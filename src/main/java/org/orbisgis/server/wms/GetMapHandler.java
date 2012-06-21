@@ -64,7 +64,7 @@ import org.orbisgis.progress.NullProgressMonitor;
  *
  * @author maxence, Tony MARTIN
  */
-public class getMapHandler {
+public class GetMapHandler {
 
         public static void getMap(ArrayList<String> layerList, ArrayList<String> styleList, String crs,
                 ArrayList<Double> bbox, int width, int height, double pixelSize, String imageFormat,
@@ -129,12 +129,12 @@ public class getMapHandler {
                 }
 
                 BufferedImage img;
-                
+
                 try {
                         layers.open();
 
                         Envelope env;
-                        
+
                         if (minX != null && minY != null && maxX != null && maxY != null) {
                                 env = new Envelope(minX, maxX, minY, maxY);
                         } else {
@@ -287,6 +287,6 @@ public class getMapHandler {
         public static void getMapXmlParser(String queryString, PrintWriter print) {
         }
 
-        private getMapHandler() {
+        private GetMapHandler() {
         }
 }

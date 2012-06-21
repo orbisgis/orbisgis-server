@@ -42,13 +42,23 @@ package org.orbisgis.server.wms;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import org.orbisgis.core.context.main.MainContext;
 
 /**
  *
  * @author Tony MARTIN
  */
-public class WMS {
-
+public final class WMS {
+        private MainContext context;
+                
+        public void init() {
+                context = new MainContext(false);
+        }
+        
+        public void destroy(){
+                context.dispose();
+        }
+        
         void processURL(String queryString, OutputStream output, WMSResponse wmsResponse) {
                 String service;
                 String version;
@@ -77,12 +87,15 @@ public class WMS {
 
                 if (requestType.equalsIgnoreCase("getmap")) {
 
-                        getMapHandler.getMapUrlParser(queryString, output, wmsResponse);
+                        GetMapHandler.getMapUrlParser(queryString, output, wmsResponse);
 
                 }
 
         }
 
         void processXML(InputStream postStream, OutputStream printStream) {
+        }
+
+        public WMS() {
         }
 }

@@ -40,15 +40,13 @@
  */
 package org.orbisgis.server.wms;
 
-import java.util.ArrayList;
-
 /**
  *
  * @author Tony MARTIN
  */
-public class getCapabilitiesHandler {
-    
-    public static void getCapabilities(){
+public class CoreInit {
         
-    }
+        public CoreInit(){
+        }
+        
 }
