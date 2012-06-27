@@ -45,14 +45,17 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.bind.*;
-import javax.xml.bind.util.ValidationEventCollector;
-import javax.xml.validation.Schema;
 import net.opengis.se._2_0.core.AbstractStyleType;
 import net.opengis.se._2_0.core.StyleType;
 import net.opengis.sld._1_2.NamedLayerElement;
 import net.opengis.sld._1_2.StyledLayerDescriptorElement;
+import org.orbisgis.core.DataManager;
+import org.orbisgis.core.Services;
 import org.orbisgis.core.layerModel.ILayer;
+import org.orbisgis.core.layerModel.LayerException;
 import org.orbisgis.core.renderer.se.SeExceptions;
 import org.orbisgis.core.renderer.se.SeExceptions.InvalidStyle;
 import org.orbisgis.core.renderer.se.Style;
@@ -65,38 +68,23 @@ public class SLD {
 
         private ArrayList<SLDLayer> layers;
 
-        SLD(String sld) throws URISyntaxException {
+        SLD(String sld) throws URISyntaxException, WMSException {
 
                 URI uri = new URI(sld);
 
                 JAXBContext jaxbContext;
                 try {
-                        jaxbContext = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core");
+                        jaxbContext = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:net.opengis.wms:oasis.names.tc.ciq.xsdschema.xal._2");
                         Unmarshaller u = jaxbContext.createUnmarshaller();
 
-                        Schema schema = u.getSchema();
-                        ValidationEventCollector validationCollector = new ValidationEventCollector();
-                        u.setEventHandler(validationCollector);
-
-                        JAXBElement<StyledLayerDescriptorElement> sldElem = (JAXBElement<StyledLayerDescriptorElement>) u.unmarshal(uri.toURL());
-                        String errors = "";
-
-                        for (ValidationEvent event : validationCollector.getEvents()) {
-                                String msg = event.getMessage();
-                                ValidationEventLocator locator = event.getLocator();
-                                int line = locator.getLineNumber();
-                                int column = locator.getColumnNumber();
-                                errors = errors + "Error at line " + line + " column " + column + " (" + msg + ")\n";
-
-                        }
-                        if (errors.isEmpty()) {
-                                try {
-                                        init(sldElem.getValue());
-                                } catch (InvalidStyle ex) {
-                                }
-                        }
+                        StyledLayerDescriptorElement sldElem = (StyledLayerDescriptorElement) u.unmarshal(uri.toURL());
+                        init(sldElem);
                 } catch (JAXBException jaxbException) {
+                        throw new WMSException(jaxbException);
                 } catch (MalformedURLException malformedURLException) {
+                        throw new WMSException(malformedURLException);
+                } catch (SeExceptions.InvalidStyle invalidStyleException) {
+                        throw new WMSException(invalidStyleException);
                 }
         }
 
@@ -104,9 +92,15 @@ public class SLD {
                 return layers.size();
         }
 
-        ILayer getLayer(int i) {
-
-                ILayer layer = null;
+        ILayer getLayer(int i) throws WMSException {
+                
+                DataManager dataManager = Services.getService(DataManager.class);
+                ILayer layer;
+                try {
+                        layer = dataManager.createLayer(layers.get(i).getName());
+                } catch (LayerException ex) {
+                        throw new WMSException(ex);
+                }
                 StyleType st = layers.get(i).getStyle();
                 Style the_style;
                 try {
@@ -115,6 +109,7 @@ public class SLD {
                         layer.addStyle(fts);
                         fts.merge(the_style);
                 } catch (InvalidStyle ex) {
+                        throw new WMSException(ex);
                 }
                 return layer;
         }

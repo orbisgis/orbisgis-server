@@ -59,7 +59,7 @@ public final class WMS {
                 context.dispose();
         }
         
-        void processURL(String queryString, OutputStream output, WMSResponse wmsResponse) {
+        void processURL(String queryString, OutputStream output, WMSResponse wmsResponse) throws WMSException {
                 String service;
                 String version;
                 String requestType = "undefined";

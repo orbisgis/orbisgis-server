@@ -69,8 +69,7 @@ public class GetMapHandler {
         public static void getMap(ArrayList<String> layerList, ArrayList<String> styleList, String crs,
                 ArrayList<Double> bbox, int width, int height, double pixelSize, String imageFormat,
                 boolean transparent, String bgColor, String stringSLD, String exceptionsFormat, OutputStream output,
-                WMSResponse wmsResponse) {
-
+                WMSResponse wmsResponse) throws WMSException {
                 Double minX;
                 Double minY;
                 Double maxX;
@@ -91,6 +90,7 @@ public class GetMapHandler {
 
 
                 boolean transparency = transparent;
+                
                 Double dpi = 25.4 / pixelSize;
 
                 DataManager dataManager = Services.getService(DataManager.class);
@@ -108,6 +108,7 @@ public class GetMapHandler {
                                         String style = styleList.get(i);
                                 }
                         } catch (LayerException e) {
+                                throw new WMSException(e);
                         }
 
                 } else // Changing the sld String object to a Style type object
@@ -122,9 +123,11 @@ public class GetMapHandler {
                                         try {
                                                 layers.addLayer(sld.getLayer(i));
                                         } catch (LayerException ex) {
+                                                throw new WMSException(ex);
                                         }
                                 }
                         } catch (URISyntaxException ex) {
+                                throw new WMSException(ex);
                         }
                 }
 
@@ -193,11 +196,12 @@ public class GetMapHandler {
                         MapImageWriter.write(wmsResponse, output, imageFormat, img, pixelSize);
                 } // ??
                 catch (Exception ex) {
-                        ex.printStackTrace(System.out);
-                        System.out.flush();
+                        //ex.printStackTrace(System.out);
+                        //System.out.flush();
                         try {
                                 layers.close();
                         } catch (LayerException ex1) {
+                                throw new WMSException(ex1);
                         }
                         img = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
                         Graphics2D g2 = img.createGraphics();
@@ -212,7 +216,7 @@ public class GetMapHandler {
                 // Write img
         }
 
-        public static void getMapUrlParser(String queryString, OutputStream output, WMSResponse wmsResponse) {
+        public static void getMapUrlParser(String queryString, OutputStream output, WMSResponse wmsResponse) throws WMSException {
 
                 ArrayList<String> layerList = new ArrayList<String>();
                 ArrayList<String> styleList = new ArrayList<String>();
