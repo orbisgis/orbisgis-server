@@ -40,6 +40,7 @@
  */
 package org.orbisgis.server.wms;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.orbisgis.core.context.main.MainContext;
@@ -50,6 +51,7 @@ import org.orbisgis.core.context.main.MainContext;
  */
 public final class WMS {
         private MainContext context;
+        private File styleDirectory;
                 
         public void init() {
                 context = new MainContext(false);
@@ -87,7 +89,7 @@ public final class WMS {
 
                 if (requestType.equalsIgnoreCase("getmap")) {
 
-                        GetMapHandler.getMapUrlParser(queryString, output, wmsResponse);
+                        GetMapHandler.getMapUrlParser(queryString, output, wmsResponse, this.styleDirectory);
 
                 }
 
@@ -96,6 +98,7 @@ public final class WMS {
         void processXML(InputStream postStream, OutputStream printStream) {
         }
 
-        public WMS() {
+        public WMS(File styleDirectory) {
+                this.styleDirectory = styleDirectory;
         }
 }

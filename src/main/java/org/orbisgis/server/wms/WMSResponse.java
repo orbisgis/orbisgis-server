@@ -46,4 +46,6 @@ package org.orbisgis.server.wms;
  */
 public interface WMSResponse {
         void setContentType(String contentType);
+        
+        //void setResponseCode(int code);
 }

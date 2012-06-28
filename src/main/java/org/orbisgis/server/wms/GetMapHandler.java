@@ -44,11 +44,17 @@ import com.vividsolutions.jts.geom.Envelope;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import net.opengis.se._2_0.core.AbstractStyleType;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
 import org.orbisgis.core.layerModel.ILayer;
@@ -57,6 +63,8 @@ import org.orbisgis.core.layerModel.LayerException;
 import org.orbisgis.core.map.MapTransform;
 import org.orbisgis.core.renderer.ImageRenderer;
 import org.orbisgis.core.renderer.Renderer;
+import org.orbisgis.core.renderer.se.SeExceptions;
+import org.orbisgis.core.renderer.se.Style;
 import org.orbisgis.core.renderer.se.parameter.color.ColorHelper;
 import org.orbisgis.progress.NullProgressMonitor;
 
@@ -69,7 +77,7 @@ public class GetMapHandler {
         public static void getMap(ArrayList<String> layerList, ArrayList<String> styleList, String crs,
                 ArrayList<Double> bbox, int width, int height, double pixelSize, String imageFormat,
                 boolean transparent, String bgColor, String stringSLD, String exceptionsFormat, OutputStream output,
-                WMSResponse wmsResponse) throws WMSException {
+                WMSResponse wmsResponse, File styleDirectory) throws WMSException {
                 Double minX;
                 Double minY;
                 Double maxX;
@@ -90,31 +98,53 @@ public class GetMapHandler {
 
 
                 boolean transparency = transparent;
-                
+
                 Double dpi = 25.4 / pixelSize;
 
                 DataManager dataManager = Services.getService(DataManager.class);
 
                 LayerCollection layers = new LayerCollection("Map");
 
+                //First case : Layers and Styles are given with shp and se file names
                 if (layerList != null && layerList.size() > 0) {
                         int i;
                         // Reverse order make the first layer been rendered in the last
                         try {
                                 for (i = layerList.size() - 1; i >= 0; i--) {
+                                        //Create the Ilayer with given layer name
                                         String layer = layerList.get(i);
                                         ILayer Il = dataManager.createLayer(layer);
+
+                                        if (styleList != null && styleList.size() > 0) {
+                                                //Adding the style to the Ilayer
+                                                String style = styleList.get(i);
+                                                JAXBContext jaxbContext;
+                                                jaxbContext = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:net.opengis.wms:oasis.names.tc.ciq.xsdschema.xal._2");
+                                                Unmarshaller u = jaxbContext.createUnmarshaller();
+                                                JAXBElement<? extends AbstractStyleType> abstractStyle = (JAXBElement<AbstractStyleType>) u.unmarshal(new File(styleDirectory, style + ".se"));
+
+                                                net.opengis.se._2_0.core.StyleType se = (net.opengis.se._2_0.core.StyleType) abstractStyle.getValue();
+                                                Style the_style;
+                                                try {
+                                                        the_style = new Style(se, null);
+                                                        Style fts = new Style(Il, false);
+                                                        Il.addStyle(fts);
+                                                        fts.merge(the_style);
+                                                } catch (SeExceptions.InvalidStyle ex) {
+                                                        throw new WMSException(ex);
+                                                }
+                                        }
+                                        //then adding the Ilayer to the layers to render list
                                         layers.addLayer(Il);
-                                        String style = styleList.get(i);
                                 }
                         } catch (LayerException e) {
                                 throw new WMSException(e);
+                        } catch (JAXBException je) {
+                                throw new WMSException(je);
                         }
 
                 } else // Changing the sld String object to a Style type object
                 if (stringSLD != null) {
-
-
 
                         try {
                                 SLD sld = new SLD(stringSLD);
@@ -216,7 +246,7 @@ public class GetMapHandler {
                 // Write img
         }
 
-        public static void getMapUrlParser(String queryString, OutputStream output, WMSResponse wmsResponse) throws WMSException {
+        public static void getMapUrlParser(String queryString, OutputStream output, WMSResponse wmsResponse, File styleDirectory) throws WMSException {
 
                 ArrayList<String> layerList = new ArrayList<String>();
                 ArrayList<String> styleList = new ArrayList<String>();
@@ -285,7 +315,7 @@ public class GetMapHandler {
                         }
                 }
 
-                getMap(layerList, styleList, crs, bbox, width, height, pixelSize, imageFormat, transparent, bgColor, sld, exceptionsFormat, output, wmsResponse);
+                getMap(layerList, styleList, crs, bbox, width, height, pixelSize, imageFormat, transparent, bgColor, sld, exceptionsFormat, output, wmsResponse, styleDirectory);
         }
 
         public static void getMapXmlParser(String queryString, PrintWriter print) {

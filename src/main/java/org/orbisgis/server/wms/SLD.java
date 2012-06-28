@@ -45,8 +45,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.bind.*;
 import net.opengis.se._2_0.core.AbstractStyleType;
 import net.opengis.se._2_0.core.StyleType;
@@ -149,7 +147,6 @@ public class SLD {
                         JAXBElement<? extends AbstractStyleType> style = l.getAbstractStyle();
 
                         net.opengis.se._2_0.core.StyleType se = (net.opengis.se._2_0.core.StyleType) style.getValue();
-                        //Style the_style = new Style(se, null);
                         sldLayer.addStyle(se);
 
 
