@@ -50,11 +50,6 @@ import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import net.opengis.se._2_0.core.AbstractStyleType;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
 import org.orbisgis.core.layerModel.ILayer;
@@ -118,18 +113,11 @@ public class GetMapHandler {
                                         if (styleList != null && styleList.size() > 0) {
                                                 //Adding the style to the Ilayer
                                                 String style = styleList.get(i);
-                                                JAXBContext jaxbContext;
-                                                jaxbContext = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:net.opengis.wms:oasis.names.tc.ciq.xsdschema.xal._2");
-                                                Unmarshaller u = jaxbContext.createUnmarshaller();
-                                                JAXBElement<? extends AbstractStyleType> abstractStyle = (JAXBElement<AbstractStyleType>) u.unmarshal(new File(styleDirectory, style + ".se"));
-
-                                                net.opengis.se._2_0.core.StyleType se = (net.opengis.se._2_0.core.StyleType) abstractStyle.getValue();
-                                                Style the_style;
                                                 try {
-                                                        the_style = new Style(se, null);
-                                                        Style fts = new Style(Il, false);
-                                                        Il.addStyle(fts);
-                                                        fts.merge(the_style);
+                                                        Style the_style;
+                                                        the_style = new Style(Il, new File(styleDirectory, style + ".se").getAbsolutePath());
+                                                        Il.addStyle(the_style);
+
                                                 } catch (SeExceptions.InvalidStyle ex) {
                                                         throw new WMSException(ex);
                                                 }
@@ -139,8 +127,6 @@ public class GetMapHandler {
                                 }
                         } catch (LayerException e) {
                                 throw new WMSException(e);
-                        } catch (JAXBException je) {
-                                throw new WMSException(je);
                         }
 
                 } else // Changing the sld String object to a Style type object

@@ -91,7 +91,7 @@ public class SLD {
         }
 
         ILayer getLayer(int i) throws WMSException {
-                
+
                 DataManager dataManager = Services.getService(DataManager.class);
                 ILayer layer;
                 try {
@@ -102,12 +102,12 @@ public class SLD {
                 StyleType st = layers.get(i).getStyle();
                 Style the_style;
                 try {
-                        the_style = new Style(st, null);
-                        Style fts = new Style(layer, false);
-                        layer.addStyle(fts);
-                        fts.merge(the_style);
-                } catch (InvalidStyle ex) {
-                        throw new WMSException(ex);
+                        the_style = new Style(st, layer);
+                        List<Style> styles = new ArrayList<Style>();
+                        styles.add(the_style);
+                        layer.setStyles(styles);
+                } catch (InvalidStyle e) {
+                        throw new WMSException(e);
                 }
                 return layer;
         }
