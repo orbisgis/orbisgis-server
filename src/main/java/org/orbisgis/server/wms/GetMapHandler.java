@@ -68,7 +68,7 @@ import org.orbisgis.progress.NullProgressMonitor;
  * @author maxence, Tony MARTIN
  */
 public class GetMapHandler {
-
+        
         public static void getMap(ArrayList<String> layerList, ArrayList<String> styleList, String crs,
                 ArrayList<Double> bbox, int width, int height, double pixelSize, String imageFormat,
                 boolean transparent, String bgColor, String stringSLD, String exceptionsFormat, OutputStream output,
@@ -77,7 +77,8 @@ public class GetMapHandler {
                 Double minY;
                 Double maxX;
                 Double maxY;
-
+                boolean isSld = false;
+                
                 if (bbox.size() == 4) {
                         minX = bbox.get(0);
                         minY = bbox.get(1);
@@ -89,52 +90,41 @@ public class GetMapHandler {
                         maxX = null;
                         maxY = null;
                 }
-
-
-
+                
+                
+                
                 boolean transparency = transparent;
-
+                
                 Double dpi = 25.4 / pixelSize;
-
+                
                 DataManager dataManager = Services.getService(DataManager.class);
-
+                
                 LayerCollection layers = new LayerCollection("Map");
-
+                
+                
+                Style the_style = null;
                 //First case : Layers and Styles are given with shp and se file names
                 if (layerList != null && layerList.size() > 0) {
                         int i;
                         // Reverse order make the first layer been rendered in the last
                         try {
-                                for (i = layerList.size() - 1; i >= 0; i--) {
+                                for (i = 0; i < layerList.size(); i++) {
                                         //Create the Ilayer with given layer name
                                         String layer = layerList.get(i);
                                         ILayer Il = dataManager.createLayer(layer);
 
-                                        if (styleList != null && styleList.size() > 0) {
-                                                //Adding the style to the Ilayer
-                                                String style = styleList.get(i);
-                                                try {
-                                                        Style the_style;
-                                                        the_style = new Style(Il, new File(styleDirectory, style + ".se").getAbsolutePath());
-                                                        Il.addStyle(the_style);
-
-                                                } catch (SeExceptions.InvalidStyle ex) {
-                                                        throw new WMSException(ex);
-                                                }
-                                        }
                                         //then adding the Ilayer to the layers to render list
                                         layers.addLayer(Il);
                                 }
                         } catch (LayerException e) {
                                 throw new WMSException(e);
                         }
-
+                        
                 } else // Changing the sld String object to a Style type object
                 if (stringSLD != null) {
-
                         try {
+                                isSld = true;
                                 SLD sld = new SLD(stringSLD);
-
                                 for (int i = 0; i < sld.size(); i++) {
                                         try {
                                                 layers.addLayer(sld.getLayer(i));
@@ -146,83 +136,95 @@ public class GetMapHandler {
                                 throw new WMSException(ex);
                         }
                 }
-
+                
                 BufferedImage img;
-
+                
                 try {
                         layers.open();
-
+                        
+                        if (styleList != null) {
+                                int j;
+                                //Adding the style to the Ilayer
+                                for (j = 0; j < styleList.size(); j++) {
+                                        if (j < layerList.size()) {
+                                                String style = styleList.get(j);
+                                                try {
+                                                        the_style = new Style(layers.getChildren()[j], new File(styleDirectory, style + ".se").getAbsolutePath());
+                                                        layers.getChildren()[j].setStyle(0, the_style);
+                                                        
+                                                } catch (SeExceptions.InvalidStyle ex) {
+                                                        throw new WMSException(ex);
+                                                }
+                                        }
+                                }
+                        }
+                        if (isSld) {
+                                try {
+                                        SLD sld = new SLD(stringSLD);
+                                        for (int i = 0; i < sld.size(); i++) {
+                                                the_style = sld.getLayer(i).getStyle(0);
+                                                layers.getChildren()[i].setStyle(0, the_style);
+                                                
+                                        }
+                                } catch (URISyntaxException ex) {
+                                        throw new WMSException(ex);
+                                }
+                        }
+                        
+                        
                         Envelope env;
-
+                        
                         if (minX != null && minY != null && maxX != null && maxY != null) {
                                 env = new Envelope(minX, maxX, minY, maxY);
                         } else {
                                 env = layers.getEnvelope();
                         }
-
+                        
                         Renderer renderer = new ImageRenderer();
                         MapTransform mt = new MapTransform();
 
                         // WMS Ask to distort map CRS when envelope and dimension box (i.e. the map to genereate) differ
                         mt.setAdjustExtent(false);
-
+                        
                         int imgType = BufferedImage.TYPE_4BYTE_ABGR;
-
+                        
                         if ("image/jpeg".equals(imageFormat)) {
                                 imgType = BufferedImage.TYPE_3BYTE_BGR;
                         }
-
+                        
                         img = new BufferedImage(width, height, imgType);
-
+                        
                         mt.setDpi(dpi);
                         mt.setImage(img);
                         mt.setExtent(env);
-
+                        
                         Graphics2D g2 = img.createGraphics();
-
+                        
                         Color color;
                         if (transparency) {
                                 color = ColorHelper.getColorWithAlpha(Color.decode(bgColor), 0.0);
                         } else {
                                 color = Color.decode(bgColor);
                         }
-
+                        
                         g2.setBackground(color);
                         g2.clearRect(0, 0, width, height);
-
+                        
                         NullProgressMonitor pm = new NullProgressMonitor();
-                        //System.out.println("Render starts");
                         renderer.draw(mt, g2, width, height, layers, pm);
-                        //System.out.println("Render ends");
-
-                        //g2.setColor(Color.black);
-                        //g2.drawString("DPI: " + dpi, 10, 10);
-
-
+                        
                         g2.dispose();
-
-                        /*
-                         * System.out.println("Layers:"); for (ILayer lay :
-                         * layers.getChildren()) { System.out.println(" - " +
-                         * lay.getName()); }
-                         */
-
-                        layers.close();
-
                         MapImageWriter.write(wmsResponse, output, imageFormat, img, pixelSize);
-                } // ??
-                catch (Exception ex) {
-                        //ex.printStackTrace(System.out);
-                        //System.out.flush();
+                        
+                } catch (Exception ex) {
+                        ex.printStackTrace(new PrintWriter(output));
+                        wmsResponse.setContentType("text/plain");
+                } finally {
                         try {
                                 layers.close();
                         } catch (LayerException ex1) {
                                 throw new WMSException(ex1);
                         }
-                        img = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
-                        Graphics2D g2 = img.createGraphics();
-                        g2.drawString(ex.getMessage(), 10, 10);
-                        g2.dispose();
                 }
 
 
@@ -231,9 +233,9 @@ public class GetMapHandler {
 
                 // Write img
         }
-
+        
         public static void getMapUrlParser(String queryString, OutputStream output, WMSResponse wmsResponse, File styleDirectory) throws WMSException {
-
+                
                 ArrayList<String> layerList = new ArrayList<String>();
                 ArrayList<String> styleList = new ArrayList<String>();
                 String crs = null;
@@ -246,67 +248,67 @@ public class GetMapHandler {
                 String bgColor = "#FFFFFF";
                 String sld = null;
                 String exceptionsFormat = null;
-
+                
                 for (String parameter : queryString.split("&")) {
                         String[] paramValues = parameter.split("=");
-
+                        
                         if (paramValues[0].equalsIgnoreCase("layers")) {
                                 layerList.addAll(Arrays.asList(paramValues[1].split(",")));
                         }
-
+                        
                         if (paramValues[0].equalsIgnoreCase("styles")) {
                                 styleList.addAll(Arrays.asList(paramValues[1].split(",")));
                         }
-
+                        
                         if (paramValues[0].equalsIgnoreCase("crs")) {
                                 crs = paramValues[1];
                         }
-
+                        
                         if (paramValues[0].equalsIgnoreCase("bbox")) {
                                 for (String coord : queryString.split(",")) {
                                         bbox.add(Double.parseDouble(coord));
                                 }
                         }
-
+                        
                         if (paramValues[0].equalsIgnoreCase("width")) {
                                 width = Integer.parseInt(paramValues[1]);
                         }
-
+                        
                         if (paramValues[0].equalsIgnoreCase("height")) {
                                 height = Integer.parseInt(paramValues[1]);
                         }
-
+                        
                         if (paramValues[0].equalsIgnoreCase("pixelsize")) {
                                 pixelSize = Double.parseDouble(paramValues[1]);
                         }
-
+                        
                         if (paramValues[0].equalsIgnoreCase("format")) {
                                 imageFormat = paramValues[1];
                         }
-
+                        
                         if (paramValues[0].equalsIgnoreCase("transparent")) {
                                 transparent = paramValues[1].equalsIgnoreCase("true") || paramValues[1].equalsIgnoreCase("1");
                         }
-
+                        
                         if (paramValues[0].equalsIgnoreCase("bgcolor")) {
                                 bgColor = paramValues[1];
                         }
-
+                        
                         if (paramValues[0].equalsIgnoreCase("sld")) {
                                 sld = paramValues[1];
                         }
-
+                        
                         if (paramValues[0].equalsIgnoreCase("exceptions")) {
                                 exceptionsFormat = paramValues[1];
                         }
                 }
-
+                
                 getMap(layerList, styleList, crs, bbox, width, height, pixelSize, imageFormat, transparent, bgColor, sld, exceptionsFormat, output, wmsResponse, styleDirectory);
         }
-
+        
         public static void getMapXmlParser(String queryString, PrintWriter print) {
         }
-
+        
         private GetMapHandler() {
         }
 }
