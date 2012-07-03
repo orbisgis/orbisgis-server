@@ -43,6 +43,7 @@ package org.orbisgis.server.wms;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import org.orbisgis.core.context.main.MainContext;
 
 /**
@@ -50,48 +51,83 @@ import org.orbisgis.core.context.main.MainContext;
  * @author Tony MARTIN
  */
 public final class WMS {
+
         private MainContext context;
         private File styleDirectory;
-                
+
         public void init() {
                 context = new MainContext(false);
         }
-        
-        public void destroy(){
+
+        public void destroy() {
                 context.dispose();
         }
-        
+
         void processURL(String queryString, OutputStream output, WMSResponse wmsResponse) throws WMSException {
-                String service;
-                String version;
+                String service = "undefined";
+                String version = "undefined";
                 String requestType = "undefined";
 
                 for (String parameter : queryString.split("&")) {
                         if (parameter.matches("(?i:service=.*)")) {
                                 String param[] = parameter.split("=");
-                                service = param[1];
+                                if (param.length > 1) {
+                                        service = param[1];
+                                }
+                                if (!service.equalsIgnoreCase("wms")) {
+                                        PrintWriter out = new PrintWriter(output);
+                                        wmsResponse.setContentType("text/html;charset=UTF-8");
+                                        wmsResponse.setResponseCode(400);
+                                        out.print("<h2>The service specified is either unsupported or wrongly requested</h2>"
+                                                + "<p>Please specify WMS service as it is the only one supported by this server</p>");
+                                        out.flush();
+                                        return;
+                                }
                         }
                         if (parameter.matches("(?i:version=.*)")) {
                                 String param[] = parameter.split("=");
-                                version = param[1];
+                                if (param.length > 1) {
+                                        version = param[1];
+                                }
+                                if (!version.equalsIgnoreCase("1.3.0") && !version.equalsIgnoreCase("1.3")) {
+                                        PrintWriter out = new PrintWriter(output);
+                                        wmsResponse.setContentType("text/html;charset=UTF-8");
+                                        wmsResponse.setResponseCode(400);
+                                        out.print("<h2>The version number is incorrect or unspecified</h2>"
+                                                + "<p>Please specify 1.3 version number as it is the only supported by this server</p>");
+                                        out.flush();
+                                        return;
+                                }
                         }
                         if (parameter.matches("(?i:request=.*)")) {
                                 String param[] = parameter.split("=");
-                                requestType = param[1];
+                                if (param.length > 1) {
+                                        requestType = param[1];
+                                }
+                                if (requestType.equalsIgnoreCase("getmap")) {
+
+                                        GetMapHandler.getMapUrlParser(queryString, output, wmsResponse, this.styleDirectory);
+
+                                } else if (requestType.equalsIgnoreCase("getcapabilities")) {
+
+                                        GetCapabilitiesHandler.getCap(queryString, output, wmsResponse, this.styleDirectory);
+
+                                } else {
+                                        PrintWriter out = new PrintWriter(output);
+                                        wmsResponse.setContentType("text/html;charset=UTF-8");
+                                        wmsResponse.setResponseCode(400);
+                                        out.print("<h2>The requested request is not supported or wrongly specified</h2>"
+                                                + "<p>Please specify either getMap or getCapabilities request as it they are the only two supported by this server</p>");
+                                        out.flush();
+                                        return;
+                                }
                         }
 
-                        /*
-                         * if (!version.equalsIgnoreCase("2.0.0"){
-                         *
-                         * }
-                         */
-                }
-
-                if (requestType.equalsIgnoreCase("getmap")) {
-
-                        GetMapHandler.getMapUrlParser(queryString, output, wmsResponse, this.styleDirectory);
 
                 }
+
+
+
 
         }
 

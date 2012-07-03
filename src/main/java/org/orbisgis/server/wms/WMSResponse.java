@@ -45,7 +45,10 @@ package org.orbisgis.server.wms;
  * @author Tony MARTIN
  */
 public interface WMSResponse {
+
         void setContentType(String contentType);
-        
-        //void setResponseCode(int code);
+
+        String getRequestUrl();
+
+        void setResponseCode(int code);
 }
