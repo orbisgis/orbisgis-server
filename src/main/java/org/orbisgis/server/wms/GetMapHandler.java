@@ -50,6 +50,7 @@ import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
 import org.orbisgis.core.layerModel.ILayer;
@@ -69,8 +70,8 @@ import org.orbisgis.progress.NullProgressMonitor;
  */
 public class GetMapHandler {
 
-        public static void getMap(ArrayList<String> layerList, ArrayList<String> styleList, String crs,
-                ArrayList<Double> bbox, int width, int height, double pixelSize, String imageFormat,
+        public static void getMap(List<String> layerList, List<String> styleList, String crs,
+                List<Double> bbox, int width, int height, double pixelSize, String imageFormat,
                 boolean transparent, String bgColor, String stringSLD, String exceptionsFormat, OutputStream output,
                 WMSResponse wmsResponse, File styleDirectory) throws WMSException {
                 Double minX;
@@ -102,7 +103,7 @@ public class GetMapHandler {
                 LayerCollection layers = new LayerCollection("Map");
 
 
-                Style the_style = null;
+                Style theStyle = null;
                 //First case : Layers and Styles are given with shp and se file names
                 if (layerList != null && layerList.size() > 0) {
                         int i;
@@ -149,8 +150,8 @@ public class GetMapHandler {
                                         if (j < layerList.size()) {
                                                 String style = styleList.get(j);
                                                 try {
-                                                        the_style = new Style(layers.getChildren()[j], new File(styleDirectory, style + ".se").getAbsolutePath());
-                                                        layers.getChildren()[j].setStyle(0, the_style);
+                                                        theStyle = new Style(layers.getChildren()[j], new File(styleDirectory, style + ".se").getAbsolutePath());
+                                                        layers.getChildren()[j].setStyle(0, theStyle);
 
                                                 } catch (SeExceptions.InvalidStyle ex) {
                                                         throw new WMSException(ex);
@@ -162,8 +163,8 @@ public class GetMapHandler {
                                 try {
                                         SLD sld = new SLD(stringSLD);
                                         for (int i = 0; i < sld.size(); i++) {
-                                                the_style = sld.getLayer(i).getStyle(0);
-                                                layers.getChildren()[i].setStyle(0, the_style);
+                                                theStyle = sld.getLayer(i).getStyle(0);
+                                                layers.getChildren()[i].setStyle(0, theStyle);
 
                                         }
                                 } catch (URISyntaxException ex) {
@@ -236,13 +237,13 @@ public class GetMapHandler {
 
         public static void getMapUrlParser(String queryString, OutputStream output, WMSResponse wmsResponse, File styleDirectory) throws WMSException {
 
-                ArrayList<String> layerList = new ArrayList<String>();
-                ArrayList<String> styleList = new ArrayList<String>();
+                List<String> layerList = new ArrayList<String>();
+                List<String> styleList = new ArrayList<String>();
                 String crs = null;
-                ArrayList<Double> bbox = new ArrayList<Double>();
+                List<Double> bbox = new ArrayList<Double>();
                 Integer width = null;
                 Integer height = null;
-                Double pixelSize = 0.028;
+                Double pixelSize = 0.084;
                 String imageFormat = "image/png";
                 boolean transparent = false;
                 String bgColor = "#FFFFFF";
@@ -253,11 +254,15 @@ public class GetMapHandler {
                         String[] paramValues = parameter.split("=");
 
                         if (paramValues[0].equalsIgnoreCase("layers")) {
-                                layerList.addAll(Arrays.asList(paramValues[1].split(",")));
+                                if (paramValues.length > 1) {
+                                        layerList.addAll(Arrays.asList(paramValues[1].split(",")));
+                                }
                         }
 
                         if (paramValues[0].equalsIgnoreCase("styles")) {
-                                styleList.addAll(Arrays.asList(paramValues[1].split(",")));
+                                if (paramValues.length > 1) {
+                                        styleList.addAll(Arrays.asList(paramValues[1].split(",")));
+                                }
                         }
 
                         if (paramValues[0].equalsIgnoreCase("crs")) {
@@ -265,17 +270,22 @@ public class GetMapHandler {
                         }
 
                         if (paramValues[0].equalsIgnoreCase("bbox")) {
-                                for (String coord : queryString.split(",")) {
-                                        bbox.add(Double.parseDouble(coord));
+                                if (paramValues.length > 1) {
+                                        for (String coord : paramValues[1].split(",")) {
+                                                bbox.add(Double.parseDouble(coord));
+                                        }
                                 }
                         }
 
                         if (paramValues[0].equalsIgnoreCase("width")) {
-                                width = Integer.parseInt(paramValues[1]);
+                                if (paramValues.length > 1) {
+                                        width = Integer.parseInt(paramValues[1]);
+                                }
                         }
-
                         if (paramValues[0].equalsIgnoreCase("height")) {
-                                height = Integer.parseInt(paramValues[1]);
+                                if (paramValues.length > 1) {
+                                        height = Integer.parseInt(paramValues[1]);
+                                }
                         }
 
                         if (paramValues[0].equalsIgnoreCase("pixelsize")) {

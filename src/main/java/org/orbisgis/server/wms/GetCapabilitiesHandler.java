@@ -40,14 +40,17 @@
  */
 package org.orbisgis.server.wms;
 
+import com.vividsolutions.jts.geom.Envelope;
 import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
+import net.opengis.wms.BoundingBox;
 import net.opengis.wms.Capability;
 import net.opengis.wms.ContactInformation;
 import net.opengis.wms.DCPType;
+import net.opengis.wms.EXGeographicBoundingBox;
 import net.opengis.wms.Get;
 import net.opengis.wms.HTTP;
 import net.opengis.wms.Layer;
@@ -56,6 +59,11 @@ import net.opengis.wms.OperationType;
 import net.opengis.wms.Request;
 import net.opengis.wms.Service;
 import net.opengis.wms.WMSCapabilities;
+import org.gdms.data.DataSource;
+import org.gdms.data.DataSourceCreationException;
+import org.gdms.data.DataSourceFactory;
+import org.gdms.data.NoSuchTableException;
+import org.gdms.driver.DriverException;
 import org.gdms.source.SourceManager;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
@@ -66,7 +74,14 @@ import org.orbisgis.core.Services;
  */
 public class GetCapabilitiesHandler {
 
-        static void getCap(String queryString, OutputStream output, WMSResponse wmsResponse, File styleDirectory) {
+        /**
+         *
+         * @param queryString
+         * @param output
+         * @param wmsResponse
+         * @param styleDirectory
+         */
+        static void getCap(String queryString, OutputStream output, WMSResponse wmsResponse, File styleDirectory) throws WMSException {
                 PrintWriter out = new PrintWriter(output);
                 WMSCapabilities cap = new WMSCapabilities();
 
@@ -93,28 +108,54 @@ public class GetCapabilitiesHandler {
                 //Setting Layers capabilities
                 Capability c = new Capability();
                 Layer availableLayers = new Layer();
-                SourceManager sm = Services.getService(DataManager.class).getSourceManager();
+                DataSourceFactory dsf = Services.getService(DataManager.class).getDataSourceFactory();
+                SourceManager sm = dsf.getSourceManager();
                 String[] names = sm.getSourceNames();
 
-                for (int i = 0; i < names.length; i++) {
-                        if (!sm.getSource(names[i]).isSystemTableSource()) {
-                                Layer layer = new Layer();
-                                layer.setName(names[i]);
-                                layer.setTitle(names[i]);
+                try {
+                        for (int i = 0; i < names.length; i++) {
+                                if (!sm.getSource(names[i]).isSystemTableSource()) {
+                                        Layer layer = new Layer();
+                                        layer.setName(names[i]);
+                                        layer.setTitle(names[i]);
 
-                                availableLayers.getLayer().add(layer);
+                                        //Setting the bouding box data
+                                        DataSource ds = dsf.getDataSource(names[i]);
+                                        ds.open();
+                                        Envelope env = ds.getFullExtent();
+                                        ds.close();
+
+                                        BoundingBox BBox = new BoundingBox();
+                                        BBox.setMaxx(env.getMaxX());
+                                        BBox.setMinx(env.getMinX());
+                                        BBox.setMiny(env.getMinY());
+                                        BBox.setMaxy(env.getMaxY());
+                                        BBox.setCRS("EPSG:27582");
+                                        layer.getBoundingBox().add(BBox);
+
+                                        availableLayers.getLayer().add(layer);
+                                }
                         }
+                } catch (NoSuchTableException noSuchTableException) {
+                        throw new WMSException(noSuchTableException);
+                } catch (DataSourceCreationException dataSourceCreationException) {
+                        throw new WMSException(dataSourceCreationException);
+                } catch (DriverException driverException) {
+                        throw new WMSException(driverException);
                 }
+
+                //Server supported CRS
+                availableLayers.getCRS().add("EPSG:27582");
+
                 c.setLayer(availableLayers);
 
-                //setting the request capabilities
+                //Setting the request capabilities
                 Request req = new Request();
                 OperationType opMap = new OperationType();
                 opMap.getFormat().add("image/jpeg");
                 opMap.getFormat().add("image/png");
                 OnlineResource oRMap = new OnlineResource();
                 oRMap.setHref(wmsResponse.getRequestUrl());
-                System.out.println(wmsResponse.getRequestUrl());
                 oRMap.setTitle("GetMap");
                 Get get = new Get();
                 get.setOnlineResource(oRMap);
@@ -157,7 +198,7 @@ public class GetCapabilitiesHandler {
 
                 } catch (Exception ex) {
                         wmsResponse.setContentType("text/html;charset=UTF-8");
-                        out.print("<h1>something went wrong</h1>");
+                        out.print("<h2>Something went wrong</h2>");
                         out.print(ex);
                         ex.printStackTrace(out);
                 }
