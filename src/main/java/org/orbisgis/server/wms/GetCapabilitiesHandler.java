@@ -50,7 +50,6 @@ import net.opengis.wms.BoundingBox;
 import net.opengis.wms.Capability;
 import net.opengis.wms.ContactInformation;
 import net.opengis.wms.DCPType;
-import net.opengis.wms.EXGeographicBoundingBox;
 import net.opengis.wms.Get;
 import net.opengis.wms.HTTP;
 import net.opengis.wms.Layer;
@@ -69,17 +68,21 @@ import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
 
 /**
+ * Creates the answer to a getCapabilities request and writes it into the output
+ * stream
  *
  * @author Tony MARTIN
  */
-public class GetCapabilitiesHandler {
+public final class GetCapabilitiesHandler {
 
         /**
+         * Handles the getCapabilities request and gives the XML formated server
+         * capabilities to the outputStream
          *
-         * @param queryString
-         * @param output
-         * @param wmsResponse
-         * @param styleDirectory
+         * @param queryString getCapabilities request string
+         * @param output servlet outputStream
+         * @param wmsResponse HttpServletResponse modified for WMS use
+         * @param styleDirectory path to the directory containing seFiles
          */
         static void getCap(String queryString, OutputStream output, WMSResponse wmsResponse, File styleDirectory) throws WMSException {
                 PrintWriter out = new PrintWriter(output);

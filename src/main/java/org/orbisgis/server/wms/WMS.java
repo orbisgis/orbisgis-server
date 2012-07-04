@@ -55,15 +55,30 @@ public final class WMS {
         private MainContext context;
         private File styleDirectory;
 
+        /**
+         * Initialize the context (containing datasources, datamanager...)
+         */
         public void init() {
                 context = new MainContext(false);
         }
 
+        /**
+         * Free ressources
+         */
         public void destroy() {
                 context.dispose();
         }
 
-        void processURL(String queryString, OutputStream output, WMSResponse wmsResponse) throws WMSException {
+        /**
+         * Handles the URL request and reads the request type to start
+         * processing of either a getMap or getCapabilities request
+         *
+         * @param queryString
+         * @param output
+         * @param wmsResponse
+         * @throws WMSException
+         */
+        public void processURL(String queryString, OutputStream output, WMSResponse wmsResponse) throws WMSException {
                 String service = "undefined";
                 String version = "undefined";
                 String requestType = "undefined";
@@ -89,15 +104,7 @@ public final class WMS {
                                 if (param.length > 1) {
                                         version = param[1];
                                 }
-                                if (!version.equalsIgnoreCase("1.3.0") && !version.equalsIgnoreCase("1.3")) {
-                                        PrintWriter out = new PrintWriter(output);
-                                        wmsResponse.setContentType("text/html;charset=UTF-8");
-                                        wmsResponse.setResponseCode(400);
-                                        out.print("<h2>The version number is incorrect or unspecified</h2>"
-                                                + "<p>Please specify 1.3 version number as it is the only supported by this server</p>");
-                                        out.flush();
-                                        return;
-                                }
+
                         }
                         if (parameter.matches("(?i:request=.*)")) {
                                 String param[] = parameter.split("=");
@@ -105,7 +112,15 @@ public final class WMS {
                                         requestType = param[1];
                                 }
                                 if (requestType.equalsIgnoreCase("getmap")) {
-
+                                        if (!version.equalsIgnoreCase("1.3.0") && !version.equalsIgnoreCase("1.3")) {
+                                                PrintWriter out = new PrintWriter(output);
+                                                wmsResponse.setContentType("text/html;charset=UTF-8");
+                                                wmsResponse.setResponseCode(400);
+                                                out.print("<h2>The version number is incorrect or unspecified</h2>"
+                                                        + "<p>Please specify 1.3 version number as it is the only supported by this server</p>");
+                                                out.flush();
+                                                return;
+                                        }
                                         GetMapHandler.getMapUrlParser(queryString, output, wmsResponse, this.styleDirectory);
 
                                 } else if (requestType.equalsIgnoreCase("getcapabilities")) {
@@ -131,9 +146,14 @@ public final class WMS {
 
         }
 
-        void processXML(InputStream postStream, OutputStream printStream) {
+        public void processXML(InputStream postStream, OutputStream printStream) {
         }
 
+        /**
+         * Class constructor with styleDirectory path
+         *
+         * @param styleDirectory
+         */
         public WMS(File styleDirectory) {
                 this.styleDirectory = styleDirectory;
         }

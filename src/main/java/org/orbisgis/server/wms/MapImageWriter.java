@@ -49,22 +49,26 @@ import java.io.UnsupportedEncodingException;
 import javax.media.jai.JAI;
 
 /**
+ * This class is used to write the image into the output stream
  *
  * @author maxence, Tony MARTIN
  */
-class MapImageWriter {
+public final class MapImageWriter {
 
         //We store here the formats currently supported. 
-        private static final String[] formats = {"image/jpeg", "image/png"};
+        private static final String[] FORMATS = {"image/jpeg", "image/png"};
 
         private MapImageWriter() {
         }
 
         /**
+         * The write class selects the encoding parameter considering the image
+         * format requested. Then, the correct writer will encode the img given
+         * by the render into the servlet output stream
          *
          * @param wmsResponse
          * @param output
-         * @param format
+         * @param format desired image format
          * @param img
          * @param pixelSize
          * @throws UnsupportedEncodingException If the requested format can not
@@ -75,23 +79,16 @@ class MapImageWriter {
         public static void write(WMSResponse wmsResponse, OutputStream output,
                 String format, BufferedImage img, double pixelSize) throws IOException {
 
-                if (format.equalsIgnoreCase(formats[0])) {
+                if (format.equalsIgnoreCase(FORMATS[0])) {
                         writeJPEG(wmsResponse, output, img, pixelSize);
-                } else if (format.equalsIgnoreCase(formats[1])) {
+                } else if (format.equalsIgnoreCase(FORMATS[1])) {
                         writePNG(wmsResponse, output, img, pixelSize);
                 } else {
                         throw new UnsupportedEncodingException("Unsupported Format (" + format + ")");
                 }
         }
 
-        /**
-         *
-         * @param wmsResponse
-         * @param img
-         * @param pixelSize
-         * @throws IOException
-         */
-        public static void writeJPEG(WMSResponse wmsResponse, OutputStream output,
+        private static void writeJPEG(WMSResponse wmsResponse, OutputStream output,
                 BufferedImage img, double pixelSize) throws IOException {
                 wmsResponse.setContentType("image/jpeg");
 

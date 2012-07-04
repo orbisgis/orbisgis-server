@@ -59,14 +59,23 @@ import org.orbisgis.core.renderer.se.SeExceptions.InvalidStyle;
 import org.orbisgis.core.renderer.se.Style;
 
 /**
+ * Called in the case where the styles and layers are defined by a SLD file URI
  *
  * @author maxence, Tony MARTIN
  */
 public class SLD {
 
-        private ArrayList<SLDLayer> layers;
+        private List<SLDLayer> layers;
 
-        SLD(String sld) throws URISyntaxException, WMSException {
+        /**
+         * Constructor of the SLD object. Contains the URI file path to the
+         * desired SLD file.
+         *
+         * @param sld
+         * @throws URISyntaxException
+         * @throws WMSException
+         */
+        public SLD(String sld) throws URISyntaxException, WMSException {
 
                 URI uri = new URI(sld);
 
@@ -76,7 +85,9 @@ public class SLD {
                         Unmarshaller u = jaxbContext.createUnmarshaller();
 
                         StyledLayerDescriptorElement sldElem = (StyledLayerDescriptorElement) u.unmarshal(uri.toURL());
+
                         init(sldElem);
+
                 } catch (JAXBException jaxbException) {
                         throw new WMSException(jaxbException);
                 } catch (MalformedURLException malformedURLException) {
@@ -86,11 +97,24 @@ public class SLD {
                 }
         }
 
-        int size() {
+        /**
+         * Returns the number of layers in the SLD file.
+         *
+         * @return
+         */
+        public int size() {
                 return layers.size();
         }
 
-        ILayer getLayer(int i) throws WMSException {
+        /**
+         * Returns the selected layer from the SLD object that contains
+         * references to the layer and the associated style
+         *
+         * @param i
+         * @return
+         * @throws WMSException
+         */
+        public ILayer getLayer(int i) throws WMSException {
 
                 DataManager dataManager = Services.getService(DataManager.class);
                 ILayer layer;
@@ -100,11 +124,11 @@ public class SLD {
                         throw new WMSException(ex);
                 }
                 StyleType st = layers.get(i).getStyle();
-                Style the_style;
+                Style theStyle;
                 try {
-                        the_style = new Style(st, layer);
+                        theStyle = new Style(st, layer);
                         List<Style> styles = new ArrayList<Style>();
-                        styles.add(the_style);
+                        styles.add(theStyle);
                         layer.setStyles(styles);
                 } catch (InvalidStyle e) {
                         throw new WMSException(e);
@@ -112,34 +136,58 @@ public class SLD {
                 return layer;
         }
 
+        /**
+         * Helps manage a SLDLayer, element of the SLD object
+         */
         public static class SLDLayer {
 
                 private StyleType style;
                 private final String name;
 
+                /**
+                 * SLD Layer constructor, created with the name of the queryable
+                 * layer
+                 *
+                 * @param name
+                 */
                 public SLDLayer(String name) {
                         this.name = name;
                 }
 
+                /**
+                 * Adds the style reference to the layer
+                 *
+                 * @param sldStyle
+                 */
                 public void addStyle(StyleType sldStyle) {
                         style = sldStyle;
                 }
 
+                /**
+                 * Returns the name of the layer
+                 *
+                 * @return
+                 */
                 public String getName() {
                         return name;
                 }
 
+                /**
+                 * Returns the style of the layer
+                 *
+                 * @return
+                 */
                 public StyleType getStyle() {
                         return style;
                 }
         }
 
         private void init(StyledLayerDescriptorElement sldType) throws SeExceptions.InvalidStyle {
-                List<NamedLayerElement> layers = sldType.getNamedLayer();
+                List<NamedLayerElement> sldLayers = sldType.getNamedLayer();
 
                 this.layers = new ArrayList<SLDLayer>();
 
-                for (NamedLayerElement l : layers) {
+                for (NamedLayerElement l : sldLayers) {
 
                         String name = l.getName();
 

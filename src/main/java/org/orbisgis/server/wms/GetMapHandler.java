@@ -45,6 +45,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
@@ -65,11 +66,35 @@ import org.orbisgis.core.renderer.se.parameter.color.ColorHelper;
 import org.orbisgis.progress.NullProgressMonitor;
 
 /**
- *
+ * This object contains all the methods that are used to handle the getMap request and give the correct 
+ * parameters to the renderer
+ * 
  * @author maxence, Tony MARTIN
  */
-public class GetMapHandler {
+public final class GetMapHandler {
 
+        /**
+         * Receives all the getMap request parameters from getMapUrlParser and turns them into acceptable
+         * objects for the renderer to process, then writes the rendrer image into the output stream via 
+         * MapImageWriter
+         * 
+         * @param layerList contains the names of requested layers
+         * @param styleList contains the names of the desired se files (must be equal or shorter than layerList)
+         * @param crs desired CRS (string)
+         * @param bbox geographic extent, given in the correct CRS
+         * @param width pixel with of the image
+         * @param height pixel height of the image
+         * @param pixelSize used to calculate the dpi resolution desired for the image
+         * @param imageFormat chosen between the image format server capabilities
+         * @param transparent
+         * @param bgColor
+         * @param stringSLD used if the layers and styles are defined in a SLD file given by its URI rather than layers and se styles files present on the server
+         * @param exceptionsFormat
+         * @param output
+         * @param wmsResponse
+         * @param styleDirectory
+         * @throws WMSException
+         */
         public static void getMap(List<String> layerList, List<String> styleList, String crs,
                 List<Double> bbox, int width, int height, double pixelSize, String imageFormat,
                 boolean transparent, String bgColor, String stringSLD, String exceptionsFormat, OutputStream output,
@@ -112,10 +137,10 @@ public class GetMapHandler {
                                 for (i = 0; i < layerList.size(); i++) {
                                         //Create the Ilayer with given layer name
                                         String layer = layerList.get(i);
-                                        ILayer Il = dataManager.createLayer(layer);
+                                        ILayer iLayer = dataManager.createLayer(layer);
 
                                         //then adding the Ilayer to the layers to render list
-                                        layers.addLayer(Il);
+                                        layers.addLayer(iLayer);
                                 }
                         } catch (LayerException e) {
                                 throw new WMSException(e);
@@ -217,9 +242,11 @@ public class GetMapHandler {
                         g2.dispose();
                         MapImageWriter.write(wmsResponse, output, imageFormat, img, pixelSize);
 
-                } catch (Exception ex) {
+                } catch (IOException ex) {
                         ex.printStackTrace(new PrintWriter(output));
                         wmsResponse.setContentType("text/plain");
+                } catch (LayerException lEx) {
+                        throw new WMSException(lEx);
                 } finally {
                         try {
                                 layers.close();
@@ -235,6 +262,15 @@ public class GetMapHandler {
                 // Write img
         }
 
+        /**
+         * Parses the url into the getMap request parameters and gives them to the getMap method
+         * 
+         * @param queryString
+         * @param output
+         * @param wmsResponse
+         * @param styleDirectory
+         * @throws WMSException
+         */
         public static void getMapUrlParser(String queryString, OutputStream output, WMSResponse wmsResponse, File styleDirectory) throws WMSException {
 
                 List<String> layerList = new ArrayList<String>();
