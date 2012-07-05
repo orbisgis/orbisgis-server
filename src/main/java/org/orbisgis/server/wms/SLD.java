@@ -113,8 +113,9 @@ public class SLD {
          * @param i
          * @return
          * @throws WMSException
+         * @throws org.orbisgis.core.renderer.se.SeExceptions.InvalidStyle  
          */
-        public ILayer getLayer(int i) throws WMSException {
+        public ILayer getLayer(int i) throws WMSException, InvalidStyle {
 
                 DataManager dataManager = Services.getService(DataManager.class);
                 ILayer layer;
@@ -125,14 +126,12 @@ public class SLD {
                 }
                 StyleType st = layers.get(i).getStyle();
                 Style theStyle;
-                try {
-                        theStyle = new Style(st, layer);
-                        List<Style> styles = new ArrayList<Style>();
-                        styles.add(theStyle);
-                        layer.setStyles(styles);
-                } catch (InvalidStyle e) {
-                        throw new WMSException(e);
-                }
+
+                theStyle = new Style(st, layer);
+                List<Style> styles = new ArrayList<Style>();
+                styles.add(theStyle);
+                layer.setStyles(styles);
+
                 return layer;
         }
 

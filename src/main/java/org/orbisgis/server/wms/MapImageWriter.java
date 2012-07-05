@@ -45,6 +45,7 @@ import com.sun.media.jai.codec.PNGEncodeParam;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import javax.media.jai.JAI;
 
@@ -71,7 +72,6 @@ public final class MapImageWriter {
          * @param format desired image format
          * @param img
          * @param pixelSize
-         * @throws UnsupportedEncodingException If the requested format can not
          * be provided by the server
          * @throws IOException If a problem has been encountered while handling
          * the output stream.
@@ -84,7 +84,12 @@ public final class MapImageWriter {
                 } else if (format.equalsIgnoreCase(FORMATS[1])) {
                         writePNG(wmsResponse, output, img, pixelSize);
                 } else {
-                        throw new UnsupportedEncodingException("Unsupported Format (" + format + ")");
+                        PrintWriter out = new PrintWriter(output);
+                        wmsResponse.setContentType("text/html;charset=UTF-8");
+                        wmsResponse.setResponseCode(400);
+                        out.print("<h2>The format requested is invalid</h2>"
+                                + "<p>Please check the server capabilities to ask for a supported format</p>");
+                        out.flush();
                 }
         }
 

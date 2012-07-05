@@ -66,29 +66,34 @@ import org.orbisgis.core.renderer.se.parameter.color.ColorHelper;
 import org.orbisgis.progress.NullProgressMonitor;
 
 /**
- * This object contains all the methods that are used to handle the getMap request and give the correct 
- * parameters to the renderer
- * 
+ * This object contains all the methods that are used to handle the getMap
+ * request and give the correct parameters to the renderer
+ *
  * @author maxence, Tony MARTIN
  */
 public final class GetMapHandler {
 
         /**
-         * Receives all the getMap request parameters from getMapUrlParser and turns them into acceptable
-         * objects for the renderer to process, then writes the rendrer image into the output stream via 
-         * MapImageWriter
-         * 
+         * Receives all the getMap request parameters from getMapUrlParser and
+         * turns them into acceptable objects for the renderer to process, then
+         * writes the rendrer image into the output stream via MapImageWriter
+         *
          * @param layerList contains the names of requested layers
-         * @param styleList contains the names of the desired se files (must be equal or shorter than layerList)
+         * @param styleList contains the names of the desired se files (must be
+         * equal or shorter than layerList)
          * @param crs desired CRS (string)
          * @param bbox geographic extent, given in the correct CRS
          * @param width pixel with of the image
          * @param height pixel height of the image
-         * @param pixelSize used to calculate the dpi resolution desired for the image
-         * @param imageFormat chosen between the image format server capabilities
+         * @param pixelSize used to calculate the dpi resolution desired for the
+         * image
+         * @param imageFormat chosen between the image format server
+         * capabilities
          * @param transparent
          * @param bgColor
-         * @param stringSLD used if the layers and styles are defined in a SLD file given by its URI rather than layers and se styles files present on the server
+         * @param stringSLD used if the layers and styles are defined in a SLD
+         * file given by its URI rather than layers and se styles files present
+         * on the server
          * @param exceptionsFormat
          * @param output
          * @param wmsResponse
@@ -155,11 +160,32 @@ public final class GetMapHandler {
                                         try {
                                                 layers.addLayer(sld.getLayer(i));
                                         } catch (LayerException ex) {
-                                                throw new WMSException(ex);
+                                                PrintWriter out = new PrintWriter(output);
+                                                wmsResponse.setContentType("text/html;charset=UTF-8");
+                                                wmsResponse.setResponseCode(400);
+                                                out.print("<h2>At least one of the chosen layer is invalid</h2>"
+                                                        + "<p>Please make sure you entered a valid layer. Make sure of the "
+                                                        + "available layers by requesting the server capabilities</p>");
+                                                out.flush();
+                                                return;
+                                        } catch (SeExceptions.InvalidStyle ex) {
+                                                PrintWriter out = new PrintWriter(output);
+                                                wmsResponse.setContentType("text/html;charset=UTF-8");
+                                                wmsResponse.setResponseCode(400);
+                                                out.print("<h2>The se style is invalid</h2>"
+                                                        + "<p>Please give a SE valid SLD file.</p>");
+                                                out.flush();
+                                                return;
                                         }
                                 }
                         } catch (URISyntaxException ex) {
-                                throw new WMSException(ex);
+                                PrintWriter out = new PrintWriter(output);
+                                wmsResponse.setContentType("text/html;charset=UTF-8");
+                                wmsResponse.setResponseCode(400);
+                                out.print("<h2>The SLD URI is invalid</h2>"
+                                        + "<p>Please enter a valid SLD file URI path.</p>");
+                                out.flush();
+                                return;
                         }
                 }
 
@@ -193,7 +219,22 @@ public final class GetMapHandler {
 
                                         }
                                 } catch (URISyntaxException ex) {
-                                        throw new WMSException(ex);
+                                        PrintWriter out = new PrintWriter(output);
+                                        wmsResponse.setContentType("text/html;charset=UTF-8");
+                                        wmsResponse.setResponseCode(400);
+                                        out.print("<h2>The SLD URI is invalid</h2>"
+                                                + "<p>Please enter a valid SLD file URI path.</p>");
+                                        out.flush();
+                                        return;
+
+                                } catch (SeExceptions.InvalidStyle ex) {
+                                        PrintWriter out = new PrintWriter(output);
+                                        wmsResponse.setContentType("text/html;charset=UTF-8");
+                                        wmsResponse.setResponseCode(400);
+                                        out.print("<h2>The se style is invalid</h2>"
+                                                + "<p>Please give a SE valid SLD file.</p>");
+                                        out.flush();
+                                        return;
                                 }
                         }
 
@@ -263,8 +304,9 @@ public final class GetMapHandler {
         }
 
         /**
-         * Parses the url into the getMap request parameters and gives them to the getMap method
-         * 
+         * Parses the url into the getMap request parameters and gives them to
+         * the getMap method
+         *
          * @param queryString
          * @param output
          * @param wmsResponse

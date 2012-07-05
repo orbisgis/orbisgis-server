@@ -201,6 +201,7 @@ public final class GetCapabilitiesHandler {
 
                 } catch (Exception ex) {
                         wmsResponse.setContentType("text/html;charset=UTF-8");
+                        wmsResponse.setResponseCode(500);
                         out.print("<h2>Something went wrong</h2>");
                         out.print(ex);
                         ex.printStackTrace(out);
