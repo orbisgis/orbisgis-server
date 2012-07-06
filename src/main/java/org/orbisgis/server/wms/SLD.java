@@ -113,7 +113,7 @@ public class SLD {
          * @param i
          * @return
          * @throws WMSException
-         * @throws org.orbisgis.core.renderer.se.SeExceptions.InvalidStyle  
+         * @throws org.orbisgis.core.renderer.se.SeExceptions.InvalidStyle
          */
         public ILayer getLayer(int i) throws WMSException, InvalidStyle {
 

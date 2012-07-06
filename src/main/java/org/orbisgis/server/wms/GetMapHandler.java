@@ -331,39 +331,29 @@ public final class GetMapHandler {
                 for (String parameter : queryString.split("&")) {
                         String[] paramValues = parameter.split("=");
 
-                        if (paramValues[0].equalsIgnoreCase("layers")) {
-                                if (paramValues.length > 1) {
-                                        layerList.addAll(Arrays.asList(paramValues[1].split(",")));
-                                }
+                        if (paramValues[0].equalsIgnoreCase("layers") && (paramValues.length > 1)) {
+                                layerList.addAll(Arrays.asList(paramValues[1].split(",")));
                         }
 
-                        if (paramValues[0].equalsIgnoreCase("styles")) {
-                                if (paramValues.length > 1) {
-                                        styleList.addAll(Arrays.asList(paramValues[1].split(",")));
-                                }
+                        if (paramValues[0].equalsIgnoreCase("styles") && (paramValues.length > 1)) {
+                                styleList.addAll(Arrays.asList(paramValues[1].split(",")));
                         }
 
                         if (paramValues[0].equalsIgnoreCase("crs")) {
                                 crs = paramValues[1];
                         }
 
-                        if (paramValues[0].equalsIgnoreCase("bbox")) {
-                                if (paramValues.length > 1) {
-                                        for (String coord : paramValues[1].split(",")) {
-                                                bbox.add(Double.parseDouble(coord));
-                                        }
+                        if (paramValues[0].equalsIgnoreCase("bbox") && (paramValues.length > 1)) {
+                                for (String coord : paramValues[1].split(",")) {
+                                        bbox.add(Double.parseDouble(coord));
                                 }
                         }
 
-                        if (paramValues[0].equalsIgnoreCase("width")) {
-                                if (paramValues.length > 1) {
-                                        width = Integer.parseInt(paramValues[1]);
-                                }
+                        if (paramValues[0].equalsIgnoreCase("width") && (paramValues.length > 1)) {
+                                width = Integer.parseInt(paramValues[1]);
                         }
-                        if (paramValues[0].equalsIgnoreCase("height")) {
-                                if (paramValues.length > 1) {
-                                        height = Integer.parseInt(paramValues[1]);
-                                }
+                        if (paramValues[0].equalsIgnoreCase("height") && (paramValues.length > 1)) {
+                                height = Integer.parseInt(paramValues[1]);
                         }
 
                         if (paramValues[0].equalsIgnoreCase("pixelsize")) {

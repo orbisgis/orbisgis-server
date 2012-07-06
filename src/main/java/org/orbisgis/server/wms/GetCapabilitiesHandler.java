@@ -128,13 +128,14 @@ public final class GetCapabilitiesHandler {
                                         Envelope env = ds.getFullExtent();
                                         ds.close();
 
-                                        BoundingBox BBox = new BoundingBox();
-                                        BBox.setMaxx(env.getMaxX());
-                                        BBox.setMinx(env.getMinX());
-                                        BBox.setMiny(env.getMinY());
-                                        BBox.setMaxy(env.getMaxY());
-                                        BBox.setCRS("EPSG:27582");
-                                        layer.getBoundingBox().add(BBox);
+                                        BoundingBox bBox = new BoundingBox();
+                                        bBox.setMaxx(env.getMaxX());
+                                        bBox.setMinx(env.getMinX());
+                                        bBox.setMiny(env.getMinY());
+                                        bBox.setMaxy(env.getMaxY());
+                                        bBox.setCRS("EPSG:27582");
+                                        layer.getBoundingBox().add(bBox);
+                                        layer.setQueryable(true);
 
                                         availableLayers.getLayer().add(layer);
                                 }

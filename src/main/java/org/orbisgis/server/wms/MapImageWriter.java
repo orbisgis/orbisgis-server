@@ -46,7 +46,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import javax.media.jai.JAI;
 
 /**
@@ -71,8 +70,7 @@ public final class MapImageWriter {
          * @param output
          * @param format desired image format
          * @param img
-         * @param pixelSize
-         * be provided by the server
+         * @param pixelSize be provided by the server
          * @throws IOException If a problem has been encountered while handling
          * the output stream.
          */
@@ -80,7 +78,7 @@ public final class MapImageWriter {
                 String format, BufferedImage img, double pixelSize) throws IOException {
 
                 if (format.equalsIgnoreCase(FORMATS[0])) {
-                        writeJPEG(wmsResponse, output, img, pixelSize);
+                        writeJPEG(wmsResponse, output, img);
                 } else if (format.equalsIgnoreCase(FORMATS[1])) {
                         writePNG(wmsResponse, output, img, pixelSize);
                 } else {
@@ -94,7 +92,7 @@ public final class MapImageWriter {
         }
 
         private static void writeJPEG(WMSResponse wmsResponse, OutputStream output,
-                BufferedImage img, double pixelSize) throws IOException {
+                BufferedImage img) throws IOException {
                 wmsResponse.setContentType("image/jpeg");
 
                 JPEGEncodeParam jenc = new JPEGEncodeParam();
