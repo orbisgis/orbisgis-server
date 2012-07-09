@@ -122,10 +122,6 @@ public final class GetMapHandler {
                         maxY = null;
                 }
 
-
-
-                boolean transparency = transparent;
-
                 Double dpi = 25.4 / pixelSize;
 
                 DataManager dataManager = Services.getService(DataManager.class);
@@ -133,7 +129,6 @@ public final class GetMapHandler {
                 LayerCollection layers = new LayerCollection("Map");
 
 
-                Style theStyle = null;
                 //First case : Layers and Styles are given with shp and se file names
                 if (layerList != null && layerList.size() > 0) {
                         int i;
@@ -193,15 +188,16 @@ public final class GetMapHandler {
 
                 try {
                         layers.open();
-
+                        
+                        //After opening the layers, we can add the styles to each layer
                         if (styleList != null) {
                                 int j;
-                                //Adding the style to the Ilayer
+                                //In case of using the server's styles
                                 for (j = 0; j < styleList.size(); j++) {
                                         if (j < layerList.size()) {
                                                 String style = styleList.get(j);
                                                 try {
-                                                        theStyle = new Style(layers.getChildren()[j], new File(styleDirectory, style + ".se").getAbsolutePath());
+                                                        Style theStyle = new Style(layers.getChildren()[j], new File(styleDirectory, style + ".se").getAbsolutePath());
                                                         layers.getChildren()[j].setStyle(0, theStyle);
 
                                                 } catch (SeExceptions.InvalidStyle ex) {
@@ -211,10 +207,12 @@ public final class GetMapHandler {
                                 }
                         }
                         if (isSld) {
+                                
+                                //In case of an external sld
                                 try {
                                         SLD sld = new SLD(stringSLD);
                                         for (int i = 0; i < sld.size(); i++) {
-                                                theStyle = sld.getLayer(i).getStyle(0);
+                                                Style theStyle = sld.getLayer(i).getStyle(0);
                                                 layers.getChildren()[i].setStyle(0, theStyle);
 
                                         }
@@ -238,7 +236,8 @@ public final class GetMapHandler {
                                 }
                         }
 
-
+                        
+                        //Setting the envelope according to given bounding box
                         Envelope env;
 
                         if (minX != null && minY != null && maxX != null && maxY != null) {
@@ -268,7 +267,7 @@ public final class GetMapHandler {
                         Graphics2D g2 = img.createGraphics();
 
                         Color color;
-                        if (transparency) {
+                        if (transparent) {
                                 color = ColorHelper.getColorWithAlpha(Color.decode(bgColor), 0.0);
                         } else {
                                 color = Color.decode(bgColor);

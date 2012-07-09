@@ -41,14 +41,28 @@
 package org.orbisgis.server.wms;
 
 /**
- *
+ * Interface to be implemented by the Servlet WMSResponse in order to be able to write
+ * in the Servlet response frome the lib part of the program.
+ * 
  * @author Tony MARTIN
  */
 public interface WMSResponse {
 
+        /**
+         * Set the response time (mostly text or image).
+         * @param contentType
+         */
         void setContentType(String contentType);
 
+        /**
+         * Returns the URI Request adress. Used to answer a GetCapabilities Request.
+         * @return
+         */
         String getRequestUrl();
 
+        /**
+         * Sets the server response code. Used when errors occur.
+         * @param code
+         */
         void setResponseCode(int code);
 }

@@ -44,6 +44,7 @@ import com.vividsolutions.jts.geom.Envelope;
 import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import net.opengis.wms.BoundingBox;
@@ -154,10 +155,11 @@ public final class GetCapabilitiesHandler {
                 c.setLayer(availableLayers);
 
                 //Setting the request capabilities
+                
+                //GetMap capabilities
                 Request req = new Request();
                 OperationType opMap = new OperationType();
-                opMap.getFormat().add("image/jpeg");
-                opMap.getFormat().add("image/png");
+                opMap.getFormat().addAll(Arrays.asList(MapImageWriter.FORMATS));
                 OnlineResource oRMap = new OnlineResource();
                 oRMap.setHref(wmsResponse.getRequestUrl());
                 oRMap.setTitle("GetMap");
@@ -170,6 +172,7 @@ public final class GetCapabilitiesHandler {
                 opMap.getDCPType().add(dcpType);
                 req.setGetMap(opMap);
 
+                //GetCap Capabilities
                 OperationType opCap = new OperationType();
                 opCap.getFormat().add("text/xml");
                 OnlineResource oRCap = new OnlineResource();
@@ -189,10 +192,8 @@ public final class GetCapabilitiesHandler {
 
                 cap.setCapability(c);
 
-
                 try {
-
-
+                        //Marshalling the WMS Capabilities into an XML response
                         JAXBContext jaxbContext = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:net.opengis.wms:oasis.names.tc.ciq.xsdschema.xal._2");
                         Marshaller marshaller = jaxbContext.createMarshaller();
                         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);

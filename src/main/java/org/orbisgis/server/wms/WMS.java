@@ -71,9 +71,11 @@ public final class WMS {
          * Free ressources
          */
         public void destroy() {
-                context.dispose();
+                getContext().dispose();
         }
-
+        
+        
+        
         /**
          * Handles the URL request and reads the request type to start
          * processing of either a getMap or getCapabilities request
@@ -87,6 +89,9 @@ public final class WMS {
                 String service = "undefined";
                 String version = "undefined";
                 String requestType = "undefined";
+                
+                
+                //Spliting request parameters to determine the requestType to execute
                 
                 for (String parameter : queryString.split("&")) {
                         if (parameter.matches("(?i:service=.*)")) {
@@ -120,6 +125,8 @@ public final class WMS {
 
                 }
                 
+                // In case of a GetMap request, the WMS version is checked as recomended by the standard. If 
+                // a wrong version is selected
                 if (requestType.equalsIgnoreCase("getmap")) {
                         if (!(version.equalsIgnoreCase("1.3.0") || version.equalsIgnoreCase("1.3"))) {
                                 PrintWriter out = new PrintWriter(output);
@@ -157,5 +164,12 @@ public final class WMS {
          */
         public WMS(File styleDirectory) {
                 this.styleDirectory = styleDirectory;
+        }
+
+        /**
+         * @return the context
+         */
+        public MainContext getContext() {
+                return context;
         }
 }
