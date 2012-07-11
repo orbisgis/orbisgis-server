@@ -40,6 +40,7 @@
  */
 package org.orbisgis.server.wms;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -47,6 +48,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.*;
 import net.opengis.se._2_0.core.AbstractStyleType;
+import net.opengis.se._2_0.core.OnlineResourceType;
+import net.opengis.se._2_0.core.StyleReferenceType;
 import net.opengis.se._2_0.core.StyleType;
 import net.opengis.sld._1_2.NamedLayerElement;
 import net.opengis.sld._1_2.StyledLayerDescriptorElement;
@@ -181,7 +184,7 @@ public class SLD {
                 }
         }
 
-        private void init(StyledLayerDescriptorElement sldType) throws SeExceptions.InvalidStyle {
+        private void init(StyledLayerDescriptorElement sldType) throws SeExceptions.InvalidStyle, WMSException {
                 List<NamedLayerElement> sldLayers = sldType.getNamedLayer();
 
                 this.layers = new ArrayList<SLDLayer>();
@@ -193,8 +196,33 @@ public class SLD {
                         SLDLayer sldLayer = new SLDLayer(name);
                         JAXBElement<? extends AbstractStyleType> style = l.getAbstractStyle();
 
-                        net.opengis.se._2_0.core.StyleType se = (net.opengis.se._2_0.core.StyleType) style.getValue();
-                        sldLayer.addStyle(se);
+                        if (style.getValue() instanceof StyleType) {
+                                StyleType se = (StyleType) style.getValue();
+                                sldLayer.addStyle(se);
+                        } else if (style.getValue() instanceof StyleReferenceType) {
+                                StyleReferenceType seRef = (StyleReferenceType) style.getValue();
+                                OnlineResourceType seOR = seRef.getOnlineResource();
+                                String seHref = seOR.getHref();
+                                try {
+                                        URI uri = new URI(seHref);
+                                        JAXBContext jaxbContext;
+                                        jaxbContext = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:net.opengis.wms:oasis.names.tc.ciq.xsdschema.xal._2");
+                                        Unmarshaller u = jaxbContext.createUnmarshaller();
+                                        JAXBElement<? extends AbstractStyleType> abstractStyle = (JAXBElement<? extends AbstractStyleType>) u.unmarshal(uri.toURL());
+                                        StyleType se = (StyleType) abstractStyle.getValue();
+                                        System.out.println(se.getName());
+                                        sldLayer.addStyle(se);
+                                        
+                                } catch (JAXBException jaxbException) {
+                                        throw new WMSException(jaxbException);
+                                } catch (MalformedURLException malformedURLException) {
+                                        throw new WMSException(malformedURLException);
+                                } catch (URISyntaxException ex) {
+                                        throw new WMSException(ex);
+                                }
+                        }
+
+
 
 
                         this.layers.add(sldLayer);

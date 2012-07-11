@@ -108,7 +108,6 @@ public final class GetMapHandler {
                 Double minY;
                 Double maxX;
                 Double maxY;
-                boolean isSld = false;
 
                 if (bbox.size() == 4) {
                         minX = bbox.get(0);
@@ -149,7 +148,6 @@ public final class GetMapHandler {
                 } else // Changing the sld String object to a Style type object
                 if (stringSLD != null) {
                         try {
-                                isSld = true;
                                 SLD sld = new SLD(stringSLD);
                                 for (int i = 0; i < sld.size(); i++) {
                                         try {
@@ -188,13 +186,13 @@ public final class GetMapHandler {
 
                 try {
                         layers.open();
-                        
+
                         //After opening the layers, we can add the styles to each layer
                         if (styleList != null) {
                                 int j;
                                 //In case of using the server's styles
-                                for (j = 0; j < styleList.size(); j++) {
-                                        if (j < layerList.size()) {
+                                for (j = 0; j < layerList.size(); j++) {
+                                        if (j < styleList.size()) {
                                                 String style = styleList.get(j);
                                                 try {
                                                         Style theStyle = new Style(layers.getChildren()[j], new File(styleDirectory, style + ".se").getAbsolutePath());
@@ -203,11 +201,22 @@ public final class GetMapHandler {
                                                 } catch (SeExceptions.InvalidStyle ex) {
                                                         throw new WMSException(ex);
                                                 }
+                                        } else { //we add a server default style associated with the layer 
+                                                String style = layers.getLayer(j).getName();
+                                                File styleFile = new File(styleDirectory, style + ".se");
+                                                if (styleFile.exists()) {
+                                                        try {
+                                                                Style theStyle = new Style(layers.getChildren()[j], styleFile.getAbsolutePath());
+                                                                layers.getChildren()[j].setStyle(0, theStyle);
+
+                                                        } catch (SeExceptions.InvalidStyle ex) {
+                                                                throw new WMSException(ex);
+                                                        }
+                                                }
                                         }
                                 }
-                        }
-                        if (isSld) {
-                                
+                        } else if (stringSLD != null) {
+
                                 //In case of an external sld
                                 try {
                                         SLD sld = new SLD(stringSLD);
@@ -234,9 +243,25 @@ public final class GetMapHandler {
                                         out.flush();
                                         return;
                                 }
+                        } else if (stringSLD == null && styleList == null) {
+                                int j;
+                                //In case of using the server's styles
+                                for (j = 0; j < layerList.size(); j++) {
+                                        String style = layers.getLayer(j).getName();
+                                        File styleFile = new File(styleDirectory, style + ".se");
+                                        if (styleFile.exists()) {
+                                                try {
+                                                        Style theStyle = new Style(layers.getChildren()[j], styleFile.getAbsolutePath());
+                                                        layers.getChildren()[j].setStyle(0, theStyle);
+
+                                                } catch (SeExceptions.InvalidStyle ex) {
+                                                        throw new WMSException(ex);
+                                                }
+                                        }
+                                }
                         }
 
-                        
+
                         //Setting the envelope according to given bounding box
                         Envelope env;
 
