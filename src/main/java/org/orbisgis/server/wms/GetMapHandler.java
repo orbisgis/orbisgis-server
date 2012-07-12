@@ -52,6 +52,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
 import org.orbisgis.core.layerModel.ILayer;
@@ -99,12 +100,13 @@ public final class GetMapHandler {
          * @param output
          * @param wmsResponse
          * @param styleDirectory
+         * @param serverStyles 
          * @throws WMSException
          */
         public static void getMap(List<String> layerList, List<String> styleList, String crs,
                 List<Double> bbox, int width, int height, double pixelSize, String imageFormat,
                 boolean transparent, String bgColor, String stringSLD, String exceptionsFormat, OutputStream output,
-                WMSResponse wmsResponse, File styleDirectory) throws WMSException {
+                WMSResponse wmsResponse, File styleDirectory, Map<String, Style> serverStyles) throws WMSException {
                 Double minX;
                 Double minY;
                 Double maxX;
@@ -128,6 +130,7 @@ public final class GetMapHandler {
 
                 LayerCollection layers = new LayerCollection("Map");
 
+                SLD sld = null;
 
                 //First case : Layers and Styles are given with shp and se file names
                 if (layerList != null && layerList.size() > 0) {
@@ -149,20 +152,20 @@ public final class GetMapHandler {
                 } else // Changing the sld String object to a Style type object
                 if (stringSLD != null) {
                         try {
-                                SLD sld = new SLD(stringSLD);
+                                sld = new SLD(stringSLD);
                                 for (int i = 0; i < sld.size(); i++) {
                                         try {
                                                 layers.addLayer(sld.getLayer(i));
                                         } catch (LayerException ex) {
-                                                WMS.exceptionDescription(wmsResponse,output,"<h2>At least one of the chosen layer is invalid</h2><p>Please make sure you entered a valid layer. Make sure of the available layers by requesting the server capabilities</p>");
+                                                WMS.exceptionDescription(wmsResponse, output, "<h2>At least one of the chosen layer is invalid</h2><p>Please make sure you entered a valid layer. Make sure of the available layers by requesting the server capabilities</p>");
                                                 return;
                                         } catch (SeExceptions.InvalidStyle ex) {
-                                                WMS.exceptionDescription(wmsResponse,output,"<h2>The se style is invalid</h2><p>Please give a SE valid SLD file.</p>");
+                                                WMS.exceptionDescription(wmsResponse, output, "<h2>The se style is invalid</h2><p>Please give a SE valid SLD file.</p>");
                                                 return;
                                         }
                                 }
                         } catch (URISyntaxException ex) {
-                                WMS.exceptionDescription(wmsResponse,output,"<h2>The SLD URI is invalid</h2><p>Please enter a valid SLD file URI path.</p>");
+                                WMS.exceptionDescription(wmsResponse, output, "<h2>The SLD URI is invalid</h2><p>Please enter a valid SLD file URI path.</p>");
                                 return;
                         }
                 }
@@ -178,26 +181,16 @@ public final class GetMapHandler {
                                 //In case of using the server's styles
                                 for (j = 0; j < layerList.size(); j++) {
                                         if (j < styleList.size()) {
-                                                String style = styleList.get(j);
-                                                try {
-                                                        Style theStyle = new Style(layers.getChildren()[j], new File(styleDirectory, style + ".se").getAbsolutePath());
-                                                        layers.getChildren()[j].setStyle(0, theStyle);
+                                                String styleString = styleList.get(j);
+                                                Style style = serverStyles.get(styleString);
+                                                layers.getChildren()[j].setStyle(0, style);
 
-                                                } catch (SeExceptions.InvalidStyle ex) {
-                                                        throw new WMSException(ex);
-                                                }
                                         } else //we add a server default style associated with the layer 
                                         {
-                                                String style = layers.getLayer(j).getName();
-                                                File styleFile = new File(styleDirectory, style + ".se");
-                                                if (styleFile.exists()) {
-                                                        try {
-                                                                Style theStyle = new Style(layers.getChildren()[j], styleFile.getAbsolutePath());
-                                                                layers.getChildren()[j].setStyle(0, theStyle);
-
-                                                        } catch (SeExceptions.InvalidStyle ex) {
-                                                                throw new WMSException(ex);
-                                                        }
+                                                String styleString = layers.getLayer(j).getName();
+                                                if (serverStyles.containsKey(styleString)) {
+                                                        Style style = serverStyles.get(styleString);
+                                                        layers.getChildren()[j].setStyle(0, style);
                                                 }
                                         }
                                 }
@@ -205,18 +198,12 @@ public final class GetMapHandler {
 
                                 //In case of an external sld
                                 try {
-                                        SLD sld = new SLD(stringSLD);
                                         for (int i = 0; i < sld.size(); i++) {
                                                 Style theStyle = sld.getLayer(i).getStyle(0);
                                                 layers.getChildren()[i].setStyle(0, theStyle);
-
                                         }
-                                } catch (URISyntaxException ex) {
-                                        WMS.exceptionDescription(wmsResponse,output,"<h2>The SLD URI is invalid</h2><p>Please enter a valid SLD file URI path.</p>");
-                                        return;
-
                                 } catch (SeExceptions.InvalidStyle ex) {
-                                        WMS.exceptionDescription(wmsResponse,output,"<h2>The se style is invalid</h2><p>Please give a SE valid style in the SLD file.</p>");
+                                        WMS.exceptionDescription(wmsResponse, output, "<h2>The se style is invalid</h2><p>Please give a SE valid style in the SLD file.</p>");
                                         return;
                                 }
                         }
@@ -289,9 +276,10 @@ public final class GetMapHandler {
          * @param output
          * @param wmsResponse
          * @param styleDirectory
+         * @param serverStyles
          * @throws WMSException
          */
-        public static void getMapUrlParser(String queryString, OutputStream output, WMSResponse wmsResponse, File styleDirectory) throws WMSException {
+        public static void getMapUrlParser(String queryString, OutputStream output, WMSResponse wmsResponse, File styleDirectory, Map<String, Style> serverStyles) throws WMSException {
 
                 List<String> layerList = new ArrayList<String>();
                 List<String> styleList = new ArrayList<String>();
@@ -359,7 +347,7 @@ public final class GetMapHandler {
                         }
                 }
 
-                getMap(layerList, styleList, crs, bbox, width, height, pixelSize, imageFormat, transparent, bgColor, sld, exceptionsFormat, output, wmsResponse, styleDirectory);
+                getMap(layerList, styleList, crs, bbox, width, height, pixelSize, imageFormat, transparent, bgColor, sld, exceptionsFormat, output, wmsResponse, styleDirectory, serverStyles);
         }
 
         public static void getMapXmlParser(String queryString, PrintWriter print) {

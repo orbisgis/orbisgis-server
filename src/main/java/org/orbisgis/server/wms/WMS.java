@@ -44,7 +44,11 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 import org.orbisgis.core.context.main.MainContext;
+import org.orbisgis.core.renderer.se.SeExceptions.InvalidStyle;
+import org.orbisgis.core.renderer.se.Style;
 import org.orbisgis.core.workspace.CoreWorkspace;
 
 /**
@@ -55,6 +59,7 @@ public final class WMS {
 
         private MainContext context;
         private File styleDirectory;
+        private Map<String, Style> serverStyles;
 
         /**
          * Initialize the context (containing datasources, datamanager...)
@@ -65,6 +70,20 @@ public final class WMS {
                 CoreWorkspace c = new CoreWorkspace();
                 c.setWorkspaceFolder(workspacePath);
                 context = new MainContext(false, c);
+
+                File[] styleFiles = styleDirectory.listFiles();
+                
+                serverStyles = new HashMap<String, Style>();
+
+                for (File file : styleFiles) {
+                        if (file.getName().endsWith(".se")) {
+                                try {   
+                                        serverStyles.put(file.getName().substring(0, file.getName().length() - 3), new Style(null, new File(styleDirectory, file.getName()).getAbsolutePath()));
+                                } catch (InvalidStyle ex) {
+                                        
+                                }
+                        }
+                }
         }
 
         /**
@@ -98,7 +117,7 @@ public final class WMS {
                                         service = param[1];
                                 }
                                 if (!service.equalsIgnoreCase("wms")) {
-                                        exceptionDescription(wmsResponse,output,"<h2>The service specified is either unsupported or wrongly requested</h2><p>Please specify WMS service as it is the only one supported by this server</p>");
+                                        exceptionDescription(wmsResponse, output, "<h2>The service specified is either unsupported or wrongly requested</h2><p>Please specify WMS service as it is the only one supported by this server</p>");
                                         return;
                                 }
                         }
@@ -122,10 +141,10 @@ public final class WMS {
                 // a wrong version is selected
                 if (requestType.equalsIgnoreCase("getmap")) {
                         if (!(version.equalsIgnoreCase("1.3.0") || version.equalsIgnoreCase("1.3"))) {
-                                exceptionDescription(wmsResponse,output,"<h2>The version number is incorrect or unspecified</h2><p>Please specify 1.3 version number as it is the only supported by this server</p>");
+                                exceptionDescription(wmsResponse, output, "<h2>The version number is incorrect or unspecified</h2><p>Please specify 1.3 version number as it is the only supported by this server</p>");
                                 return;
                         }
-                        GetMapHandler.getMapUrlParser(queryString, output, wmsResponse, this.styleDirectory);
+                        GetMapHandler.getMapUrlParser(queryString, output, wmsResponse, this.styleDirectory, this.serverStyles);
 
                 } else if (requestType.equalsIgnoreCase("getcapabilities")) {
 
