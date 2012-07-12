@@ -40,14 +40,11 @@
  */
 package org.orbisgis.server.wms;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.HashMap;
 import java.util.Map;
 import org.orbisgis.core.context.main.MainContext;
-import org.orbisgis.core.renderer.se.SeExceptions.InvalidStyle;
 import org.orbisgis.core.renderer.se.Style;
 import org.orbisgis.core.workspace.CoreWorkspace;
 
@@ -63,13 +60,12 @@ public final class WMS {
         /**
          * Initialize the context (containing datasources, datamanager...)
          *
-         * @param workspacePath
+         * @param coreWorkspace 
          * @param serverStyles
          */
-        public void init(String workspacePath, Map<String, Style> serverStyles) {
-                CoreWorkspace c = new CoreWorkspace();
-                c.setWorkspaceFolder(workspacePath);
-                context = new MainContext(false, c);
+        public void init(CoreWorkspace coreWorkspace, Map<String, Style> serverStyles) {
+                
+                context = new MainContext(false, coreWorkspace);
                 this.serverStyles = serverStyles;
         }
 
@@ -148,7 +144,6 @@ public final class WMS {
         /**
          * Class constructor with styleDirectory path
          *
-         * @param styleDirectory
          */
         public WMS() {
         }
