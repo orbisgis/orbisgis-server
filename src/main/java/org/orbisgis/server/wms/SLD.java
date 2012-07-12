@@ -40,7 +40,6 @@
  */
 package org.orbisgis.server.wms;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -184,7 +183,7 @@ public class SLD {
         }
 
         private void init(StyledLayerDescriptorElement sldType) throws SeExceptions.InvalidStyle, WMSException {
-                
+
                 List<NamedLayerElement> sldLayers = sldType.getNamedLayer();
 
                 this.layers = new ArrayList<SLDLayer>();
@@ -195,13 +194,13 @@ public class SLD {
 
                         SLDLayer sldLayer = new SLDLayer(name);
                         JAXBElement<? extends AbstractStyleType> style = l.getAbstractStyle();
-                        
+
                         //If the style is given inline in the SLD file
                         if (style.getValue() instanceof StyleType) {
                                 StyleType se = (StyleType) style.getValue();
                                 sldLayer.addStyle(se);
                         } else //If the SE file is given by an external URL - Not Working Yet
-                                if (style.getValue() instanceof StyleReferenceType) {
+                        if (style.getValue() instanceof StyleReferenceType) {
                                 StyleReferenceType seRef = (StyleReferenceType) style.getValue();
                                 OnlineResourceType seOR = seRef.getOnlineResource();
                                 String seHref = seOR.getHref();
@@ -211,7 +210,7 @@ public class SLD {
                                         JAXBElement<? extends AbstractStyleType> abstractStyle = (JAXBElement<? extends AbstractStyleType>) u.unmarshal(uri.toURL());
                                         StyleType se = (StyleType) abstractStyle.getValue();
                                         sldLayer.addStyle(se);
-                                        
+
                                 } catch (JAXBException jaxbException) {
                                         throw new WMSException(jaxbException);
                                 } catch (MalformedURLException malformedURLException) {

@@ -89,7 +89,8 @@ public final class GetMapHandler {
          * image
          * @param imageFormat chosen between the image format server
          * capabilities
-         * @param transparent
+         * @param transparent boolean that determines whether the background is
+         * visible or not (only works on png outputs)
          * @param bgColor
          * @param stringSLD used if the layers and styles are defined in a SLD
          * file given by its URI rather than layers and se styles files present
@@ -153,31 +154,15 @@ public final class GetMapHandler {
                                         try {
                                                 layers.addLayer(sld.getLayer(i));
                                         } catch (LayerException ex) {
-                                                PrintWriter out = new PrintWriter(output);
-                                                wmsResponse.setContentType("text/html;charset=UTF-8");
-                                                wmsResponse.setResponseCode(400);
-                                                out.print("<h2>At least one of the chosen layer is invalid</h2>"
-                                                        + "<p>Please make sure you entered a valid layer. Make sure of the "
-                                                        + "available layers by requesting the server capabilities</p>");
-                                                out.flush();
+                                                WMS.exceptionDescription(wmsResponse,output,"<h2>At least one of the chosen layer is invalid</h2><p>Please make sure you entered a valid layer. Make sure of the available layers by requesting the server capabilities</p>");
                                                 return;
                                         } catch (SeExceptions.InvalidStyle ex) {
-                                                PrintWriter out = new PrintWriter(output);
-                                                wmsResponse.setContentType("text/html;charset=UTF-8");
-                                                wmsResponse.setResponseCode(400);
-                                                out.print("<h2>The se style is invalid</h2>"
-                                                        + "<p>Please give a SE valid SLD file.</p>");
-                                                out.flush();
+                                                WMS.exceptionDescription(wmsResponse,output,"<h2>The se style is invalid</h2><p>Please give a SE valid SLD file.</p>");
                                                 return;
                                         }
                                 }
                         } catch (URISyntaxException ex) {
-                                PrintWriter out = new PrintWriter(output);
-                                wmsResponse.setContentType("text/html;charset=UTF-8");
-                                wmsResponse.setResponseCode(400);
-                                out.print("<h2>The SLD URI is invalid</h2>"
-                                        + "<p>Please enter a valid SLD file URI path.</p>");
-                                out.flush();
+                                WMS.exceptionDescription(wmsResponse,output,"<h2>The SLD URI is invalid</h2><p>Please enter a valid SLD file URI path.</p>");
                                 return;
                         }
                 }
@@ -188,7 +173,7 @@ public final class GetMapHandler {
                         layers.open();
 
                         //After opening the layers, we can add the styles to each layer
-                        if (styleList != null) {
+                        if (layerList != null) {
                                 int j;
                                 //In case of using the server's styles
                                 for (j = 0; j < layerList.size(); j++) {
@@ -201,7 +186,8 @@ public final class GetMapHandler {
                                                 } catch (SeExceptions.InvalidStyle ex) {
                                                         throw new WMSException(ex);
                                                 }
-                                        } else { //we add a server default style associated with the layer 
+                                        } else //we add a server default style associated with the layer 
+                                        {
                                                 String style = layers.getLayer(j).getName();
                                                 File styleFile = new File(styleDirectory, style + ".se");
                                                 if (styleFile.exists()) {
@@ -226,38 +212,12 @@ public final class GetMapHandler {
 
                                         }
                                 } catch (URISyntaxException ex) {
-                                        PrintWriter out = new PrintWriter(output);
-                                        wmsResponse.setContentType("text/html;charset=UTF-8");
-                                        wmsResponse.setResponseCode(400);
-                                        out.print("<h2>The SLD URI is invalid</h2>"
-                                                + "<p>Please enter a valid SLD file URI path.</p>");
-                                        out.flush();
+                                        WMS.exceptionDescription(wmsResponse,output,"<h2>The SLD URI is invalid</h2><p>Please enter a valid SLD file URI path.</p>");
                                         return;
 
                                 } catch (SeExceptions.InvalidStyle ex) {
-                                        PrintWriter out = new PrintWriter(output);
-                                        wmsResponse.setContentType("text/html;charset=UTF-8");
-                                        wmsResponse.setResponseCode(400);
-                                        out.print("<h2>The se style is invalid</h2>"
-                                                + "<p>Please give a SE valid SLD file.</p>");
-                                        out.flush();
+                                        WMS.exceptionDescription(wmsResponse,output,"<h2>The se style is invalid</h2><p>Please give a SE valid style in the SLD file.</p>");
                                         return;
-                                }
-                        } else if (stringSLD == null && styleList == null) {
-                                int j;
-                                //In case of using the server's styles
-                                for (j = 0; j < layerList.size(); j++) {
-                                        String style = layers.getLayer(j).getName();
-                                        File styleFile = new File(styleDirectory, style + ".se");
-                                        if (styleFile.exists()) {
-                                                try {
-                                                        Style theStyle = new Style(layers.getChildren()[j], styleFile.getAbsolutePath());
-                                                        layers.getChildren()[j].setStyle(0, theStyle);
-
-                                                } catch (SeExceptions.InvalidStyle ex) {
-                                                        throw new WMSException(ex);
-                                                }
-                                        }
                                 }
                         }
 
@@ -319,12 +279,6 @@ public final class GetMapHandler {
                                 throw new WMSException(ex1);
                         }
                 }
-
-
-
-
-
-                // Write img
         }
 
         /**

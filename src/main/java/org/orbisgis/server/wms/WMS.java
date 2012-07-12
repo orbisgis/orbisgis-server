@@ -73,9 +73,7 @@ public final class WMS {
         public void destroy() {
                 getContext().dispose();
         }
-        
-        
-        
+
         /**
          * Handles the URL request and reads the request type to start
          * processing of either a getMap or getCapabilities request
@@ -89,10 +87,10 @@ public final class WMS {
                 String service = "undefined";
                 String version = "undefined";
                 String requestType = "undefined";
-                
-                
+
+
                 //Spliting request parameters to determine the requestType to execute
-                
+
                 for (String parameter : queryString.split("&")) {
                         if (parameter.matches("(?i:service=.*)")) {
                                 String param[] = parameter.split("=");
@@ -100,12 +98,7 @@ public final class WMS {
                                         service = param[1];
                                 }
                                 if (!service.equalsIgnoreCase("wms")) {
-                                        PrintWriter out = new PrintWriter(output);
-                                        wmsResponse.setContentType("text/html;charset=UTF-8");
-                                        wmsResponse.setResponseCode(400);
-                                        out.print("<h2>The service specified is either unsupported or wrongly requested</h2>"
-                                                + "<p>Please specify WMS service as it is the only one supported by this server</p>");
-                                        out.flush();
+                                        exceptionDescription(wmsResponse,output,"<h2>The service specified is either unsupported or wrongly requested</h2><p>Please specify WMS service as it is the only one supported by this server</p>");
                                         return;
                                 }
                         }
@@ -124,18 +117,12 @@ public final class WMS {
 
 
                 }
-                
+
                 // In case of a GetMap request, the WMS version is checked as recomended by the standard. If 
                 // a wrong version is selected
                 if (requestType.equalsIgnoreCase("getmap")) {
                         if (!(version.equalsIgnoreCase("1.3.0") || version.equalsIgnoreCase("1.3"))) {
-                                PrintWriter out = new PrintWriter(output);
-                                wmsResponse.setContentType("text/html;charset=UTF-8");
-                                wmsResponse.setResponseCode(400);
-                                out.print("<h2>The version number is incorrect or unspecified</h2>"
-                                        + "<p>Please specify 1.3 version number as it is the only supported by this server</p>"
-                                        + version);
-                                out.flush();
+                                exceptionDescription(wmsResponse,output,"<h2>The version number is incorrect or unspecified</h2><p>Please specify 1.3 version number as it is the only supported by this server</p>");
                                 return;
                         }
                         GetMapHandler.getMapUrlParser(queryString, output, wmsResponse, this.styleDirectory);
@@ -145,12 +132,7 @@ public final class WMS {
                         GetCapabilitiesHandler.getCap(queryString, output, wmsResponse, this.styleDirectory);
 
                 } else {
-                        PrintWriter out = new PrintWriter(output);
-                        wmsResponse.setContentType("text/html;charset=UTF-8");
-                        wmsResponse.setResponseCode(400);
-                        out.print("<h2>The requested request type is not supported or wrongly specified</h2>"
-                                + "<p>Please specify either getMap or getCapabilities request as it they are the only two supported by this server</p>");
-                        out.flush();
+                        exceptionDescription(wmsResponse, output, "<h2>The requested request type is not supported or wrongly specified</h2><p>Please specify either getMap or getCapabilities request as it they are the only two supported by this server</p>");
                 }
         }
 
@@ -171,5 +153,13 @@ public final class WMS {
          */
         public MainContext getContext() {
                 return context;
+        }
+
+        public static void exceptionDescription(WMSResponse wmsResponse, OutputStream output, String errorMessage) {
+                PrintWriter out = new PrintWriter(output);
+                wmsResponse.setContentType("text/html;charset=UTF-8");
+                wmsResponse.setResponseCode(400);
+                out.print(errorMessage);
+                out.flush();
         }
 }
