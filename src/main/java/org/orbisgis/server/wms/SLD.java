@@ -81,7 +81,6 @@ public class SLD {
 
                 URI uri = new URI(sld);
 
-                JAXBContext jaxbContext;
                 try {
                         Unmarshaller u = Services.JAXBCONTEXT.createUnmarshaller();
 
