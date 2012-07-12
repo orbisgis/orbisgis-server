@@ -151,6 +151,7 @@ public final class GetCapabilitiesHandler {
 
                 //Server supported CRS
                 availableLayers.getCRS().add("EPSG:27582");
+                availableLayers.setName("Server available layers");
 
                 c.setLayer(availableLayers);
 
@@ -172,7 +173,7 @@ public final class GetCapabilitiesHandler {
                 opMap.getDCPType().add(dcpType);
                 req.setGetMap(opMap);
 
-                //GetCap Capabilities
+                //GetCap capabilities
                 OperationType opCap = new OperationType();
                 opCap.getFormat().add("text/xml");
                 OnlineResource oRCap = new OnlineResource();
@@ -186,6 +187,22 @@ public final class GetCapabilitiesHandler {
                 dcpTypeCap.setHTTP(httpCap);
                 opCap.getDCPType().add(dcpTypeCap);
                 req.setGetCapabilities(opCap);
+                
+                //GetFeatureinfo capabilities
+                OperationType opFeature = new OperationType();
+                opFeature.getFormat().add("text/xml");
+                OnlineResource oRFeature = new OnlineResource();
+                oRFeature.setHref(wmsResponse.getRequestUrl());
+                oRFeature.setTitle("GetFeatureInfo");
+                Get getFeature = new Get();
+                getFeature.setOnlineResource(oRFeature);
+                HTTP httpFeature = new HTTP();
+                httpFeature.setGet(getFeature);
+                DCPType dcpTypeFeature = new DCPType();
+                dcpTypeFeature.setHTTP(httpFeature);
+                opFeature.getDCPType().add(dcpTypeFeature);
+                req.setGetFeatureInfo(opFeature);
+                
 
                 c.setRequest(req);
 
@@ -194,8 +211,7 @@ public final class GetCapabilitiesHandler {
 
                 try {
                         //Marshalling the WMS Capabilities into an XML response
-                        JAXBContext jaxbContext = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:net.opengis.wms:oasis.names.tc.ciq.xsdschema.xal._2");
-                        Marshaller marshaller = jaxbContext.createMarshaller();
+                        Marshaller marshaller = Services.JAXBCONTEXT.createMarshaller();
                         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
                         wmsResponse.setContentType("text/xml;charset=UTF-8");

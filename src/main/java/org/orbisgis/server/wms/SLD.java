@@ -84,8 +84,7 @@ public class SLD {
 
                 JAXBContext jaxbContext;
                 try {
-                        jaxbContext = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:net.opengis.wms:oasis.names.tc.ciq.xsdschema.xal._2");
-                        Unmarshaller u = jaxbContext.createUnmarshaller();
+                        Unmarshaller u = Services.JAXBCONTEXT.createUnmarshaller();
 
                         StyledLayerDescriptorElement sldElem = (StyledLayerDescriptorElement) u.unmarshal(uri.toURL());
 
@@ -185,6 +184,7 @@ public class SLD {
         }
 
         private void init(StyledLayerDescriptorElement sldType) throws SeExceptions.InvalidStyle, WMSException {
+                
                 List<NamedLayerElement> sldLayers = sldType.getNamedLayer();
 
                 this.layers = new ArrayList<SLDLayer>();
@@ -195,22 +195,21 @@ public class SLD {
 
                         SLDLayer sldLayer = new SLDLayer(name);
                         JAXBElement<? extends AbstractStyleType> style = l.getAbstractStyle();
-
+                        
+                        //If the style is given inline in the SLD file
                         if (style.getValue() instanceof StyleType) {
                                 StyleType se = (StyleType) style.getValue();
                                 sldLayer.addStyle(se);
-                        } else if (style.getValue() instanceof StyleReferenceType) {
+                        } else //If the SE file is given by an external URL - Not Working Yet
+                                if (style.getValue() instanceof StyleReferenceType) {
                                 StyleReferenceType seRef = (StyleReferenceType) style.getValue();
                                 OnlineResourceType seOR = seRef.getOnlineResource();
                                 String seHref = seOR.getHref();
                                 try {
                                         URI uri = new URI(seHref);
-                                        JAXBContext jaxbContext;
-                                        jaxbContext = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:net.opengis.wms:oasis.names.tc.ciq.xsdschema.xal._2");
-                                        Unmarshaller u = jaxbContext.createUnmarshaller();
+                                        Unmarshaller u = Services.JAXBCONTEXT.createUnmarshaller();
                                         JAXBElement<? extends AbstractStyleType> abstractStyle = (JAXBElement<? extends AbstractStyleType>) u.unmarshal(uri.toURL());
                                         StyleType se = (StyleType) abstractStyle.getValue();
-                                        System.out.println(se.getName());
                                         sldLayer.addStyle(se);
                                         
                                 } catch (JAXBException jaxbException) {
