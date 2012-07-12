@@ -41,11 +41,9 @@
 package org.orbisgis.server.wms;
 
 import com.vividsolutions.jts.geom.Envelope;
-import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Arrays;
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import net.opengis.wms.BoundingBox;
 import net.opengis.wms.Capability;
@@ -83,9 +81,8 @@ public final class GetCapabilitiesHandler {
          * @param queryString getCapabilities request string
          * @param output servlet outputStream
          * @param wmsResponse HttpServletResponse modified for WMS use
-         * @param styleDirectory path to the directory containing seFiles
          */
-        static void getCap(String queryString, OutputStream output, WMSResponse wmsResponse, File styleDirectory) throws WMSException {
+        static void getCap(String queryString, OutputStream output, WMSResponse wmsResponse) throws WMSException {
                 PrintWriter out = new PrintWriter(output);
                 WMSCapabilities cap = new WMSCapabilities();
 
@@ -156,7 +153,7 @@ public final class GetCapabilitiesHandler {
                 c.setLayer(availableLayers);
 
                 //Setting the request capabilities
-                
+
                 //GetMap capabilities
                 Request req = new Request();
                 OperationType opMap = new OperationType();
@@ -187,7 +184,7 @@ public final class GetCapabilitiesHandler {
                 dcpTypeCap.setHTTP(httpCap);
                 opCap.getDCPType().add(dcpTypeCap);
                 req.setGetCapabilities(opCap);
-                
+
                 //GetFeatureinfo capabilities
                 OperationType opFeature = new OperationType();
                 opFeature.getFormat().add("text/xml");
@@ -202,7 +199,7 @@ public final class GetCapabilitiesHandler {
                 dcpTypeFeature.setHTTP(httpFeature);
                 opFeature.getDCPType().add(dcpTypeFeature);
                 req.setGetFeatureInfo(opFeature);
-                
+
 
                 c.setRequest(req);
 

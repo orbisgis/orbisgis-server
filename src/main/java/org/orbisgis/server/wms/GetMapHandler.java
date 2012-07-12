@@ -44,7 +44,6 @@ import com.vividsolutions.jts.geom.Envelope;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -99,14 +98,13 @@ public final class GetMapHandler {
          * @param exceptionsFormat
          * @param output
          * @param wmsResponse
-         * @param styleDirectory
-         * @param serverStyles 
+         * @param serverStyles
          * @throws WMSException
          */
         public static void getMap(List<String> layerList, List<String> styleList, String crs,
                 List<Double> bbox, int width, int height, double pixelSize, String imageFormat,
                 boolean transparent, String bgColor, String stringSLD, String exceptionsFormat, OutputStream output,
-                WMSResponse wmsResponse, File styleDirectory, Map<String, Style> serverStyles) throws WMSException {
+                WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException {
                 Double minX;
                 Double minY;
                 Double maxX;
@@ -182,8 +180,13 @@ public final class GetMapHandler {
                                 for (j = 0; j < layerList.size(); j++) {
                                         if (j < styleList.size()) {
                                                 String styleString = styleList.get(j);
-                                                Style style = serverStyles.get(styleString);
-                                                layers.getChildren()[j].setStyle(0, style);
+                                                if (serverStyles.containsKey(styleString)) {
+                                                        Style style = serverStyles.get(styleString);
+                                                        layers.getChildren()[j].setStyle(0, style);
+                                                } else {
+                                                        WMS.exceptionDescription(wmsResponse, output, "<h2>One of the requested SE styles doesn't exist on this server</h2><p>Please look for an existing style in the server extended capabilities</p>");
+                                                        return;
+                                                }
 
                                         } else //we add a server default style associated with the layer 
                                         {
@@ -275,11 +278,10 @@ public final class GetMapHandler {
          * @param queryString
          * @param output
          * @param wmsResponse
-         * @param styleDirectory
          * @param serverStyles
          * @throws WMSException
          */
-        public static void getMapUrlParser(String queryString, OutputStream output, WMSResponse wmsResponse, File styleDirectory, Map<String, Style> serverStyles) throws WMSException {
+        public static void getMapUrlParser(String queryString, OutputStream output, WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException {
 
                 List<String> layerList = new ArrayList<String>();
                 List<String> styleList = new ArrayList<String>();
@@ -347,7 +349,7 @@ public final class GetMapHandler {
                         }
                 }
 
-                getMap(layerList, styleList, crs, bbox, width, height, pixelSize, imageFormat, transparent, bgColor, sld, exceptionsFormat, output, wmsResponse, styleDirectory, serverStyles);
+                getMap(layerList, styleList, crs, bbox, width, height, pixelSize, imageFormat, transparent, bgColor, sld, exceptionsFormat, output, wmsResponse, serverStyles);
         }
 
         public static void getMapXmlParser(String queryString, PrintWriter print) {

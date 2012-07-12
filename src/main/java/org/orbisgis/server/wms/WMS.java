@@ -58,32 +58,19 @@ import org.orbisgis.core.workspace.CoreWorkspace;
 public final class WMS {
 
         private MainContext context;
-        private File styleDirectory;
         private Map<String, Style> serverStyles;
 
         /**
          * Initialize the context (containing datasources, datamanager...)
          *
          * @param workspacePath
+         * @param serverStyles
          */
-        public void init(String workspacePath) {
+        public void init(String workspacePath, Map<String, Style> serverStyles) {
                 CoreWorkspace c = new CoreWorkspace();
                 c.setWorkspaceFolder(workspacePath);
                 context = new MainContext(false, c);
-
-                File[] styleFiles = styleDirectory.listFiles();
-                
-                serverStyles = new HashMap<String, Style>();
-
-                for (File file : styleFiles) {
-                        if (file.getName().endsWith(".se")) {
-                                try {   
-                                        serverStyles.put(file.getName().substring(0, file.getName().length() - 3), new Style(null, new File(styleDirectory, file.getName()).getAbsolutePath()));
-                                } catch (InvalidStyle ex) {
-                                        
-                                }
-                        }
-                }
+                this.serverStyles = serverStyles;
         }
 
         /**
@@ -144,11 +131,11 @@ public final class WMS {
                                 exceptionDescription(wmsResponse, output, "<h2>The version number is incorrect or unspecified</h2><p>Please specify 1.3 version number as it is the only supported by this server</p>");
                                 return;
                         }
-                        GetMapHandler.getMapUrlParser(queryString, output, wmsResponse, this.styleDirectory, this.serverStyles);
+                        GetMapHandler.getMapUrlParser(queryString, output, wmsResponse, this.serverStyles);
 
                 } else if (requestType.equalsIgnoreCase("getcapabilities")) {
 
-                        GetCapabilitiesHandler.getCap(queryString, output, wmsResponse, this.styleDirectory);
+                        GetCapabilitiesHandler.getCap(queryString, output, wmsResponse);
 
                 } else {
                         exceptionDescription(wmsResponse, output, "<h2>The requested request type is not supported or wrongly specified</h2><p>Please specify either getMap or getCapabilities request as it they are the only two supported by this server</p>");
@@ -163,8 +150,7 @@ public final class WMS {
          *
          * @param styleDirectory
          */
-        public WMS(File styleDirectory) {
-                this.styleDirectory = styleDirectory;
+        public WMS() {
         }
 
         /**
