@@ -157,7 +157,9 @@ public final class GetCapabilitiesHandler {
                 //GetMap capabilities
                 Request req = new Request();
                 OperationType opMap = new OperationType();
-                opMap.getFormat().addAll(Arrays.asList(MapImageWriter.FORMATS));
+                for (ImageFormats im : ImageFormats.values()) {
+                        opMap.getFormat().add(im.toString());
+                }
                 OnlineResource oRMap = new OnlineResource();
                 oRMap.setHref(wmsResponse.getRequestUrl());
                 oRMap.setTitle("GetMap");
@@ -217,7 +219,7 @@ public final class GetCapabilitiesHandler {
                 } catch (Exception ex) {
                         wmsResponse.setContentType("text/html;charset=UTF-8");
                         wmsResponse.setResponseCode(500);
-                        out.print("<h2>Something went wrong</h2>");
+                        out.print("Something went wrong");
                         out.print(ex);
                         ex.printStackTrace(out);
                 }

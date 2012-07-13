@@ -144,7 +144,8 @@ public final class GetMapHandler {
                                         layers.addLayer(iLayer);
                                 }
                         } catch (LayerException e) {
-                                throw new WMSException(e);
+                                WMS.exceptionDescription(wmsResponse, output, "At least one of the chosen layer is invalid. Make sure of the available layers by requesting the server capabilities.");
+                                return;
                         }
 
                 } else // Changing the sld String object to a Style type object
@@ -155,15 +156,15 @@ public final class GetMapHandler {
                                         try {
                                                 layers.addLayer(sld.getLayer(i));
                                         } catch (LayerException ex) {
-                                                WMS.exceptionDescription(wmsResponse, output, "<h2>At least one of the chosen layer is invalid</h2><p>Please make sure you entered a valid layer. Make sure of the available layers by requesting the server capabilities</p>");
+                                                WMS.exceptionDescription(wmsResponse, output, "At least one of the chosen layer is invalid. Make sure of the available layers by requesting the server capabilities.");
                                                 return;
                                         } catch (SeExceptions.InvalidStyle ex) {
-                                                WMS.exceptionDescription(wmsResponse, output, "<h2>The se style is invalid</h2><p>Please give a SE valid SLD file.</p>");
+                                                WMS.exceptionDescription(wmsResponse, output, "The se style is invalid. Please give a SE valid SLD file.");
                                                 return;
                                         }
                                 }
                         } catch (URISyntaxException ex) {
-                                WMS.exceptionDescription(wmsResponse, output, "<h2>The SLD URI is invalid</h2><p>Please enter a valid SLD file URI path.</p>");
+                                WMS.exceptionDescription(wmsResponse, output, "The SLD URI is invalid. Please enter a valid SLD file URI path.");
                                 return;
                         }
                 }
@@ -184,7 +185,7 @@ public final class GetMapHandler {
                                                         Style style = serverStyles.get(styleString);
                                                         layers.getChildren()[j].setStyle(0, style);
                                                 } else {
-                                                        WMS.exceptionDescription(wmsResponse, output, "<h2>One of the requested SE styles doesn't exist on this server</h2><p>Please look for an existing style in the server extended capabilities</p>");
+                                                        WMS.exceptionDescription(wmsResponse, output, "One of the requested SE styles doesn't exist on this server. Please look for an existing style in the server extended capabilities.");
                                                         return;
                                                 }
 
@@ -206,7 +207,7 @@ public final class GetMapHandler {
                                                 layers.getChildren()[i].setStyle(0, theStyle);
                                         }
                                 } catch (SeExceptions.InvalidStyle ex) {
-                                        WMS.exceptionDescription(wmsResponse, output, "<h2>The se style is invalid</h2><p>Please give a SE valid style in the SLD file.</p>");
+                                        WMS.exceptionDescription(wmsResponse, output, "The se style is invalid. Please give a SE valid style in the SLD file..");
                                         return;
                                 }
                         }
@@ -229,7 +230,7 @@ public final class GetMapHandler {
 
                         int imgType = BufferedImage.TYPE_4BYTE_ABGR;
 
-                        if ("image/jpeg".equals(imageFormat)) {
+                        if (ImageFormats.JPEG.toString().equals(imageFormat)) {
                                 imgType = BufferedImage.TYPE_3BYTE_BGR;
                         }
 
@@ -290,7 +291,7 @@ public final class GetMapHandler {
                 Integer width = null;
                 Integer height = null;
                 Double pixelSize = 0.084;
-                String imageFormat = "image/png";
+                String imageFormat = ImageFormats.PNG.toString();
                 boolean transparent = false;
                 String bgColor = "#FFFFFF";
                 String sld = null;

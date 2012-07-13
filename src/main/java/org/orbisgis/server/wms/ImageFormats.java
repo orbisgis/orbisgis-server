@@ -41,42 +41,20 @@
 package org.orbisgis.server.wms;
 
 /**
- * A specific exception to gather different types into this specific one
+ *
  * @author Tony MARTIN
  */
-public class WMSException extends Exception {
-
-        /**
-         * Creates a new instance of
-         * <code>WMSException</code> without detail message.
-         */
-        public WMSException() {
-        }
-
-        /**
-         * Constructs an instance of
-         * <code>WMSException</code> with the specified detail message.
-         *
-         * @param msg the detail message.
-         */
-        public WMSException(String msg) {
-                super(msg);
-        }
-
-        /**
-         * 
-         * @param thrwbl
-         */
-        public WMSException(Throwable thrwbl) {
-                super(thrwbl);
-        }
-
-        /**
-         * 
-         * @param string
-         * @param thrwbl
-         */
-        public WMSException(String string, Throwable thrwbl) {
-                super(string, thrwbl);
+public enum ImageFormats {
+        JPEG {
+                @Override
+                public String toString() {
+                        return "image/jpeg";
+                }
+        },
+        PNG {
+                @Override
+                public String toString() {
+                        return "image/png";
+                }
         }
 }

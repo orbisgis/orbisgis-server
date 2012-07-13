@@ -100,7 +100,7 @@ public final class WMS {
                                         service = param[1];
                                 }
                                 if (!service.equalsIgnoreCase("wms")) {
-                                        exceptionDescription(wmsResponse, output, "<h2>The service specified is either unsupported or wrongly requested</h2><p>Please specify WMS service as it is the only one supported by this server</p>");
+                                        exceptionDescription(wmsResponse, output, "The service specified is either unsupported or wrongly requested. Please specify WMS service as it is the only one supported by this server");
                                         return;
                                 }
                         }
@@ -121,10 +121,10 @@ public final class WMS {
                 }
 
                 // In case of a GetMap request, the WMS version is checked as recomended by the standard. If 
-                // a wrong version is selected
+                // a wrong version is selected, an error is sent and the user is asked for a supported version
                 if (requestType.equalsIgnoreCase("getmap")) {
                         if (!(version.equalsIgnoreCase("1.3.0") || version.equalsIgnoreCase("1.3"))) {
-                                exceptionDescription(wmsResponse, output, "<h2>The version number is incorrect or unspecified</h2><p>Please specify 1.3 version number as it is the only supported by this server</p>");
+                                exceptionDescription(wmsResponse, output, "The version number is incorrect or unspecified. Please specify 1.3 version number as it is the only supported by this server. ");
                                 return;
                         }
                         GetMapHandler.getMapUrlParser(queryString, output, wmsResponse, this.serverStyles);
@@ -134,7 +134,7 @@ public final class WMS {
                         GetCapabilitiesHandler.getCap(queryString, output, wmsResponse);
 
                 } else {
-                        exceptionDescription(wmsResponse, output, "<h2>The requested request type is not supported or wrongly specified</h2><p>Please specify either getMap or getCapabilities request as it they are the only two supported by this server</p>");
+                        exceptionDescription(wmsResponse, output, "The requested request type is not supported or wrongly specified. Please specify either getMap or getCapabilities request as it they are the only two supported by this server. ");
                 }
         }
 
@@ -142,24 +142,34 @@ public final class WMS {
         }
 
         /**
-         * Class constructor with styleDirectory path
+         * Class constructor
          *
          */
         public WMS() {
         }
 
         /**
+         * Returns the context so it can be disposed
+         * 
          * @return the context
          */
         public MainContext getContext() {
                 return context;
         }
 
+        /**
+         * Generates the error message in case of an exception created by a bad client request
+         * 
+         * @param wmsResponse
+         * @param output
+         * @param errorMessage
+         */
         public static void exceptionDescription(WMSResponse wmsResponse, OutputStream output, String errorMessage) {
                 PrintWriter out = new PrintWriter(output);
-                wmsResponse.setContentType("text/html;charset=UTF-8");
+                wmsResponse.setContentType("text/xml;charset=UTF-8");
                 wmsResponse.setResponseCode(400);
-                out.print(errorMessage);
+                out.print("<?xml version='1.0' encoding=\"UTF-8\"?><ServiceExceptionReport xmlns=\"http://www.opengis.net/ogc\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"1.3.0\" xsi:schemaLocation=\"http://www.opengis.net/ogc http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd\"><ServiceException>" 
+                        + errorMessage + "</ServiceException></ServiceExceptionReport>");
                 out.flush();
         }
 }

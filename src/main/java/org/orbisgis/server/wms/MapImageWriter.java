@@ -77,23 +77,18 @@ public final class MapImageWriter {
         public static void write(WMSResponse wmsResponse, OutputStream output,
                 String format, BufferedImage img, double pixelSize) throws IOException {
 
-                if (format.equalsIgnoreCase(FORMATS[0])) {
+                if (format.equalsIgnoreCase(ImageFormats.JPEG.toString())) {
                         writeJPEG(wmsResponse, output, img);
-                } else if (format.equalsIgnoreCase(FORMATS[1])) {
+                } else if (format.equalsIgnoreCase(ImageFormats.PNG.toString())) {
                         writePNG(wmsResponse, output, img, pixelSize);
                 } else {
-                        PrintWriter out = new PrintWriter(output);
-                        wmsResponse.setContentType("text/html;charset=UTF-8");
-                        wmsResponse.setResponseCode(400);
-                        out.print("<h2>The format requested is invalid</h2>"
-                                + "<p>Please check the server capabilities to ask for a supported format</p>");
-                        out.flush();
+                        WMS.exceptionDescription(wmsResponse, output, "The format requested is invalid. Please check the server capabilities to ask for a supported format.");
                 }
         }
 
         private static void writeJPEG(WMSResponse wmsResponse, OutputStream output,
                 BufferedImage img) throws IOException {
-                wmsResponse.setContentType("image/jpeg");
+                wmsResponse.setContentType(ImageFormats.JPEG.toString());
 
                 JPEGEncodeParam jenc = new JPEGEncodeParam();
                 JAI.create("Encode", img, output, "JPEG", jenc);
@@ -103,7 +98,7 @@ public final class MapImageWriter {
 
         private static void writePNG(WMSResponse wmsResponse, OutputStream output,
                 BufferedImage img, double pixelSize) throws IOException {
-                wmsResponse.setContentType("image/png");
+                wmsResponse.setContentType(ImageFormats.PNG.toString());
 
                 int dpm = (int) (1000 / pixelSize + 1);
                 PNGEncodeParam penc = PNGEncodeParam.getDefaultEncodeParam(img);
