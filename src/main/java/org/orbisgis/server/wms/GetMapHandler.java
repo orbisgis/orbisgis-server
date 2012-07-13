@@ -353,6 +353,13 @@ public final class GetMapHandler {
                 getMap(layerList, styleList, crs, bbox, width, height, pixelSize, imageFormat, transparent, bgColor, sld, exceptionsFormat, output, wmsResponse, serverStyles);
         }
 
+        /**
+         * Parses the parameters of a getMap request from the post request (in XML format) and
+         * gives them to the getMap method
+         * 
+         * @param queryString
+         * @param print
+         */
         public static void getMapXmlParser(String queryString, PrintWriter print) {
         }
 

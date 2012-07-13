@@ -45,7 +45,6 @@ import com.sun.media.jai.codec.PNGEncodeParam;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import javax.media.jai.JAI;
 
 /**

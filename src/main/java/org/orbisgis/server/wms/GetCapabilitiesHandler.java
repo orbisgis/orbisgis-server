@@ -43,7 +43,10 @@ package org.orbisgis.server.wms;
 import com.vividsolutions.jts.geom.Envelope;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import net.opengis.wms.BoundingBox;
 import net.opengis.wms.Capability;
@@ -73,7 +76,16 @@ import org.orbisgis.core.Services;
  * @author Tony MARTIN
  */
 public final class GetCapabilitiesHandler {
-
+        
+        private static final JAXBContext JAXBCONTEXT;
+        
+        static {
+                try {
+                        JAXBCONTEXT = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:net.opengis.wms:oasis.names.tc.ciq.xsdschema.xal._2");
+                } catch (JAXBException ex) {
+                        throw new RuntimeException(ex);
+                }
+        }
         /**
          * Handles the getCapabilities request and gives the XML formated server
          * capabilities to the outputStream
@@ -90,7 +102,6 @@ public final class GetCapabilitiesHandler {
                 //Setting service WMS metadata
                 Service s = new Service();
                 s.setName("WMS");
-
                 s.setTitle("WMS Service for OrbisWMS");
 
                 OnlineResource oR = new OnlineResource();
@@ -205,21 +216,21 @@ public final class GetCapabilitiesHandler {
 
                 c.setRequest(req);
 
-
+                
                 cap.setCapability(c);
 
                 try {
                         //Marshalling the WMS Capabilities into an XML response
-                        Marshaller marshaller = Services.JAXBCONTEXT.createMarshaller();
+                        Marshaller marshaller = JAXBCONTEXT.createMarshaller();
                         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
                         wmsResponse.setContentType("text/xml;charset=UTF-8");
                         marshaller.marshal(cap, out);
 
                 } catch (Exception ex) {
-                        wmsResponse.setContentType("text/html;charset=UTF-8");
+                        wmsResponse.setContentType("text/xml;charset=UTF-8");
                         wmsResponse.setResponseCode(500);
-                        out.print("Something went wrong");
+                        out.print("<?xml version='1.0' encoding=\"UTF-8\"?><ServiceExceptionReport xmlns=\"http://www.opengis.net/ogc\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"1.3.0\" xsi:schemaLocation=\"http://www.opengis.net/ogc http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd\"><ServiceException>Something went wrong</ServiceException></ServiceExceptionReport>");
                         out.print(ex);
                         ex.printStackTrace(out);
                 }
