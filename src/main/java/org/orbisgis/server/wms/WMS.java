@@ -60,11 +60,11 @@ public final class WMS {
         /**
          * Initialize the context (containing datasources, datamanager...)
          *
-         * @param coreWorkspace 
+         * @param coreWorkspace
          * @param serverStyles
          */
         public void init(CoreWorkspace coreWorkspace, Map<String, Style> serverStyles) {
-                
+
                 context = new MainContext(false, coreWorkspace);
                 this.serverStyles = serverStyles;
         }
@@ -80,45 +80,36 @@ public final class WMS {
          * Handles the URL request and reads the request type to start
          * processing of either a getMap or getCapabilities request
          *
-         * @param queryString
+         * @param queryParameters
          * @param output
          * @param wmsResponse
          * @throws WMSException
          */
-        public void processURL(String queryString, OutputStream output, WMSResponse wmsResponse) throws WMSException {
-                String service = "undefined";
-                String version = "undefined";
-                String requestType = "undefined";
+        public void processURL(Map<String, String[]> queryParameters, OutputStream output, WMSResponse wmsResponse) throws WMSException {
 
 
                 //Spliting request parameters to determine the requestType to execute
 
-                for (String parameter : queryString.split("&")) {
-                        if (parameter.matches("(?i:service=.*)")) {
-                                String param[] = parameter.split("=");
-                                if (param.length > 1) {
-                                        service = param[1];
-                                }
-                                if (!service.equalsIgnoreCase("wms")) {
-                                        exceptionDescription(wmsResponse, output, "The service specified is either unsupported or wrongly requested. Please specify WMS service as it is the only one supported by this server");
-                                        return;
-                                }
-                        }
-                        if (parameter.matches("(?i:version=.*)")) {
-                                String param[] = parameter.split("=");
-                                if (param.length > 1) {
-                                        version = param[1];
-                                }
-                        }
-                        if (parameter.matches("(?i:request=.*)")) {
-                                String param[] = parameter.split("=");
-                                if (param.length > 1) {
-                                        requestType = param[1];
-                                }
-                        }
-
-
+                String service = "undefined";
+                if (queryParameters.containsKey("SERVICE")) {
+                        service = queryParameters.get("SERVICE")[0];
                 }
+                if (!service.equalsIgnoreCase("wms")) {
+                        exceptionDescription(wmsResponse, output, "The service specified is either unsupported or wrongly requested. Please specify WMS service as it is the only one supported by this server");
+                        return;
+                }
+                
+                String version = "undefined";
+                if (queryParameters.containsKey("VERSION")) {
+                        version = queryParameters.get("VERSION")[0];
+                }
+                
+                String requestType = "undefined";
+                if (queryParameters.containsKey("REQUEST")) {
+                        requestType = queryParameters.get("REQUEST")[0];
+                }
+
+
 
                 // In case of a GetMap request, the WMS version is checked as recomended by the standard. If 
                 // a wrong version is selected, an error is sent and the user is asked for a supported version
@@ -127,18 +118,18 @@ public final class WMS {
                                 exceptionDescription(wmsResponse, output, "The version number is incorrect or unspecified. Please specify 1.3 version number as it is the only supported by this server. ");
                                 return;
                         }
-                        GetMapHandler.getMapUrlParser(queryString, output, wmsResponse, this.serverStyles);
+                        GetMapHandler.getMapUrlParser(queryParameters, output, wmsResponse, this.serverStyles);
 
                 } else if (requestType.equalsIgnoreCase("getcapabilities")) {
 
-                        GetCapabilitiesHandler.getCap(queryString, output, wmsResponse);
+                        GetCapabilitiesHandler.getCap(output, wmsResponse);
 
                 } else {
                         exceptionDescription(wmsResponse, output, "The requested request type is not supported or wrongly specified. Please specify either getMap or getCapabilities request as it they are the only two supported by this server. ");
                 }
         }
 
-        public void processXML(InputStream postStream, OutputStream printStream) {
+        public void processXML(InputStream postStream, OutputStream printStream, WMSResponse wmsResponse) {
         }
 
         /**
@@ -150,7 +141,7 @@ public final class WMS {
 
         /**
          * Returns the context so it can be disposed
-         * 
+         *
          * @return the context
          */
         public MainContext getContext() {
@@ -158,8 +149,9 @@ public final class WMS {
         }
 
         /**
-         * Generates the error message in case of an exception created by a bad client request
-         * 
+         * Generates the error message in case of an exception created by a bad
+         * client request
+         *
          * @param wmsResponse
          * @param output
          * @param errorMessage
@@ -168,7 +160,7 @@ public final class WMS {
                 PrintWriter out = new PrintWriter(output);
                 wmsResponse.setContentType("text/xml;charset=UTF-8");
                 wmsResponse.setResponseCode(400);
-                out.print("<?xml version='1.0' encoding=\"UTF-8\"?><ServiceExceptionReport xmlns=\"http://www.opengis.net/ogc\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"1.3.0\" xsi:schemaLocation=\"http://www.opengis.net/ogc http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd\"><ServiceException>" 
+                out.print("<?xml version='1.0' encoding=\"UTF-8\"?><ServiceExceptionReport xmlns=\"http://www.opengis.net/ogc\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"1.3.0\" xsi:schemaLocation=\"http://www.opengis.net/ogc http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd\"><ServiceException>"
                         + errorMessage + "</ServiceException></ServiceExceptionReport>");
                 out.flush();
         }

@@ -48,9 +48,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
@@ -101,26 +98,11 @@ public final class GetMapHandler {
          * @param serverStyles
          * @throws WMSException
          */
-        public static void getMap(List<String> layerList, List<String> styleList, String crs,
-                List<Double> bbox, int width, int height, double pixelSize, String imageFormat,
+        public static void getMap(String[] layerList, String[] styleList, String crs,
+                double[] bbox, int width, int height, double pixelSize, String imageFormat,
                 boolean transparent, String bgColor, String stringSLD, String exceptionsFormat, OutputStream output,
                 WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException {
-                Double minX;
-                Double minY;
-                Double maxX;
-                Double maxY;
 
-                if (bbox.size() == 4) {
-                        minX = bbox.get(0);
-                        minY = bbox.get(1);
-                        maxX = bbox.get(2);
-                        maxY = bbox.get(3);
-                } else {
-                        minX = null;
-                        minY = null;
-                        maxX = null;
-                        maxY = null;
-                }
 
                 Double dpi = 25.4 / pixelSize;
 
@@ -131,13 +113,13 @@ public final class GetMapHandler {
                 SLD sld = null;
 
                 //First case : Layers and Styles are given with shp and se file names
-                if (layerList != null && layerList.size() > 0) {
+                if (layerList != null && layerList.length > 0) {
                         int i;
                         // Reverse order make the first layer been rendered in the last
                         try {
-                                for (i = 0; i < layerList.size(); i++) {
+                                for (i = 0; i < layerList.length; i++) {
                                         //Create the Ilayer with given layer name
-                                        String layer = layerList.get(i);
+                                        String layer = layerList[i];
                                         ILayer iLayer = dataManager.createLayer(layer);
 
                                         //then adding the Ilayer to the layers to render list
@@ -178,9 +160,9 @@ public final class GetMapHandler {
                         if (layerList != null) {
                                 int j;
                                 //In case of using the server's styles
-                                for (j = 0; j < layerList.size(); j++) {
-                                        if (j < styleList.size()) {
-                                                String styleString = styleList.get(j);
+                                for (j = 0; j < layerList.length; j++) {
+                                        if (j < styleList.length) {
+                                                String styleString = styleList[j];
                                                 if (serverStyles.containsKey(styleString)) {
                                                         Style style = serverStyles.get(styleString);
                                                         layers.getChildren()[j].setStyle(0, style);
@@ -216,8 +198,8 @@ public final class GetMapHandler {
                         //Setting the envelope according to given bounding box
                         Envelope env;
 
-                        if (minX != null && minY != null && maxX != null && maxY != null) {
-                                env = new Envelope(minX, maxX, minY, maxY);
+                        if (bbox !=null && bbox.length == 4) {
+                                env = new Envelope(bbox[0], bbox[1], bbox[2], bbox[3]);
                         } else {
                                 env = layers.getEnvelope();
                         }
@@ -276,87 +258,94 @@ public final class GetMapHandler {
          * Parses the url into the getMap request parameters and gives them to
          * the getMap method
          *
-         * @param queryString
+         * @param queryParameters
          * @param output
          * @param wmsResponse
          * @param serverStyles
          * @throws WMSException
          */
-        public static void getMapUrlParser(String queryString, OutputStream output, WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException {
+        public static void getMapUrlParser(Map<String, String[]> queryParameters, OutputStream output, WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException {
 
-                List<String> layerList = new ArrayList<String>();
-                List<String> styleList = new ArrayList<String>();
+                String[] layerList = null;
+                String[] styleList = null;
+                double[] bbox = null;
                 String crs = null;
-                List<Double> bbox = new ArrayList<Double>();
-                Integer width = null;
-                Integer height = null;
-                Double pixelSize = 0.084;
+                int width;
+                int height;
+                double pixelSize = 0.084;
                 String imageFormat = ImageFormats.PNG.toString();
                 boolean transparent = false;
                 String bgColor = "#FFFFFF";
                 String sld = null;
                 String exceptionsFormat = null;
 
-                for (String parameter : queryString.split("&")) {
-                        String[] paramValues = parameter.split("=");
 
-                        if (paramValues[0].equalsIgnoreCase("layers") && (paramValues.length > 1)) {
-                                layerList.addAll(Arrays.asList(paramValues[1].split(",")));
-                        }
+                if (queryParameters.containsKey("CRS")) {
+                        crs = queryParameters.get("CRS")[0];
+                }
 
-                        if (paramValues[0].equalsIgnoreCase("styles") && (paramValues.length > 1)) {
-                                styleList.addAll(Arrays.asList(paramValues[1].split(",")));
-                        }
+                if (queryParameters.containsKey("BBOX")) {
+                        String[] sbbox = queryParameters.get("BBOX")[0].split(",");
+                        bbox = new double[sbbox.length];
 
-                        if (paramValues[0].equalsIgnoreCase("crs")) {
-                                crs = paramValues[1];
+                        for (int i = 0; i < bbox.length; i++) {
+                                bbox[i] = Double.valueOf(sbbox[i]);
                         }
+                }
 
-                        if (paramValues[0].equalsIgnoreCase("bbox") && (paramValues.length > 1)) {
-                                for (String coord : paramValues[1].split(",")) {
-                                        bbox.add(Double.parseDouble(coord));
-                                }
-                        }
+                if (queryParameters.containsKey("WIDTH")) {
+                        width = Integer.valueOf(queryParameters.get("WIDTH")[0]);
+                } else {
+                        WMS.exceptionDescription(wmsResponse, output, "You must specify an image width.");
+                        return;
+                }
 
-                        if (paramValues[0].equalsIgnoreCase("width") && (paramValues.length > 1)) {
-                                width = Integer.parseInt(paramValues[1]);
-                        }
-                        if (paramValues[0].equalsIgnoreCase("height") && (paramValues.length > 1)) {
-                                height = Integer.parseInt(paramValues[1]);
-                        }
+                if (queryParameters.containsKey("HEIGHT")) {
+                        height = Integer.valueOf(queryParameters.get("HEIGHT")[0]);
+                } else {
+                        WMS.exceptionDescription(wmsResponse, output, "You must specify an image height.");
+                        return;
+                }
 
-                        if (paramValues[0].equalsIgnoreCase("pixelsize")) {
-                                pixelSize = Double.parseDouble(paramValues[1]);
-                        }
+                if (queryParameters.containsKey("LAYERS")) {
+                        layerList = queryParameters.get("LAYERS")[0].split(",");
+                }
 
-                        if (paramValues[0].equalsIgnoreCase("format")) {
-                                imageFormat = paramValues[1];
-                        }
+                if (queryParameters.containsKey("STYLES")) {
+                        styleList = queryParameters.get("STYLES")[0].split(",");
+                }
 
-                        if (paramValues[0].equalsIgnoreCase("transparent")) {
-                                transparent = paramValues[1].equalsIgnoreCase("true") || paramValues[1].equalsIgnoreCase("1");
-                        }
+                if (queryParameters.containsKey("PIXELSIZE")) {
+                        pixelSize = Double.valueOf(queryParameters.get("PIXELSIZE")[0]);
+                }
 
-                        if (paramValues[0].equalsIgnoreCase("bgcolor")) {
-                                bgColor = paramValues[1];
-                        }
+                if (queryParameters.containsKey("FORMAT")) {
+                        imageFormat = queryParameters.get("FORMAT")[0];
+                }
 
-                        if (paramValues[0].equalsIgnoreCase("sld")) {
-                                sld = paramValues[1];
-                        }
+                if (queryParameters.containsKey("TRANSPARENT")) {
+                        transparent = Boolean.getBoolean(queryParameters.get("TRANSPARENT")[0]);
+                }
 
-                        if (paramValues[0].equalsIgnoreCase("exceptions")) {
-                                exceptionsFormat = paramValues[1];
-                        }
+                if (queryParameters.containsKey("BGCOLOR")) {
+                        bgColor = queryParameters.get("BGCOLOR")[0];
+                }
+
+                if (queryParameters.containsKey("SLD")) {
+                        sld = queryParameters.get("SLD")[0];
+                }
+
+                if (queryParameters.containsKey("EXCEPTIONS")) {
+                        exceptionsFormat = queryParameters.get("EXCEPTIONS")[0];
                 }
 
                 getMap(layerList, styleList, crs, bbox, width, height, pixelSize, imageFormat, transparent, bgColor, sld, exceptionsFormat, output, wmsResponse, serverStyles);
         }
 
         /**
-         * Parses the parameters of a getMap request from the post request (in XML format) and
-         * gives them to the getMap method
-         * 
+         * Parses the parameters of a getMap request from the post request (in
+         * XML format) and gives them to the getMap method
+         *
          * @param queryString
          * @param print
          */

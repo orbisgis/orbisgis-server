@@ -43,8 +43,6 @@ package org.orbisgis.server.wms;
 import com.vividsolutions.jts.geom.Envelope;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -90,11 +88,10 @@ public final class GetCapabilitiesHandler {
          * Handles the getCapabilities request and gives the XML formated server
          * capabilities to the outputStream
          *
-         * @param queryString getCapabilities request string
          * @param output servlet outputStream
          * @param wmsResponse HttpServletResponse modified for WMS use
          */
-        static void getCap(String queryString, OutputStream output, WMSResponse wmsResponse) throws WMSException {
+        static void getCap(OutputStream output, WMSResponse wmsResponse) throws WMSException {
                 PrintWriter out = new PrintWriter(output);
                 WMSCapabilities cap = new WMSCapabilities();
 
