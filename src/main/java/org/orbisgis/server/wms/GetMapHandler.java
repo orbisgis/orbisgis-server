@@ -198,7 +198,7 @@ public final class GetMapHandler {
                         //Setting the envelope according to given bounding box
                         Envelope env;
 
-                        if (bbox !=null && bbox.length == 4) {
+                        if (bbox.length == 4) {
                                 env = new Envelope(bbox[0], bbox[1], bbox[2], bbox[3]);
                         } else {
                                 env = layers.getEnvelope();
@@ -266,9 +266,9 @@ public final class GetMapHandler {
          */
         public static void getMapUrlParser(Map<String, String[]> queryParameters, OutputStream output, WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException {
 
-                String[] layerList = null;
-                String[] styleList = null;
-                double[] bbox = null;
+                String[] layerList = new String[0];
+                String[] styleList = new String[0];
+                double[] bbox = new double[0];
                 String crs = null;
                 int width;
                 int height;
@@ -311,7 +311,7 @@ public final class GetMapHandler {
                         layerList = queryParameters.get("LAYERS")[0].split(",");
                 }
 
-                if (queryParameters.containsKey("STYLES")) {
+                if (queryParameters.containsKey("STYLES") && !queryParameters.get("STYLES")[0].isEmpty()) {
                         styleList = queryParameters.get("STYLES")[0].split(",");
                 }
 
