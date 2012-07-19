@@ -43,6 +43,9 @@ package org.orbisgis.server.wms;
 import com.vividsolutions.jts.geom.Envelope;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -65,8 +68,11 @@ import org.gdms.data.DataSourceFactory;
 import org.gdms.data.NoSuchTableException;
 import org.gdms.driver.DriverException;
 import org.gdms.source.SourceManager;
+import org.jproj.CoordinateReferenceSystem;
+import org.jproj.Registry;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
+import scala.actors.threadpool.Arrays;
 
 /**
  * Creates the answer to a getCapabilities request and writes it into the output
@@ -76,15 +82,9 @@ import org.orbisgis.core.Services;
  */
 public final class GetCapabilitiesHandler {
 
-        private static final JAXBContext JAXBCONTEXT;
-
-        static {
-                try {
-                        JAXBCONTEXT = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:net.opengis.wms:oasis.names.tc.ciq.xsdschema.xal._2");
-                } catch (JAXBException ex) {
-                        throw new RuntimeException(ex);
-                }
-        }
+        private Map<String, Layer> layerMap = new HashMap<String, Layer>();
+        private final JAXBContext JAXBCONTEXT;
+        private List<String> authCRS;
 
         /**
          * Handles the getCapabilities request and gives the XML formated server
@@ -93,7 +93,7 @@ public final class GetCapabilitiesHandler {
          * @param output servlet outputStream
          * @param wmsResponse HttpServletResponse modified for WMS use
          */
-        static void getCap(OutputStream output, WMSResponse wmsResponse) throws WMSException {
+        void getCap(OutputStream output, WMSResponse wmsResponse) throws WMSException {
                 PrintWriter out = new PrintWriter(output);
                 WMSCapabilities cap = new WMSCapabilities();
 
@@ -126,26 +126,45 @@ public final class GetCapabilitiesHandler {
                 try {
                         for (int i = 0; i < names.length; i++) {
                                 if (!sm.getSource(names[i]).isSystemTableSource()) {
-                                        Layer layer = new Layer();
-                                        layer.setName(names[i]);
-                                        layer.setTitle(names[i]);
+                                        if (layerMap.containsKey(names[i])) {
+                                                Layer layer = layerMap.get(names[i]);
+                                                availableLayers.getLayer().add(layer);
 
-                                        //Setting the bouding box data
-                                        DataSource ds = dsf.getDataSource(names[i]);
-                                        ds.open();
-                                        Envelope env = ds.getFullExtent();
-                                        ds.close();
+                                        } else {
+                                                Layer layer = new Layer();
+                                                layer.setName(names[i]);
+                                                layer.setTitle(names[i]);
 
-                                        BoundingBox bBox = new BoundingBox();
-                                        bBox.setMaxx(env.getMaxX());
-                                        bBox.setMinx(env.getMinX());
-                                        bBox.setMiny(env.getMinY());
-                                        bBox.setMaxy(env.getMaxY());
-                                        bBox.setCRS("EPSG:27582");
-                                        layer.getBoundingBox().add(bBox);
-                                        layer.setQueryable(true);
+                                                //Setting the bouding box data
+                                                DataSource ds = dsf.getDataSource(names[i]);
+                                                ds.open();
+                                                Envelope env = ds.getFullExtent();
+                                                CoordinateReferenceSystem crs = ds.getCRS();
+                                                ds.close();
+                                                BoundingBox bBox = new BoundingBox();
+                                                if (crs != null) {
+                                                        int epsgCode = crs.getEPSGCode();
+                                                        if (epsgCode != -1) {
+                                                                bBox.setCRS("EPSG:" + epsgCode);
+                                                                layer.getCRS().add("EPSG:" + epsgCode);
+                                                        } else {
+                                                                WMS.exceptionDescription(wmsResponse, output, "A problem as occured with the server layers CRS", 500);
+                                                                return;
+                                                        }
+                                                } else {
+                                                        WMS.exceptionDescription(wmsResponse, output, "A problem as occured with the server layers CRS", 500);
+                                                        return;
+                                                }
 
-                                        availableLayers.getLayer().add(layer);
+                                                bBox.setMaxx(env.getMaxX());
+                                                bBox.setMinx(env.getMinX());
+                                                bBox.setMiny(env.getMinY());
+                                                bBox.setMaxy(env.getMaxY());
+                                                layer.getBoundingBox().add(bBox);
+                                                layer.setQueryable(true);
+                                                layerMap.put(names[i], layer);
+                                                availableLayers.getLayer().add(layer);
+                                        }
                                 }
                         }
                 } catch (NoSuchTableException noSuchTableException) {
@@ -155,9 +174,11 @@ public final class GetCapabilitiesHandler {
                 } catch (DriverException driverException) {
                         throw new WMSException(driverException);
                 }
-
                 //Server supported CRS
-                availableLayers.getCRS().add("EPSG:27582");
+
+
+                availableLayers.getCRS().addAll(authCRS);
+
                 availableLayers.setName("Server available layers");
 
                 c.setLayer(availableLayers);
@@ -244,6 +265,15 @@ public final class GetCapabilitiesHandler {
                 }
         }
 
-        private GetCapabilitiesHandler() {
+        GetCapabilitiesHandler() {
+                try {
+                        JAXBCONTEXT = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:net.opengis.wms:oasis.names.tc.ciq.xsdschema.xal._2");
+                } catch (JAXBException ex) {
+                        throw new RuntimeException(ex);
+                }
+
+                String[] codes = Registry.getAvailableCodes("EPSG", true);
+                authCRS = Arrays.asList(codes);
+
         }
 }

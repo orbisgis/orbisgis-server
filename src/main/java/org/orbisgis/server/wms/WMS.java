@@ -55,7 +55,8 @@ public final class WMS {
 
         private MainContext context;
         private Map<String, Style> serverStyles;
-
+        private GetCapabilitiesHandler getCapHandler;
+        
         /**
          * Initialize the context (containing datasources, datamanager...)
          *
@@ -63,8 +64,9 @@ public final class WMS {
          * @param serverStyles
          */
         public void init(CoreWorkspace coreWorkspace, Map<String, Style> serverStyles) {
-
+                
                 context = new MainContext(false, coreWorkspace);
+                getCapHandler = new GetCapabilitiesHandler();
                 this.serverStyles = serverStyles;
         }
 
@@ -120,7 +122,7 @@ public final class WMS {
 
                 } else if (requestType.equalsIgnoreCase("getcapabilities")) {
 
-                        GetCapabilitiesHandler.getCap(output, wmsResponse);
+                        getCapHandler.getCap(output, wmsResponse);
 
                 } else {
                         exceptionDescription(wmsResponse, output, "The requested request type is not supported or wrongly specified. Please specify either getMap or getCapabilities request as it they are the only two supported by this server. ");
@@ -152,9 +154,13 @@ public final class WMS {
          * @param errorMessage
          */
         public static void exceptionDescription(WMSResponse wmsResponse, OutputStream output, String errorMessage) {
+                exceptionDescription(wmsResponse, output, errorMessage, 400);
+        }
+        
+        public static void exceptionDescription(WMSResponse wmsResponse, OutputStream output, String errorMessage, int code) {
                 PrintWriter out = new PrintWriter(output);
                 wmsResponse.setContentType("text/xml;charset=UTF-8");
-                wmsResponse.setResponseCode(400);
+                wmsResponse.setResponseCode(code);
                 out.print("<?xml version='1.0' encoding=\"UTF-8\"?><ServiceExceptionReport xmlns=\"http://www.opengis.net/ogc\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"1.3.0\" xsi:schemaLocation=\"http://www.opengis.net/ogc http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd\"><ServiceException>"
                         + errorMessage + "</ServiceException></ServiceExceptionReport>");
                 out.flush();
