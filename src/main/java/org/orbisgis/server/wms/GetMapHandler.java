@@ -71,9 +71,10 @@ import org.orbisgis.progress.NullProgressMonitor;
 public final class GetMapHandler {
 
         /**
-         * Receives all the getMap request parameters from getMapUrlParser and
-         * turns them into acceptable objects for the renderer to process, then
-         * writes the rendrer image into the output stream via MapImageWriter
+         * Receives all the getMap request parameters from getMapParameterParser
+         * and turns them into acceptable objects for the renderer to process,
+         * then writes the rendrer image into the output stream via
+         * MapImageWriter
          *
          * @param layerList contains the names of requested layers
          * @param styleList contains the names of the desired se files (must be
@@ -264,7 +265,7 @@ public final class GetMapHandler {
          * @param serverStyles
          * @throws WMSException
          */
-        public static void getMapUrlParser(Map<String, String[]> queryParameters, OutputStream output, WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException {
+        public static void getMapParameterParser(Map<String, String[]> queryParameters, OutputStream output, WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException {
 
                 String[] layerList = new String[0];
                 String[] styleList = new String[0];
@@ -340,16 +341,6 @@ public final class GetMapHandler {
                 }
 
                 getMap(layerList, styleList, crs, bbox, width, height, pixelSize, imageFormat, transparent, bgColor, sld, exceptionsFormat, output, wmsResponse, serverStyles);
-        }
-
-        /**
-         * Parses the parameters of a getMap request from the post request (in
-         * XML format) and gives them to the getMap method
-         *
-         * @param queryString
-         * @param print
-         */
-        public static void getMapXmlParser(String queryString, PrintWriter print) {
         }
 
         private GetMapHandler() {

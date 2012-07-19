@@ -40,7 +40,6 @@
  */
 package org.orbisgis.server.wms;
 
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Map;
@@ -85,7 +84,7 @@ public final class WMS {
          * @param wmsResponse
          * @throws WMSException
          */
-        public void processURL(Map<String, String[]> queryParameters, OutputStream output, WMSResponse wmsResponse) throws WMSException {
+        public void processRequests(Map<String, String[]> queryParameters, OutputStream output, WMSResponse wmsResponse) throws WMSException {
 
 
                 //Spliting request parameters to determine the requestType to execute
@@ -98,17 +97,16 @@ public final class WMS {
                         exceptionDescription(wmsResponse, output, "The service specified is either unsupported or wrongly requested. Please specify WMS service as it is the only one supported by this server");
                         return;
                 }
-                
+
                 String version = "undefined";
                 if (queryParameters.containsKey("VERSION")) {
                         version = queryParameters.get("VERSION")[0];
                 }
-                
+
                 String requestType = "undefined";
                 if (queryParameters.containsKey("REQUEST")) {
                         requestType = queryParameters.get("REQUEST")[0];
                 }
-
 
 
                 // In case of a GetMap request, the WMS version is checked as recomended by the standard. If 
@@ -118,7 +116,7 @@ public final class WMS {
                                 exceptionDescription(wmsResponse, output, "The version number is incorrect or unspecified. Please specify 1.3 version number as it is the only supported by this server. ");
                                 return;
                         }
-                        GetMapHandler.getMapUrlParser(queryParameters, output, wmsResponse, this.serverStyles);
+                        GetMapHandler.getMapParameterParser(queryParameters, output, wmsResponse, this.serverStyles);
 
                 } else if (requestType.equalsIgnoreCase("getcapabilities")) {
 
@@ -127,9 +125,6 @@ public final class WMS {
                 } else {
                         exceptionDescription(wmsResponse, output, "The requested request type is not supported or wrongly specified. Please specify either getMap or getCapabilities request as it they are the only two supported by this server. ");
                 }
-        }
-
-        public void processXML(InputStream postStream, OutputStream printStream, WMSResponse wmsResponse) {
         }
 
         /**

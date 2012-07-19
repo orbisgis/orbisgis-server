@@ -55,6 +55,7 @@ import net.opengis.wms.HTTP;
 import net.opengis.wms.Layer;
 import net.opengis.wms.OnlineResource;
 import net.opengis.wms.OperationType;
+import net.opengis.wms.Post;
 import net.opengis.wms.Request;
 import net.opengis.wms.Service;
 import net.opengis.wms.WMSCapabilities;
@@ -74,9 +75,9 @@ import org.orbisgis.core.Services;
  * @author Tony MARTIN
  */
 public final class GetCapabilitiesHandler {
-        
+
         private static final JAXBContext JAXBCONTEXT;
-        
+
         static {
                 try {
                         JAXBCONTEXT = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:net.opengis.wms:oasis.names.tc.ciq.xsdschema.xal._2");
@@ -84,6 +85,7 @@ public final class GetCapabilitiesHandler {
                         throw new RuntimeException(ex);
                 }
         }
+
         /**
          * Handles the getCapabilities request and gives the XML formated server
          * capabilities to the outputStream
@@ -175,6 +177,9 @@ public final class GetCapabilitiesHandler {
                 get.setOnlineResource(oRMap);
                 HTTP http = new HTTP();
                 http.setGet(get);
+                Post post = new Post();
+                post.setOnlineResource(oRMap);
+                http.setPost(post);
                 DCPType dcpType = new DCPType();
                 dcpType.setHTTP(http);
                 opMap.getDCPType().add(dcpType);
@@ -190,6 +195,9 @@ public final class GetCapabilitiesHandler {
                 getCap.setOnlineResource(oRCap);
                 HTTP httpCap = new HTTP();
                 httpCap.setGet(getCap);
+                Post postCap = new Post();
+                postCap.setOnlineResource(oRMap);
+                http.setPost(postCap);
                 DCPType dcpTypeCap = new DCPType();
                 dcpTypeCap.setHTTP(httpCap);
                 opCap.getDCPType().add(dcpTypeCap);
@@ -205,6 +213,9 @@ public final class GetCapabilitiesHandler {
                 getFeature.setOnlineResource(oRFeature);
                 HTTP httpFeature = new HTTP();
                 httpFeature.setGet(getFeature);
+                Post postFeature = new Post();
+                postFeature.setOnlineResource(oRMap);
+                http.setPost(postFeature);
                 DCPType dcpTypeFeature = new DCPType();
                 dcpTypeFeature.setHTTP(httpFeature);
                 opFeature.getDCPType().add(dcpTypeFeature);
@@ -213,7 +224,7 @@ public final class GetCapabilitiesHandler {
 
                 c.setRequest(req);
 
-                
+
                 cap.setCapability(c);
 
                 try {

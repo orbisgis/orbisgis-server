@@ -54,8 +54,10 @@ import javax.media.jai.JAI;
  */
 public final class MapImageWriter {
 
-        //We store here the formats currently supported. 
-        public static final String[] FORMATS = {"image/jpeg", "image/png"};
+        /**
+         * Supported image formats
+         */
+        static final String[] FORMATS = {"image/jpeg", "image/png"};
 
         private MapImageWriter() {
         }
