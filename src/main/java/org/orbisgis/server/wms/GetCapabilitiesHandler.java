@@ -83,7 +83,7 @@ import scala.actors.threadpool.Arrays;
 public final class GetCapabilitiesHandler {
 
         private Map<String, Layer> layerMap = new HashMap<String, Layer>();
-        private final JAXBContext JAXBCONTEXT;
+        private final JAXBContext jaxbContext;
         private List<String> authCRS;
 
         /**
@@ -250,7 +250,7 @@ public final class GetCapabilitiesHandler {
 
                 try {
                         //Marshalling the WMS Capabilities into an XML response
-                        Marshaller marshaller = JAXBCONTEXT.createMarshaller();
+                        Marshaller marshaller = jaxbContext.createMarshaller();
                         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
                         wmsResponse.setContentType("text/xml;charset=UTF-8");
@@ -267,7 +267,7 @@ public final class GetCapabilitiesHandler {
 
         GetCapabilitiesHandler() {
                 try {
-                        JAXBCONTEXT = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:net.opengis.wms:oasis.names.tc.ciq.xsdschema.xal._2");
+                        jaxbContext = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:net.opengis.wms:oasis.names.tc.ciq.xsdschema.xal._2");
                 } catch (JAXBException ex) {
                         throw new RuntimeException(ex);
                 }

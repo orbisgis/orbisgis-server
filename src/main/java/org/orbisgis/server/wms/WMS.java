@@ -157,6 +157,14 @@ public final class WMS {
                 exceptionDescription(wmsResponse, output, errorMessage, 400);
         }
         
+        /**
+         * Generic error generation depending on the error code given
+         * 
+         * @param wmsResponse
+         * @param output
+         * @param errorMessage
+         * @param code
+         */
         public static void exceptionDescription(WMSResponse wmsResponse, OutputStream output, String errorMessage, int code) {
                 PrintWriter out = new PrintWriter(output);
                 wmsResponse.setContentType("text/xml;charset=UTF-8");

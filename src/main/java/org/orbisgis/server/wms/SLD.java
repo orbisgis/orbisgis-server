@@ -219,9 +219,6 @@ public class SLD {
                                 }
                         }
 
-
-
-
                         this.layers.add(sldLayer);
 
                 }
