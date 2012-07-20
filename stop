@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+
+file="RUNNING_PID"
+
+if [ -e $file ]
+then
+  cat $file | xargs kill
+  echo "Stopped"
+else
+  echo "Not running"
+fi
