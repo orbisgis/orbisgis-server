@@ -139,7 +139,7 @@ object Application extends Controller {
     def getImage: Array[Byte] = {
       // ByteArray for now.
       val out = new ByteArrayOutputStream
-      wmsCt.processURL(request.queryString.map(a => (a._1, a._2.toArray)), out, new res)
+      wmsCt.processRequests(request.queryString.map(a => (a._1, a._2.toArray)), out, new res)
       val b = out.toByteArray()
       out.close()
       b
