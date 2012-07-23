@@ -16,7 +16,6 @@ object ApplicationBuild extends Build {
     val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
        resolvers ++= Seq( "IRSTV" at "http://repo.orbisgis.org",
         "Local repo" at "file://"+Path.userHome.absolutePath+"/.m2/repository"),
-        unmanagedSourceDirectories in Compile <+= baseDirectory.apply(b => new File(b, "wms/src/main/java")),
 	javacOptions ++= Seq("-source", "1.6")
     )
 }
