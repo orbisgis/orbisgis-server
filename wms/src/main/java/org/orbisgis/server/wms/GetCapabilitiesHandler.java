@@ -218,7 +218,8 @@ public final class GetCapabilitiesHandler {
                 }
         }
         
-        GetCapabilitiesHandler() {
+        GetCapabilitiesHandler(Map<String, Layer> lMap) {
+                layerMap = lMap;
                 try {
                         jaxbContext = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:net.opengis.wms:oasis.names.tc.ciq.xsdschema.xal._2");
                 } catch (JAXBException ex) {

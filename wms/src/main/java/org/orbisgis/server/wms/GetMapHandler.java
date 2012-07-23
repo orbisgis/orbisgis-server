@@ -49,6 +49,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.util.Map;
+import net.opengis.wms.Layer;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
 import org.orbisgis.core.layerModel.ILayer;
@@ -69,6 +70,8 @@ import org.orbisgis.progress.NullProgressMonitor;
  * @author maxence, Tony MARTIN
  */
 public final class GetMapHandler {
+
+        private Map<String, Layer> layerMap;
 
         /**
          * Receives all the getMap request parameters from getMapParameterParser
@@ -99,7 +102,7 @@ public final class GetMapHandler {
          * @param serverStyles
          * @throws WMSException
          */
-        public static void getMap(String[] layerList, String[] styleList, String crs,
+        public void getMap(String[] layerList, String[] styleList, String crs,
                 double[] bbox, int width, int height, double pixelSize, String imageFormat,
                 boolean transparent, String bgColor, String stringSLD, String exceptionsFormat, OutputStream output,
                 WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException {
@@ -122,7 +125,7 @@ public final class GetMapHandler {
                                         //Create the Ilayer with given layer name
                                         String layer = layerList[i];
                                         ILayer iLayer = dataManager.createLayer(layer);
-
+                                        
                                         //then adding the Ilayer to the layers to render list
                                         layers.addLayer(iLayer);
                                 }
@@ -265,7 +268,7 @@ public final class GetMapHandler {
          * @param serverStyles
          * @throws WMSException
          */
-        public static void getMapParameterParser(Map<String, String[]> queryParameters, OutputStream output, WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException {
+        public void getMapParameterParser(Map<String, String[]> queryParameters, OutputStream output, WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException {
 
                 String[] layerList = new String[0];
                 String[] styleList = new String[0];
@@ -343,6 +346,7 @@ public final class GetMapHandler {
                 getMap(layerList, styleList, crs, bbox, width, height, pixelSize, imageFormat, transparent, bgColor, sld, exceptionsFormat, output, wmsResponse, serverStyles);
         }
 
-        private GetMapHandler() {
+        GetMapHandler(Map<String, Layer> lMap) {
+                layerMap = lMap;
         }
 }
