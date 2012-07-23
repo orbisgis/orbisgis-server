@@ -11,7 +11,8 @@ object Global extends GlobalSettings {
     val c = new CoreWorkspace()
     c.setWorkspaceFolder("workspace")
 
-    Application.wmsCt.init(c, Application.loadStyles)
+    Application.loadStyles
+    Application.wmsCt.init(c, Application.styles)
   }
 
   override def onStop(app: Application) {

@@ -3,6 +3,7 @@ package controllers
 import play.api._
 import play.api.mvc._
 import scala.collection.JavaConversions._
+import scala.collection.mutable.{Map => MutableMap}
 import org.orbisgis.server.wms.WMS
 import java.io.File
 import java.io.ByteArrayOutputStream
@@ -23,14 +24,20 @@ object Application extends Controller {
   // WMS entry point
   val wmsCt = new WMS
   // current SourceManager
+
+  val styles: MutableMap[String, Style] = MutableMap.empty
+
   lazy val sm = Services.getService(classOf[DataManager]).getSourceManager()
 
   // gets the style map from the local fileSystem
-  def loadStyles = {
-    Map(styleDir.listFiles.toSeq.filter(_.getName.endsWith(".se")).map { f =>
+  def loadStyles {
+    if (!styleDir.exists) throw new IllegalStateException(styleDir.getAbsolutePath + " does not exist!")
+
+    styles.clear
+    styles ++= (styleDir.listFiles.toSeq.filter(_.getName.endsWith(".se")).map { f =>
       (f.getName.substring(0, f.getName.length - 3),
-        new Style(null, new File(styleDir, f.getName).getAbsolutePath))
-    }:_*)
+        new Style(null, f.getAbsolutePath))
+    })
   }
 
   /**
@@ -80,9 +87,11 @@ object Application extends Controller {
       Redirect(routes.Application.index),
       style ⇒ {
         val source = new File(style)
-        if (source.exists()) {
+        if (source.exists() && source.getName.endsWith(".se")) {
           val target = new File(styleDir, source.getName())
           FileUtils.copy(source, target)
+	  styles.put(target.getName.substring(0, target.getName.length - 3),
+            new Style(null, target.getAbsolutePath))
         }
         Redirect(routes.Application.index)
       })
@@ -95,6 +104,7 @@ object Application extends Controller {
     val source = new File(styleDir, name)
     if (source.exists()) {
       source.delete()
+      styles.remove(name)
     }
 
     Redirect(routes.Application.index)
@@ -109,6 +119,7 @@ object Application extends Controller {
     renameForm.bindFromRequest.fold(h ⇒ BadRequest, name ⇒ {
       val old = new File(styleDir, oldname)
       old.renameTo(new File(styleDir, name))
+      styles.put(name, styles.remove(oldname).get)
       Redirect(routes.Application.index)
     })
   }
@@ -172,7 +183,7 @@ object Application extends Controller {
   */
   def clearStyles = Action {
     styleDir.listFiles() foreach (f ⇒ if (f.isFile()) f.delete())
-
+    styles.clear
     Redirect(routes.Application.index)
   }
 }
