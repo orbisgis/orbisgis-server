@@ -132,7 +132,7 @@ public final class GetMapHandler {
                                         ILayer iLayer;
 
                                         //Checking if the layer CRS matches the requested one
-                                        if (crs != null && layerMap.containsKey(layer)) {
+                                        if (layerMap.containsKey(layer)) {
                                                 String layerCRS = layerMap.get(layer).getCRS().get(0);
                                                 if (layerCRS.equals(crs)) {
                                                         iLayer = dataManager.createLayer(layer);
@@ -309,6 +309,8 @@ public final class GetMapHandler {
 
                 if (queryParameters.containsKey("CRS")) {
                         crs = queryParameters.get("CRS")[0];
+                } else {
+                        WMS.exceptionDescription(wmsResponse, output, "No CRS has been declared");
                 }
 
                 if (queryParameters.containsKey("BBOX")) {
