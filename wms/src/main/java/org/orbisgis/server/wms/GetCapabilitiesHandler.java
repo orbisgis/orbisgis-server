@@ -238,8 +238,7 @@ public final class GetCapabilitiesHandler {
                         public void sourceAdded(SourceEvent e) {
                                 String name = e.getName();
                                 if (e.isWellKnownName() && !sm.getSource(name).isSystemTableSource()) {
-                                        if (layerMap.containsKey(name)) {
-                                        } else {
+                                        if (!layerMap.containsKey(name)) {
                                                 try {
                                                         Layer layer = new Layer();
                                                         layer.setName(name);
@@ -285,21 +284,16 @@ public final class GetCapabilitiesHandler {
                         @Override
                         public void sourceRemoved(SourceRemovalEvent e) {
                                 String name = e.getName();
-                                if (!sm.getSource(name).isSystemTableSource()) {
-                                        if (layerMap.containsKey(name)) {
-                                                layerMap.remove(name);
-                                        }
-                                }
+                                layerMap.remove(name);
                         }
-                        
+
                         @Override
                         public void sourceNameChanged(SourceEvent e) {
                                 String name = e.getName();
                                 String newName = e.getNewName();
                                 if (!sm.getSource(name).isSystemTableSource()) {
                                         if (layerMap.containsKey(name)) {
-                                                layerMap.put(newName, layerMap.get(name));
-                                                layerMap.remove(name);
+                                                layerMap.put(newName, layerMap.remove(name));
                                         } else {
                                                 
                                         }

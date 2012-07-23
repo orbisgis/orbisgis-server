@@ -44,7 +44,6 @@ object Application extends Controller {
   * Manage page action.
   */
   def index = Action {
-    val sm = Services.getService(classOf[DataManager]).getSourceManager()
     val ss = sm.getSourceNames().toSeq
 
     val layers = ss.map(s ⇒ sm.getSource(s)).collect{ case s if !s.isSystemTableSource && s.isFileSource() ⇒ (s.getName(), s.getFile()) }
