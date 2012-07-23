@@ -72,6 +72,7 @@ object Application extends Controller {
           if (l.exists()) {
             val name = FileUtils.getFileNameWithoutExtensionU(l)
             sm.register(name, l)
+	    sm.saveStatus
           }
           Redirect(routes.Application.index)
         } catch {
@@ -129,7 +130,7 @@ object Application extends Controller {
   */
   def removeFile(name: String) = Action { request ⇒
     sm.remove(name)
-
+    sm.saveStatus
     Redirect(routes.Application.index)
   }
 
@@ -174,7 +175,7 @@ object Application extends Controller {
   */
   def clearFiles = Action {
     sm.removeAll()
-
+    sm.saveStatus
     Redirect(routes.Application.index)
   }
 
