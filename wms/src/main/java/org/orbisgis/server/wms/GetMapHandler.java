@@ -48,7 +48,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import net.opengis.wms.Layer;
+import org.gdms.source.SourceManager;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
 import org.orbisgis.core.layerModel.ILayer;
@@ -69,6 +73,8 @@ import org.orbisgis.progress.NullProgressMonitor;
  * @author maxence, Tony MARTIN
  */
 public final class GetMapHandler {
+
+        private Map<String, Layer> layerMap;
 
         /**
          * Receives all the getMap request parameters from getMapParameterParser
@@ -99,7 +105,7 @@ public final class GetMapHandler {
          * @param serverStyles
          * @throws WMSException
          */
-        public static void getMap(String[] layerList, String[] styleList, String crs,
+        public void getMap(String[] layerList, String[] styleList, String crs,
                 double[] bbox, int width, int height, double pixelSize, String imageFormat,
                 boolean transparent, String bgColor, String stringSLD, String exceptionsFormat, OutputStream output,
                 WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException {
@@ -108,6 +114,8 @@ public final class GetMapHandler {
                 Double dpi = 25.4 / pixelSize;
 
                 DataManager dataManager = Services.getService(DataManager.class);
+
+                List<String> newLayers = new ArrayList<String>();
 
                 LayerCollection layers = new LayerCollection("Map");
 
@@ -121,9 +129,23 @@ public final class GetMapHandler {
                                 for (i = 0; i < layerList.length; i++) {
                                         //Create the Ilayer with given layer name
                                         String layer = layerList[i];
-                                        ILayer iLayer = dataManager.createLayer(layer);
+                                        ILayer iLayer;
 
-                                        //then adding the Ilayer to the layers to render list
+                                        //Checking if the layer CRS matches the requested one
+                                        if (layerMap.containsKey(layer)) {
+                                                String layerCRS = layerMap.get(layer).getCRS().get(0);
+                                                if (layerCRS.equals(crs)) {
+                                                        iLayer = dataManager.createLayer(layer);
+                                                } else {
+                                                        String newLayer = project(layer, crs);
+                                                        iLayer = dataManager.createLayer(newLayer);
+                                                        newLayers.add(newLayer);
+                                                }
+                                        } else {
+                                                throw new LayerException();
+                                        }
+
+                                        //Then adding the Ilayer to the layers to render list
                                         layers.addLayer(iLayer);
                                 }
                         } catch (LayerException e) {
@@ -247,6 +269,10 @@ public final class GetMapHandler {
                 } catch (LayerException lEx) {
                         throw new WMSException(lEx);
                 } finally {
+                        SourceManager sManager = dataManager.getSourceManager();
+                        for (String s : newLayers) {
+                                sManager.delete(s);
+                        }
                         try {
                                 layers.close();
                         } catch (LayerException ex1) {
@@ -265,7 +291,7 @@ public final class GetMapHandler {
          * @param serverStyles
          * @throws WMSException
          */
-        public static void getMapParameterParser(Map<String, String[]> queryParameters, OutputStream output, WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException {
+        public void getMapParameterParser(Map<String, String[]> queryParameters, OutputStream output, WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException {
 
                 String[] layerList = new String[0];
                 String[] styleList = new String[0];
@@ -283,6 +309,8 @@ public final class GetMapHandler {
 
                 if (queryParameters.containsKey("CRS")) {
                         crs = queryParameters.get("CRS")[0];
+                } else {
+                        WMS.exceptionDescription(wmsResponse, output, "No CRS has been declared");
                 }
 
                 if (queryParameters.containsKey("BBOX")) {
@@ -343,6 +371,11 @@ public final class GetMapHandler {
                 getMap(layerList, styleList, crs, bbox, width, height, pixelSize, imageFormat, transparent, bgColor, sld, exceptionsFormat, output, wmsResponse, serverStyles);
         }
 
-        private GetMapHandler() {
+        GetMapHandler(Map<String, Layer> lMap) {
+                layerMap = lMap;
+        }
+
+        private String project(String layer, String crs) {
+                throw new UnsupportedOperationException("Not yet implemented");
         }
 }

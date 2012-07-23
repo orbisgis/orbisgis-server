@@ -42,7 +42,9 @@ package org.orbisgis.server.wms;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.Map;
+import net.opengis.wms.Layer;
 import org.orbisgis.core.context.main.MainContext;
 import org.orbisgis.core.renderer.se.Style;
 import org.orbisgis.core.workspace.CoreWorkspace;
@@ -55,7 +57,9 @@ public final class WMS {
 
         private MainContext context;
         private Map<String, Style> serverStyles;
+        private Map<String, Layer> layerMap;
         private GetCapabilitiesHandler getCapHandler;
+        private GetMapHandler getMap;
         
         /**
          * Initialize the context (containing datasources, datamanager...)
@@ -66,7 +70,9 @@ public final class WMS {
         public void init(CoreWorkspace coreWorkspace, Map<String, Style> serverStyles) {
                 
                 context = new MainContext(false, coreWorkspace);
-                getCapHandler = new GetCapabilitiesHandler();
+                layerMap = new HashMap<String,Layer>();
+                getCapHandler = new GetCapabilitiesHandler(layerMap);
+                getMap = new GetMapHandler(layerMap);
                 this.serverStyles = serverStyles;
         }
 
@@ -118,7 +124,7 @@ public final class WMS {
                                 exceptionDescription(wmsResponse, output, "The version number is incorrect or unspecified. Please specify 1.3 version number as it is the only supported by this server. ");
                                 return;
                         }
-                        GetMapHandler.getMapParameterParser(queryParameters, output, wmsResponse, this.serverStyles);
+                        getMap.getMapParameterParser(queryParameters, output, wmsResponse, this.serverStyles);
 
                 } else if (requestType.equalsIgnoreCase("getcapabilities")) {
 
