@@ -63,6 +63,7 @@ import net.opengis.wms.OperationType;
 import net.opengis.wms.Post;
 import net.opengis.wms.Request;
 import net.opengis.wms.Service;
+import net.opengis.wms.Style;
 import net.opengis.wms.WMSCapabilities;
 import org.gdms.data.DataSource;
 import org.gdms.data.DataSourceCreationException;
@@ -88,9 +89,11 @@ import scala.actors.threadpool.Arrays;
 public final class GetCapabilitiesHandler {
         
         private Map<String, Layer> layerMap = new HashMap<String, Layer>();
+        private Map<String, String[]> layerStyles;
+        private Map<String, Style> serverStyles;
         private final JAXBContext jaxbContext;
         private List<String> authCRS;
-
+        
         /**
          * Handles the getCapabilities request and gives the XML formated server
          * capabilities to the outputStream
@@ -101,8 +104,8 @@ public final class GetCapabilitiesHandler {
         void getCap(OutputStream output, WMSResponse wmsResponse) throws WMSException {
                 PrintWriter out = new PrintWriter(output);
                 WMSCapabilities cap = new WMSCapabilities();
-
-
+                
+                
                 //Setting service WMS metadata
                 Service s = new Service();
                 s.setName("WMS");
@@ -116,7 +119,7 @@ public final class GetCapabilitiesHandler {
                 ContactInformation cI = new ContactInformation();
                 cI.setContactElectronicMailAddress("info@orbisgis.org");
                 s.setContactInformation(cI);
-                
+               
                 cap.setService(s);
 
                 //Setting Capability parameters
@@ -218,8 +221,9 @@ public final class GetCapabilitiesHandler {
                 }
         }
         
-        GetCapabilitiesHandler(Map<String, Layer> lMap) {
+        GetCapabilitiesHandler(Map<String, Layer> lMap, Map<String, String[]> lS) {
                 layerMap = lMap;
+                layerStyles = lS;
                 try {
                         jaxbContext = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:net.opengis.wms:oasis.names.tc.ciq.xsdschema.xal._2");
                 } catch (JAXBException ex) {
@@ -269,6 +273,16 @@ public final class GetCapabilitiesHandler {
                                                         bBox.setMaxy(env.getMaxY());
                                                         layer.getBoundingBox().add(bBox);
                                                         layer.setQueryable(true);
+                                                        
+                                                        if (layerStyles.containsKey(name)){
+                                                                for (int i = 0; i < layerStyles.get(name).length; i++) {
+                                                                        Style style = new Style();
+                                                                        String styleName = layerStyles.get(name)[i];
+                                                                        style.setName(styleName);
+                                                                        style.setTitle(styleName);
+                                                                        layer.getStyle().add(style);
+                                                                }
+                                                        }
                                                         layerMap.put(name, layer);
                                                 } catch (NoSuchTableException ex) {
                                                         Logger.getLogger(GetCapabilitiesHandler.class.getName()).log(Level.SEVERE, null, ex);
@@ -291,11 +305,10 @@ public final class GetCapabilitiesHandler {
                         public void sourceNameChanged(SourceEvent e) {
                                 String name = e.getName();
                                 String newName = e.getNewName();
+                                
                                 if (!sm.getSource(name).isSystemTableSource()) {
                                         if (layerMap.containsKey(name)) {
                                                 layerMap.put(newName, layerMap.remove(name));
-                                        } else {
-                                                
                                         }
                                 }
                         }
