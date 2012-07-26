@@ -46,8 +46,6 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -303,11 +301,10 @@ public final class GetCapabilitiesHandler {
                                 String name = e.getName();
                                 String newName = e.getNewName();
 
-                                if (!sm.getSource(name).isSystemTableSource()) {
-                                        if (layerMap.containsKey(name)) {
-                                                layerMap.put(newName, layerMap.remove(name));
-                                        }
+                                if (!sm.getSource(name).isSystemTableSource() && layerMap.containsKey(name)) {
+                                        layerMap.put(newName, layerMap.remove(name));
                                 }
+
                         }
                 };
 
