@@ -127,9 +127,7 @@ public final class GetCapabilitiesHandler {
                 //Setting Layers capabilities
                 Capability c = new Capability();
                 Layer availableLayers = new Layer();
-                System.out.println(layerMap.values());
                 for (Layer e : layerMap.values()) {
-                        System.out.println(e);
                         availableLayers.getLayer().add(e);
                 }
                 //Server supported CRS
@@ -244,11 +242,9 @@ public final class GetCapabilitiesHandler {
                         public void sourceAdded(SourceEvent e) {
                                 String name = e.getName();
                                 if (e.isWellKnownName() && !sm.getSource(name).isSystemTableSource()) {
-                                        System.out.println("Source added entry");
 
                                         if (!layerMap.containsKey(name)) {
                                                 try {
-                                                        System.out.println(name);
                                                         Layer layer = new Layer();
                                                         layer.setName(name);
                                                         layer.setTitle(name);
@@ -271,14 +267,12 @@ public final class GetCapabilitiesHandler {
                                                         } else {
                                                                 return;
                                                         }
-                                                        System.out.println("BBox Setting");
                                                         bBox.setMaxx(env.getMaxX());
                                                         bBox.setMinx(env.getMinX());
                                                         bBox.setMiny(env.getMinY());
                                                         bBox.setMaxy(env.getMaxY());
                                                         layer.getBoundingBox().add(bBox);
                                                         layer.setQueryable(true);
-                                                        System.out.println("layer styles ?");
                                                         if (layerStyles.containsKey(name)) {
                                                                 for (int i = 0; i < layerStyles.get(name).length; i++) {
                                                                         Style style = new Style();
@@ -288,9 +282,7 @@ public final class GetCapabilitiesHandler {
                                                                         layer.getStyle().add(style);
                                                                 }
                                                         }
-                                                        System.out.println("adding layer");
                                                         layerMap.put(name, layer);
-                                                        System.out.println("Source added");
                                                 } catch (NoSuchTableException ex) {
                                                 } catch (DataSourceCreationException ex) {
                                                 } catch (DriverException ex) {
