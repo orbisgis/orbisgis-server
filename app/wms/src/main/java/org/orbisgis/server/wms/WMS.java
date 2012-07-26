@@ -60,20 +60,23 @@ public final class WMS {
         private Map<String, Layer> layerMap;
         private GetCapabilitiesHandler getCapHandler;
         private GetMapHandler getMap;
-        
+        private Map<String, String[]> layerStyles;
+
         /**
          * Initialize the context (containing datasources, datamanager...)
          *
          * @param coreWorkspace
-         * @param serverStyles
+         * @param sStyles 
          */
-        public void init(CoreWorkspace coreWorkspace, Map<String, Style> serverStyles) {
+        public void init(CoreWorkspace coreWorkspace, Map<String, Style> sStyles) {
+                
+                layerStyles = new HashMap<String, String[]>();
                 
                 context = new MainContext(false, coreWorkspace);
-                layerMap = new HashMap<String,Layer>();
-                getCapHandler = new GetCapabilitiesHandler(layerMap);
+                layerMap = new HashMap<String, Layer>();
                 getMap = new GetMapHandler(layerMap);
-                this.serverStyles = serverStyles;
+                this.serverStyles = sStyles;
+                getCapHandler = new GetCapabilitiesHandler(layerMap, layerStyles);
         }
 
         /**
@@ -124,7 +127,7 @@ public final class WMS {
                                 exceptionDescription(wmsResponse, output, "The version number is incorrect or unspecified. Please specify 1.3 version number as it is the only supported by this server. ");
                                 return;
                         }
-                        getMap.getMapParameterParser(queryParameters, output, wmsResponse, this.serverStyles);
+                        getMap.getMapParameterParser(queryParameters, output, wmsResponse, serverStyles);
 
                 } else if (requestType.equalsIgnoreCase("getcapabilities")) {
 
@@ -162,10 +165,10 @@ public final class WMS {
         public static void exceptionDescription(WMSResponse wmsResponse, OutputStream output, String errorMessage) {
                 exceptionDescription(wmsResponse, output, errorMessage, 400);
         }
-        
+
         /**
          * Generic error generation depending on the error code given
-         * 
+         *
          * @param wmsResponse
          * @param output
          * @param errorMessage
