@@ -87,13 +87,13 @@ import scala.actors.threadpool.Arrays;
  * @author Tony MARTIN
  */
 public final class GetCapabilitiesHandler {
-        
+
         private Map<String, Layer> layerMap = new HashMap<String, Layer>();
         private Map<String, String[]> layerStyles;
         private Map<String, Style> serverStyles;
         private final JAXBContext jaxbContext;
         private List<String> authCRS;
-        
+
         /**
          * Handles the getCapabilities request and gives the XML formated server
          * capabilities to the outputStream
@@ -104,22 +104,22 @@ public final class GetCapabilitiesHandler {
         void getCap(OutputStream output, WMSResponse wmsResponse) throws WMSException {
                 PrintWriter out = new PrintWriter(output);
                 WMSCapabilities cap = new WMSCapabilities();
-                
-                
+
+
                 //Setting service WMS metadata
                 Service s = new Service();
                 s.setName("WMS");
                 s.setTitle("WMS Service for OrbisWMS");
-                
+
                 OnlineResource oR = new OnlineResource();
                 oR.setHref("http://www.orbisgis.org");
                 oR.setTitle("OrbisGIS Website");
                 s.setOnlineResource(oR);
-                
+
                 ContactInformation cI = new ContactInformation();
                 cI.setContactElectronicMailAddress("info@orbisgis.org");
                 s.setContactInformation(cI);
-               
+
                 cap.setService(s);
 
                 //Setting Capability parameters
@@ -127,16 +127,18 @@ public final class GetCapabilitiesHandler {
                 //Setting Layers capabilities
                 Capability c = new Capability();
                 Layer availableLayers = new Layer();
+                System.out.println(layerMap.values());
                 for (Layer e : layerMap.values()) {
+                        System.out.println(e);
                         availableLayers.getLayer().add(e);
                 }
                 //Server supported CRS
 
-                
+
                 availableLayers.getCRS().addAll(authCRS);
-                
+
                 availableLayers.setName("Server available layers");
-                
+
                 c.setLayer(availableLayers);
 
                 //Setting the request capabilities
@@ -197,21 +199,21 @@ public final class GetCapabilitiesHandler {
                 dcpTypeFeature.setHTTP(httpFeature);
                 opFeature.getDCPType().add(dcpTypeFeature);
                 req.setGetFeatureInfo(opFeature);
-                
-                
+
+
                 c.setRequest(req);
-                
-                
+
+
                 cap.setCapability(c);
-                
+
                 try {
                         //Marshalling the WMS Capabilities into an XML response
                         Marshaller marshaller = jaxbContext.createMarshaller();
                         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-                        
+
                         wmsResponse.setContentType("text/xml;charset=UTF-8");
                         marshaller.marshal(cap, out);
-                        
+
                 } catch (Exception ex) {
                         wmsResponse.setContentType("text/xml;charset=UTF-8");
                         wmsResponse.setResponseCode(500);
@@ -220,7 +222,7 @@ public final class GetCapabilitiesHandler {
                         ex.printStackTrace(out);
                 }
         }
-        
+
         GetCapabilitiesHandler(Map<String, Layer> lMap, Map<String, String[]> lS) {
                 layerMap = lMap;
                 layerStyles = lS;
@@ -229,21 +231,24 @@ public final class GetCapabilitiesHandler {
                 } catch (JAXBException ex) {
                         throw new RuntimeException(ex);
                 }
-                
+
                 String[] codes = Registry.getAvailableCodes("EPSG", true);
                 authCRS = Arrays.asList(codes);
-                
+
                 final DataSourceFactory dsf = Services.getService(DataManager.class).getDataSourceFactory();
                 final SourceManager sm = dsf.getSourceManager();
-                
+
                 SourceListener sourceListener = new SourceListener() {
-                        
+
                         @Override
                         public void sourceAdded(SourceEvent e) {
                                 String name = e.getName();
                                 if (e.isWellKnownName() && !sm.getSource(name).isSystemTableSource()) {
+                                        System.out.println("Source added entry");
+
                                         if (!layerMap.containsKey(name)) {
                                                 try {
+                                                        System.out.println(name);
                                                         Layer layer = new Layer();
                                                         layer.setName(name);
                                                         layer.setTitle(name);
@@ -266,15 +271,15 @@ public final class GetCapabilitiesHandler {
                                                         } else {
                                                                 return;
                                                         }
-                                                        
+                                                        System.out.println("BBox Setting");
                                                         bBox.setMaxx(env.getMaxX());
                                                         bBox.setMinx(env.getMinX());
                                                         bBox.setMiny(env.getMinY());
                                                         bBox.setMaxy(env.getMaxY());
                                                         layer.getBoundingBox().add(bBox);
                                                         layer.setQueryable(true);
-                                                        
-                                                        if (layerStyles.containsKey(name)){
+                                                        System.out.println("layer styles ?");
+                                                        if (layerStyles.containsKey(name)) {
                                                                 for (int i = 0; i < layerStyles.get(name).length; i++) {
                                                                         Style style = new Style();
                                                                         String styleName = layerStyles.get(name)[i];
@@ -283,18 +288,17 @@ public final class GetCapabilitiesHandler {
                                                                         layer.getStyle().add(style);
                                                                 }
                                                         }
+                                                        System.out.println("adding layer");
                                                         layerMap.put(name, layer);
+                                                        System.out.println("Source added");
                                                 } catch (NoSuchTableException ex) {
-                                                        Logger.getLogger(GetCapabilitiesHandler.class.getName()).log(Level.SEVERE, null, ex);
                                                 } catch (DataSourceCreationException ex) {
-                                                        Logger.getLogger(GetCapabilitiesHandler.class.getName()).log(Level.SEVERE, null, ex);
                                                 } catch (DriverException ex) {
-                                                        Logger.getLogger(GetCapabilitiesHandler.class.getName()).log(Level.SEVERE, null, ex);
                                                 }
                                         }
                                 }
                         }
-                        
+
                         @Override
                         public void sourceRemoved(SourceRemovalEvent e) {
                                 String name = e.getName();
@@ -305,7 +309,7 @@ public final class GetCapabilitiesHandler {
                         public void sourceNameChanged(SourceEvent e) {
                                 String name = e.getName();
                                 String newName = e.getNewName();
-                                
+
                                 if (!sm.getSource(name).isSystemTableSource()) {
                                         if (layerMap.containsKey(name)) {
                                                 layerMap.put(newName, layerMap.remove(name));
@@ -313,14 +317,14 @@ public final class GetCapabilitiesHandler {
                                 }
                         }
                 };
-                
+
                 String[] layerNames = sm.getSourceNames();
                 for (int i = 0; i < layerNames.length; i++) {
                         SourceEvent sEvent = new SourceEvent(layerNames[i], sm.getSource(layerNames[i]).isWellKnownName(), sm);
                         sourceListener.sourceAdded(sEvent);
                 }
-                
+
                 sm.addSourceListener(sourceListener);
-                
+
         }
 }
