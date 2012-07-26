@@ -274,9 +274,10 @@ public final class GetCapabilitiesHandler {
                                                         layer.getBoundingBox().add(bBox);
                                                         layer.setQueryable(true);
                                                         if (layerStyles.containsKey(name)) {
-                                                                for (int i = 0; i < layerStyles.get(name).length; i++) {
+                                                                String[] lStyles = layerStyles.get(name);
+                                                                for (int i = 0; i < lStyles.length; i++) {
                                                                         Style style = new Style();
-                                                                        String styleName = layerStyles.get(name)[i];
+                                                                        String styleName = lStyles[i];
                                                                         style.setName(styleName);
                                                                         style.setTitle(styleName);
                                                                         layer.getStyle().add(style);
