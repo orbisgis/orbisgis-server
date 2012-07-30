@@ -2,15 +2,15 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET  /wms/manage                      		controllers.Application.index
+GET  /wms/manage					controllers.Application.index
 
-GET  /wms/assets/*file               		controllers.Assets.at(path="/public", file)
+GET  /wms/assets/*file					controllers.Assets.at(path="/public", file)
 
-GET  /wms/wms								controllers.WMS.wms
+GET  /wms/wms						controllers.WMS.wms
 
-POST /wms/sources/add						controllers.Application.addFile
+POST /wms/sources/add					controllers.Application.addFile
 
-POST /wms/styles/add						controllers.WMS.addStyle
+POST /wms/styles/add					controllers.WMS.addStyle
 
 GET /wms/sources/remove/:name				controllers.Application.removeFile(name)
 
@@ -18,6 +18,12 @@ GET /wms/styles/remove/:name				controllers.WMS.removeStyle(name)
 
 POST /wms/styles/rename/:name				controllers.WMS.renameStyle(name)
 
-POST /wms/sources/clear						controllers.Application.clearFiles
+POST /wms/sources/clear					controllers.Application.clearFiles
 
-POST /wms/styles/clear						controllers.WMS.clearStyles
+POST /wms/styles/clear					controllers.WMS.clearStyles
+
+GET /wms/api/sources					controllers.API.listSources
+
+POST /wms/api/sources					controllers.API.registerSource
+
+DELETE /wms/api/sources/:name				controllers.API.deleteSource(name)
