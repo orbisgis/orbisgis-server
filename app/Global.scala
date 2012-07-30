@@ -1,5 +1,5 @@
 import play.api._
-import controllers.Application
+import controllers._
 import java.io.File
 import org.orbisgis.core.workspace.CoreWorkspace;
 import scala.collection.JavaConversions._
@@ -11,11 +11,11 @@ object Global extends GlobalSettings {
     val c = new CoreWorkspace()
     c.setWorkspaceFolder("workspace")
 
-    Application.loadStyles
-    Application.wmsCt.init(c, Application.styles)
+    WMS.loadStyles
+    WMS.wmsCt.init(c, WMS.styles)
   }
 
   override def onStop(app: Application) {
-    Application.wmsCt.destroy
+    WMS.wmsCt.destroy
   }
 }

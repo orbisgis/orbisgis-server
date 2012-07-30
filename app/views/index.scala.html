@@ -47,8 +47,8 @@
     <tr>
     <td><b>@l.getName</b></td><td>
      <div class="input-prepend">   
-    @helper.form(action = routes.Application.renameStyle(l.getName), 'class -> "form-inline") {
-         <a class="btn btn-danger" href="@controllers.routes.Application.removeStyle(l.getName)">Remove</a><button class="btn" type="submit">Rename</button><input class="span3" id="newname" name="newname" type="text" placeholder="new@(l.getName)">
+    @helper.form(action = routes.WMS.renameStyle(l.getName), 'class -> "form-inline") {
+         <a class="btn btn-danger" href="@controllers.routes.WMS.removeStyle(l.getName)">Remove</a><button class="btn" type="submit">Rename</button><input class="span3" id="newname" name="newname" type="text" placeholder="new@(l.getName)">
     }
     </div>
     </td>
@@ -56,11 +56,11 @@
     }
     </tbody>
     </table>
-@helper.form(action = routes.Application.clearStyles) {
+@helper.form(action = routes.WMS.clearStyles) {
   <button type='submit' class="btn btn-danger">Clear all</button> <span class="help-inline">This does not delete the original styles.</span>
 }
 <div class="row">
-@helper.form(action = routes.Application.addStyle, 'class -> "form-horizontal well") {
+@helper.form(action = routes.WMS.addStyle, 'class -> "form-horizontal well") {
     @helper.inputText(styleForm("style"), 'class -> "span7", '_label -> "Style file path:",
     'placeholder -> "/home/myusername/mystyle.se", '_showConstraints -> false)
     <button type='submit' class="btn btn-success">Add style</button>
@@ -68,7 +68,7 @@
 </div>
 <h2>Links</h2>
 <ul>
-<li><a href="@controllers.routes.Application.wms?SERVICE=wms&VERSION=1.3&REQUEST=getcapabilities">GetCapabilities</a></li>
+<li><a href="@controllers.routes.WMS.wms?SERVICE=wms&VERSION=1.3&REQUEST=getcapabilities">GetCapabilities</a></li>
 </ul>
 </div>
 }
