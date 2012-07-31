@@ -27,6 +27,9 @@ object WMS extends Controller {
   // current styles
   val styles: MutableMap[String, Style] = MutableMap.empty
   
+  // styles per sources
+  val sourceStyles: MutableMap[String, Array[String]] = MutableMap.empty
+  
   // gets the style map from the local fileSystem
   def loadStyles {
     if (!styleDir.exists) throw new IllegalStateException(styleDir.getAbsolutePath + " does not exist!")

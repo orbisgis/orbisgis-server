@@ -68,9 +68,9 @@ public final class WMS {
          * @param coreWorkspace
          * @param sStyles 
          */
-        public void init(CoreWorkspace coreWorkspace, Map<String, Style> sStyles) {
+        public void init(CoreWorkspace coreWorkspace, Map<String, Style> sStyles, Map<String, String[]> styleForSource) {
                 
-                layerStyles = new HashMap<String, String[]>();
+                layerStyles = styleForSource;
                 
                 context = new MainContext(false, coreWorkspace);
                 layerMap = new HashMap<String, Layer>();

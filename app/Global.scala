@@ -12,7 +12,7 @@ object Global extends GlobalSettings {
     c.setWorkspaceFolder("workspace")
 
     WMS.loadStyles
-    WMS.wmsCt.init(c, WMS.styles)
+    WMS.wmsCt.init(c, WMS.styles, WMS.sourceStyles)
   }
 
   override def onStop(app: Application) {
