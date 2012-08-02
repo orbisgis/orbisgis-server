@@ -19,7 +19,7 @@ import org.orbisgis.utils.FileUtils
 object WMS extends Controller {
   
   // local style directory
-  val styleDir = new File("../styles")
+  val styleDir = new File("styles")
 
   // WMS entry point
   val wmsCt = new JavaWMS
@@ -32,7 +32,9 @@ object WMS extends Controller {
   
   // gets the style map from the local fileSystem
   def loadStyles {
-    if (!styleDir.exists) throw new IllegalStateException(styleDir.getAbsolutePath + " does not exist!")
+    if (!styleDir.exists) {
+      styleDir.mkdirs
+    }
 
     styles.clear
     styles ++= (styleDir.listFiles.toSeq.filter(_.getName.endsWith(".se")).map { f =>
