@@ -78,6 +78,8 @@ public final class WMS {
          *
          * @param coreWorkspace
          * @param sStyles
+         * @param styleForSource  
+
          */
         public void init(CoreWorkspace coreWorkspace, Map<String, Style> sStyles, Map<String, String[]> styleForSource) {
                 
@@ -87,7 +89,6 @@ public final class WMS {
                 
                 // workaround the MainContext hardcoded logger :(
                 initLogger();
-                
                 
                 layerMap = new HashMap<String, Layer>();
                 getMap = new GetMapHandler(layerMap);

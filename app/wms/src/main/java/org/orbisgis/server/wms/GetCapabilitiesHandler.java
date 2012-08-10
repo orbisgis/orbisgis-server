@@ -76,7 +76,7 @@ public final class GetCapabilitiesHandler {
 
         private Map<String, Layer> layerMap = new HashMap<String, Layer>();
         private Map<String, String[]> layerStyles;
-        private Map<String, Style> serverStyles;
+        //private Map<String, Style> serverStyles;
         private final JAXBContext jaxbContext;
         private List<String> authCRS;
 
@@ -227,53 +227,50 @@ public final class GetCapabilitiesHandler {
                         @Override
                         public void sourceAdded(SourceEvent e) {
                                 String name = e.getName();
-                                if (e.isWellKnownName() && !sm.getSource(name).isSystemTableSource()) {
+                                if (e.isWellKnownName() && !sm.getSource(name).isSystemTableSource() && !layerMap.containsKey(name)) {
+                                        try {
+                                                Layer layer = new Layer();
+                                                layer.setName(name);
+                                                layer.setTitle(name);
 
-                                        if (!layerMap.containsKey(name)) {
-                                                try {
-                                                        Layer layer = new Layer();
-                                                        layer.setName(name);
-                                                        layer.setTitle(name);
-
-                                                        //Setting the bouding box data
-                                                        DataSource ds = dsf.getDataSource(name);
-                                                        ds.open();
-                                                        Envelope env = ds.getFullExtent();
-                                                        CoordinateReferenceSystem crs = ds.getCRS();
-                                                        ds.close();
-                                                        BoundingBox bBox = new BoundingBox();
-                                                        if (crs != null) {
-                                                                int epsgCode = crs.getEPSGCode();
-                                                                if (epsgCode != -1) {
-                                                                        bBox.setCRS("EPSG:" + epsgCode);
-                                                                        layer.getCRS().add("EPSG:" + epsgCode);
-                                                                } else {
-                                                                        return;
-                                                                }
+                                                //Setting the bouding box data
+                                                DataSource ds = dsf.getDataSource(name);
+                                                ds.open();
+                                                Envelope env = ds.getFullExtent();
+                                                CoordinateReferenceSystem crs = ds.getCRS();
+                                                ds.close();
+                                                BoundingBox bBox = new BoundingBox();
+                                                if (crs != null) {
+                                                        int epsgCode = crs.getEPSGCode();
+                                                        if (epsgCode != -1) {
+                                                                bBox.setCRS("EPSG:" + epsgCode);
+                                                                layer.getCRS().add("EPSG:" + epsgCode);
                                                         } else {
                                                                 return;
                                                         }
-                                                        bBox.setMaxx(env.getMaxX());
-                                                        bBox.setMinx(env.getMinX());
-                                                        bBox.setMiny(env.getMinY());
-                                                        bBox.setMaxy(env.getMaxY());
-                                                        layer.getBoundingBox().add(bBox);
-                                                        layer.setQueryable(true);
-                                                        if (layerStyles.containsKey(name)) {
-                                                                String[] lStyles = layerStyles.get(name);
-                                                                for (int i = 0; i < lStyles.length; i++) {
-                                                                        Style style = new Style();
-                                                                        String styleName = lStyles[i];
-                                                                        style.setName(styleName);
-                                                                        style.setTitle(styleName);
-                                                                        layer.getStyle().add(style);
-                                                                }
-                                                        }
-                                                        layerMap.put(name, layer);
-                                                } catch (NoSuchTableException ex) {
-                                                } catch (DataSourceCreationException ex) {
-                                                } catch (DriverException ex) {
+                                                } else {
+                                                        return;
                                                 }
+                                                bBox.setMaxx(env.getMaxX());
+                                                bBox.setMinx(env.getMinX());
+                                                bBox.setMiny(env.getMinY());
+                                                bBox.setMaxy(env.getMaxY());
+                                                layer.getBoundingBox().add(bBox);
+                                                layer.setQueryable(true);
+                                                if (layerStyles.containsKey(name)) {
+                                                        String[] lStyles = layerStyles.get(name);
+                                                        for (int i = 0; i < lStyles.length; i++) {
+                                                                Style style = new Style();
+                                                                String styleName = lStyles[i];
+                                                                style.setName(styleName);
+                                                                style.setTitle(styleName);
+                                                                layer.getStyle().add(style);
+                                                        }
+                                                }
+                                                layerMap.put(name, layer);
+                                        } catch (NoSuchTableException ex) {
+                                        } catch (DataSourceCreationException ex) {
+                                        } catch (DriverException ex) {
                                         }
                                 }
                         }
