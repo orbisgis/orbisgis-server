@@ -28,11 +28,18 @@
  */
 package org.orbisgis.server.wms;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 import net.opengis.wms.Layer;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 import org.orbisgis.core.context.main.MainContext;
 import org.orbisgis.core.renderer.se.Style;
 import org.orbisgis.core.workspace.CoreWorkspace;
@@ -50,17 +57,38 @@ public final class WMS {
         private GetMapHandler getMap;
         private Map<String, String[]> layerStyles;
 
+        static {
+                initLogger();
+        }
+        
+        private static void initLogger() {
+                Logger.getRootLogger().removeAllAppenders();
+                PatternLayout p = new PatternLayout("%d %-5p %c{1}: %m%n");
+                try {
+                        BasicConfigurator.configure(new FileAppender(p, "logs/orbisgis-server.log"));
+                        BasicConfigurator.configure(new ConsoleAppender(p));
+                } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                }
+                Logger.getRootLogger().setLevel(Level.INFO);
+        }
+
         /**
          * Initialize the context (containing datasources, datamanager...)
          *
          * @param coreWorkspace
-         * @param sStyles 
+         * @param sStyles
          */
         public void init(CoreWorkspace coreWorkspace, Map<String, Style> sStyles, Map<String, String[]> styleForSource) {
                 
                 layerStyles = styleForSource;
-                
+
                 context = new MainContext(false, coreWorkspace);
+                
+                // workaround the MainContext hardcoded logger :(
+                initLogger();
+                
+                
                 layerMap = new HashMap<String, Layer>();
                 getMap = new GetMapHandler(layerMap);
                 this.serverStyles = sStyles;
