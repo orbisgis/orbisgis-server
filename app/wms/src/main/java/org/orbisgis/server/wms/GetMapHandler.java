@@ -40,7 +40,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import net.opengis.wms.Layer;
+import org.gdms.data.DataSourceFactory;
+import org.gdms.data.file.FileSourceDefinition;
+import org.gdms.driver.DataSet;
+import org.gdms.driver.DriverException;
+import org.gdms.driver.driverManager.DriverManager;
 import org.gdms.source.SourceManager;
+import org.gdms.sql.engine.Engine;
+import org.gdms.sql.engine.SQLStatement;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
 import org.orbisgis.core.layerModel.ILayer;
@@ -125,7 +132,7 @@ public final class GetMapHandler {
                                                 if (layerCRS.equals(crs)) {
                                                         iLayer = dataManager.createLayer(layer);
                                                 } else {
-                                                        String newLayer = project(layer, crs);
+                                                        String newLayer = project(layer, layerCRS, crs);
                                                         iLayer = dataManager.createLayer(newLayer);
                                                         newLayers.add(newLayer);
                                                 }
@@ -363,7 +370,38 @@ public final class GetMapHandler {
                 layerMap = lMap;
         }
 
-        private String project(String layer, String crs) {
-                throw new UnsupportedOperationException("Not yet implemented");
+        private String project(String layer, String sourceCrs, String targetCrs) throws WMSException {
+                DataSourceFactory dsf = Services.getService(DataManager.class).getDataSourceFactory();
+                
+                // maybe we already converted it and there is nothing to do
+                final String newName = layer + "-" + targetCrs;
+                if (!dsf.getSourceManager().exists(newName)) {
+                        SQLStatement reProject;
+                        try {
+                                // maybe this could be factored out, but SQLStatement is not really thread safe...
+                                reProject = Engine.parse("SELECT ST_Transform(the_geom, @{src}, @{tgt}) FROM @{data};", dsf.getProperties());
+                        } catch (Exception ex) {
+                                throw new RuntimeException("Gdms failed to parse the projection query. Shoudln't happen.", ex);
+                        }
+                        
+                        reProject.setFieldParameter("src", sourceCrs);
+                        reProject.setFieldParameter("tgt", targetCrs);
+                        reProject.setTableParameter("data", layer);
+                        reProject.setDataSourceFactory(dsf);
+                        
+                        reProject.prepare();
+                        try {
+                                DataSet d = reProject.execute();
+                                FileSourceDefinition fsd = new FileSourceDefinition(dsf.getTempFile("gdms"), DriverManager.DEFAULT_SINGLE_TABLE_NAME);
+                                fsd.createDataSource(d, new NullProgressMonitor());
+                                dsf.getSourceManager().register(newName, fsd);
+                        } catch (DriverException ex) {
+                                throw new WMSException("Failed to project " + layer + " from " + sourceCrs
+                                        + " to " + targetCrs, ex);
+                        }
+                        reProject.cleanUp();
+                }
+
+                return newName;
         }
 }
