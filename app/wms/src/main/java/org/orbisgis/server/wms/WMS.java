@@ -83,7 +83,7 @@ public final class WMS {
                 
                 layerStyles = styleForSource;
 
-                context = new MainContext(false, coreWorkspace);
+                context = new MainContext(false, coreWorkspace, false);
                 
                 // workaround the MainContext hardcoded logger :(
                 initLogger();
