@@ -28,13 +28,18 @@
 package org.orbisgis.server.wms;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
+import org.gdms.source.SourceManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.orbisgis.core.DataManager;
+import org.orbisgis.core.Services;
 import org.orbisgis.core.renderer.se.Style;
 import org.orbisgis.core.workspace.CoreWorkspace;
+import org.orbisgis.utils.FileUtils;
 
 import static org.junit.Assert.*;
 
@@ -43,112 +48,107 @@ import static org.junit.Assert.*;
  */
 public class WMSTest {
 
+        private File f;
         WMS wms = new WMS();
 
         /**
-         * 
+         *
          * @throws Exception
          */
         @Before
         public void setUp() throws Exception {
+                f = File.createTempFile("wms", null);
+                f.delete();
                 CoreWorkspace c = new CoreWorkspace();
+                c.setWorkspaceFolder(f.getAbsolutePath());
                 wms.init(c, Collections.<String, Style>emptyMap(), Collections.<String, String[]>emptyMap());
+                SourceManager sm = Services.getService(DataManager.class).getSourceManager();
+                sm.register("cantons", new File("/Users/Croc/Desktop/OrbisWMS/Données/cantons.shp"));
         }
 
         /**
-         * 
+         *
          */
         @After
         public void tearDown() {
                 wms.destroy();
+                FileUtils.deleteDir(f);
         }
 
         /**
-         * 
+         *
          * @throws Exception
          */
         @Test
         public void testParameterErrors() throws Exception {
                 DummyResponse r = new DummyResponse("http://localhost:9000/wms/wms");
                 HashMap<String, String[]> h = new HashMap<String, String[]>();
-                
+
                 h.put("REQUEST", new String[]{"GetMap"});
                 h.put("SERVICE", new String[]{"WMS"});
-                h.put("LAYERS", new String[]{""});
+                h.put("LAYERS", new String[]{"cantons"});
                 h.put("STYLES", new String[]{""});
                 h.put("CRS", new String[]{"EPSG:27582"});
-                h.put("BBOX", new String[]{""});
-                h.put("WIDTH", new String[]{"800"});
-                h.put("HEIGHT", new String[]{"600"});
+                h.put("BBOX", new String[]{"2677441.0", "1197822.0", "1620431.0", "47680.0"});
+                h.put("WIDTH", new String[]{"874"});
+                h.put("HEIGHT", new String[]{"593"});
                 h.put("FORMAT", new String[]{"image/png"});
 
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
-                
+
                 //Check the error response for any missing parameter
-                
+
                 wms.processRequests(h, out, r);
                 assertEquals(400, r.responseCode);
                 assertEquals("text/xml;charset=UTF-8", r.contentType);
                 h.put("VERSION", new String[]{"1.3.0"});
-                
+
                 h.remove("REQUEST");
                 wms.processRequests(h, out, r);
                 assertEquals(400, r.responseCode);
                 assertEquals("text/xml;charset=UTF-8", r.contentType);
                 h.put("REQUEST", new String[]{"GetMap"});
-                
+
                 h.remove("SERVICE");
                 wms.processRequests(h, out, r);
                 assertEquals(400, r.responseCode);
                 assertEquals("text/xml;charset=UTF-8", r.contentType);
                 h.put("SERVICE", new String[]{"WMS"});
-                
-                h.remove("LAYERS");
-                wms.processRequests(h, out, r);
-                assertEquals(400, r.responseCode);
-                assertEquals("text/xml;charset=UTF-8", r.contentType);
-                h.put("LAYERS", new String[]{"cantons"});
-                
-                h.remove("STYLES");
-                wms.processRequests(h, out, r);
-                assertEquals(400, r.responseCode);
-                assertEquals("text/xml;charset=UTF-8", r.contentType);
-                h.put("STYLES", new String[]{""});
-                
+
                 h.remove("CRS");
                 wms.processRequests(h, out, r);
                 assertEquals(400, r.responseCode);
                 assertEquals("text/xml;charset=UTF-8", r.contentType);
                 h.put("CRS", new String[]{"EPSG:27582"});
-                
+
                 h.remove("BBOX");
                 wms.processRequests(h, out, r);
                 assertEquals(400, r.responseCode);
                 assertEquals("text/xml;charset=UTF-8", r.contentType);
-                h.put("BBOX", new String[]{""});
-                
+                h.put("BBOX", new String[]{"2677441.0,1197822.0,1620431.0,47680.0"});
+
                 h.remove("WIDTH");
                 wms.processRequests(h, out, r);
                 assertEquals(400, r.responseCode);
                 assertEquals("text/xml;charset=UTF-8", r.contentType);
-                h.put("WIDTH", new String[]{"800"});
-                
+                h.put("WIDTH", new String[]{"874"});
+
                 h.remove("HEIGHT");
                 wms.processRequests(h, out, r);
                 assertEquals(400, r.responseCode);
                 assertEquals("text/xml;charset=UTF-8", r.contentType);
-                h.put("HEIGHT", new String[]{"600"});
-                
+                h.put("HEIGHT", new String[]{"593"});
+
                 h.remove("FORMAT");
                 wms.processRequests(h, out, r);
                 assertEquals(400, r.responseCode);
                 assertEquals("text/xml;charset=UTF-8", r.contentType);
                 h.put("FORMAT", new String[]{"image/png"});
-                
+
                 wms.processRequests(h, out, r);
                 assertEquals(400, r.responseCode);
                 assertEquals("image/png", r.contentType);
-                
+
         }
 
         private static class DummyResponse implements WMSResponse {
