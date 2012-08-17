@@ -31,6 +31,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
+import org.gdms.data.DataSourceFactory;
 import org.gdms.source.SourceManager;
 import org.junit.After;
 import org.junit.Before;
@@ -49,6 +50,10 @@ import static org.junit.Assert.*;
 public class WMSTest {
 
         private File f;
+        private File fshp;
+        private File fshx;
+        private File fdbf;
+        private File fprj;
         WMS wms = new WMS();
 
         /**
@@ -62,8 +67,20 @@ public class WMSTest {
                 CoreWorkspace c = new CoreWorkspace();
                 c.setWorkspaceFolder(f.getAbsolutePath());
                 wms.init(c, Collections.<String, Style>emptyMap(), Collections.<String, String[]>emptyMap());
+
+                fshp = File.createTempFile("gdms", ".shp");
+                fshp.delete();
+                FileUtils.copy(WMSTest.class.getResourceAsStream("cantons.shp"), fshp);
+                String name = FileUtils.getFileNameWithoutExtensionU(fshp);
+                fdbf = new File(fshp.getParentFile(), name + ".dbf");
+                FileUtils.copy(WMSTest.class.getResourceAsStream("cantons.dbf"), fdbf);
+                fprj = new File(fshp.getParentFile(), name + ".prj");
+                FileUtils.copy(WMSTest.class.getResourceAsStream("cantons.prj"), fprj);
+                fshx = new File(fshp.getParentFile(), name + ".shx");
+                FileUtils.copy(WMSTest.class.getResourceAsStream("cantons.shx"), fshx);
+
                 SourceManager sm = Services.getService(DataManager.class).getSourceManager();
-                sm.register("cantons", new File("/Users/Croc/Desktop/OrbisWMS/Données/cantons.shp"));
+                sm.register("cantons", fshp);
         }
 
         /**
@@ -73,9 +90,14 @@ public class WMSTest {
         public void tearDown() {
                 wms.destroy();
                 FileUtils.deleteDir(f);
+                FileUtils.deleteDir(fshp);
+                FileUtils.deleteDir(fdbf);
+                FileUtils.deleteDir(fshx);
+                FileUtils.deleteDir(fprj);
         }
 
         /**
+         * Checks the error response for any missing parameter;
          *
          * @throws Exception
          */
@@ -95,8 +117,6 @@ public class WMSTest {
                 h.put("FORMAT", new String[]{"image/png"});
 
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-                //Check the error response for any missing parameter
 
                 wms.processRequests(h, out, r);
                 assertEquals(400, r.responseCode);
@@ -143,11 +163,42 @@ public class WMSTest {
                 wms.processRequests(h, out, r);
                 assertEquals(400, r.responseCode);
                 assertEquals("text/xml;charset=UTF-8", r.contentType);
+        }
+
+        /**
+         * Checking the ability to display a map in any supported output format
+         *
+         * @throws Exception
+         */
+        @Test
+        public void testImageFormat() throws Exception {
+                DummyResponse r = new DummyResponse("http://localhost:9000/wms/wms");
+                HashMap<String, String[]> h = new HashMap<String, String[]>();
+
+                DataSourceFactory dsf = Services.getService(DataManager.class).getDataSourceFactory();
+                dsf.getDataSource("cantons").open();
+
+                h.put("REQUEST", new String[]{"GetMap"});
+                h.put("VERSION", new String[]{"1.3.0"});
+                h.put("SERVICE", new String[]{"WMS"});
+                h.put("LAYERS", new String[]{"cantons"});
+                h.put("STYLES", new String[]{""});
+                h.put("CRS", new String[]{"EPSG:27582"});
+                h.put("BBOX", new String[]{"2677441.0", "1197822.0", "1620431.0", "47680.0"});
+                h.put("WIDTH", new String[]{"874"});
+                h.put("HEIGHT", new String[]{"593"});
                 h.put("FORMAT", new String[]{"image/png"});
 
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+
                 wms.processRequests(h, out, r);
-                assertEquals(400, r.responseCode);
+                assertEquals(200, r.responseCode);
                 assertEquals("image/png", r.contentType);
+
+                h.put("FORMAT", new String[]{"image/jpeg"});
+                wms.processRequests(h, out, r);
+                assertEquals(200, r.responseCode);
+                assertEquals("image/jpeg", r.contentType);
 
         }
 

@@ -128,8 +128,6 @@ public final class GetMapHandler {
                                         //Checking if the layer CRS matches the requested one
                                         if (layerMap.containsKey(layer)) {
                                                 String layerCRS = layerMap.get(layer).getCRS().get(0);
-                                                System.out.println(layerCRS);
-                                                System.out.println(crs);
                                                 if (layerCRS.equals(crs)) {
                                                         iLayer = dataManager.createLayer(layer);
                                                 } else {
@@ -292,8 +290,8 @@ public final class GetMapHandler {
 
                 String[] layerList = new String[0];
                 String[] styleList = new String[0];
-                double[] bbox = new double[0];
-                String crs = null;
+                double[] bbox;
+                String crs;
                 int width;
                 int height;
                 double pixelSize = 0.084;
