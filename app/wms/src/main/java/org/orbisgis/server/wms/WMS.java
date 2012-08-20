@@ -3,8 +3,8 @@
  * This cross-platform GIS is developed at French IRSTV institute and is able to
  * manipulate and create vector and raster spatial information.
  *
- * OrbisGIS is distributed under GPL 3 license. It is produced by the "Atelier SIG"
- * team of the IRSTV Institute <http://www.irstv.fr/> CNRS FR 2488.
+ * OrbisGIS is distributed under GPL 3 license. It is produced by the "Atelier
+ * SIG" team of the IRSTV Institute <http://www.irstv.fr/> CNRS FR 2488.
  *
  * Copyright (C) 2007-2012 IRSTV (FR CNRS 2488)
  *
@@ -22,9 +22,8 @@
  * You should have received a copy of the GNU General Public License along with
  * OrbisGIS. If not, see <http://www.gnu.org/licenses/>.
  *
- * For more information, please consult: <http://www.orbisgis.org/>
- * or contact directly:
- * info_at_ orbisgis.org
+ * For more information, please consult: <http://www.orbisgis.org/> or contact
+ * directly: info_at_ orbisgis.org
  */
 package org.orbisgis.server.wms;
 
@@ -60,7 +59,7 @@ public final class WMS {
         static {
                 initLogger();
         }
-        
+
         private static void initLogger() {
                 Logger.getRootLogger().removeAllAppenders();
                 PatternLayout p = new PatternLayout("%d %-5p %c{1}: %m%n");
@@ -78,17 +77,17 @@ public final class WMS {
          *
          * @param coreWorkspace
          * @param sStyles
+         * @param styleForSource          *
          */
         public void init(CoreWorkspace coreWorkspace, Map<String, Style> sStyles, Map<String, String[]> styleForSource) {
-                
+
                 layerStyles = styleForSource;
 
                 context = new MainContext(false, coreWorkspace, false);
-                
+
                 // workaround the MainContext hardcoded logger :(
                 initLogger();
-                
-                
+
                 layerMap = new HashMap<String, Layer>();
                 getMap = new GetMapHandler(layerMap);
                 this.serverStyles = sStyles;
