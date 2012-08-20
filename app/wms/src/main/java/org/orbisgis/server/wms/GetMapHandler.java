@@ -3,8 +3,8 @@
  * This cross-platform GIS is developed at French IRSTV institute and is able to
  * manipulate and create vector and raster spatial information.
  *
- * OrbisGIS is distributed under GPL 3 license. It is produced by the "Atelier SIG"
- * team of the IRSTV Institute <http://www.irstv.fr/> CNRS FR 2488.
+ * OrbisGIS is distributed under GPL 3 license. It is produced by the "Atelier
+ * SIG" team of the IRSTV Institute <http://www.irstv.fr/> CNRS FR 2488.
  *
  * Copyright (C) 2007-2012 IRSTV (FR CNRS 2488)
  *
@@ -22,9 +22,8 @@
  * You should have received a copy of the GNU General Public License along with
  * OrbisGIS. If not, see <http://www.gnu.org/licenses/>.
  *
- * For more information, please consult: <http://www.orbisgis.org/>
- * or contact directly:
- * info_at_ orbisgis.org
+ * For more information, please consult: <http://www.orbisgis.org/> or contact
+ * directly: info_at_ orbisgis.org
  */
 package org.orbisgis.server.wms;
 
@@ -290,22 +289,22 @@ public final class GetMapHandler {
 
                 String[] layerList = new String[0];
                 String[] styleList = new String[0];
-                double[] bbox = new double[0];
-                String crs = null;
+                double[] bbox;
+                String crs;
                 int width;
                 int height;
                 double pixelSize = 0.084;
-                String imageFormat = ImageFormats.PNG.toString();
+                String imageFormat = "undefined";
                 boolean transparent = false;
                 String bgColor = "#FFFFFF";
                 String sld = null;
                 String exceptionsFormat = null;
 
-
                 if (queryParameters.containsKey("CRS")) {
                         crs = queryParameters.get("CRS")[0];
                 } else {
                         WMS.exceptionDescription(wmsResponse, output, "No CRS has been declared");
+                        return;
                 }
 
                 if (queryParameters.containsKey("BBOX")) {
@@ -315,6 +314,9 @@ public final class GetMapHandler {
                         for (int i = 0; i < bbox.length; i++) {
                                 bbox[i] = Double.valueOf(sbbox[i]);
                         }
+                } else {
+                        WMS.exceptionDescription(wmsResponse, output, "You must specify a bounding box");
+                        return;
                 }
 
                 if (queryParameters.containsKey("WIDTH")) {
@@ -372,7 +374,7 @@ public final class GetMapHandler {
 
         private String project(String layer, String sourceCrs, String targetCrs) throws WMSException {
                 DataSourceFactory dsf = Services.getService(DataManager.class).getDataSourceFactory();
-                
+
                 // maybe we already converted it and there is nothing to do
                 final String newName = layer + "-" + targetCrs;
                 if (!dsf.getSourceManager().exists(newName)) {
@@ -383,12 +385,12 @@ public final class GetMapHandler {
                         } catch (Exception ex) {
                                 throw new RuntimeException("Gdms failed to parse the projection query. Shoudln't happen.", ex);
                         }
-                        
+
                         reProject.setFieldParameter("src", sourceCrs);
                         reProject.setFieldParameter("tgt", targetCrs);
                         reProject.setTableParameter("data", layer);
                         reProject.setDataSourceFactory(dsf);
-                        
+
                         reProject.prepare();
                         try {
                                 DataSet d = reProject.execute();

@@ -3,8 +3,8 @@
  * This cross-platform GIS is developed at French IRSTV institute and is able to
  * manipulate and create vector and raster spatial information.
  *
- * OrbisGIS is distributed under GPL 3 license. It is produced by the "Atelier SIG"
- * team of the IRSTV Institute <http://www.irstv.fr/> CNRS FR 2488.
+ * OrbisGIS is distributed under GPL 3 license. It is produced by the "Atelier
+ * SIG" team of the IRSTV Institute <http://www.irstv.fr/> CNRS FR 2488.
  *
  * Copyright (C) 2007-2012 IRSTV (FR CNRS 2488)
  *
@@ -22,9 +22,8 @@
  * You should have received a copy of the GNU General Public License along with
  * OrbisGIS. If not, see <http://www.gnu.org/licenses/>.
  *
- * For more information, please consult: <http://www.orbisgis.org/>
- * or contact directly:
- * info_at_ orbisgis.org
+ * For more information, please consult: <http://www.orbisgis.org/> or contact
+ * directly: info_at_ orbisgis.org
  */
 package org.orbisgis.server.wms;
 
@@ -76,7 +75,6 @@ public final class GetCapabilitiesHandler {
 
         private Map<String, Layer> layerMap = new HashMap<String, Layer>();
         private Map<String, String[]> layerStyles;
-        private Map<String, Style> serverStyles;
         private final JAXBContext jaxbContext;
         private List<String> authCRS;
 
@@ -227,53 +225,50 @@ public final class GetCapabilitiesHandler {
                         @Override
                         public void sourceAdded(SourceEvent e) {
                                 String name = e.getName();
-                                if (e.isWellKnownName() && !sm.getSource(name).isSystemTableSource()) {
+                                if (e.isWellKnownName() && !sm.getSource(name).isSystemTableSource() && !layerMap.containsKey(name)) {
+                                        try {
+                                                Layer layer = new Layer();
+                                                layer.setName(name);
+                                                layer.setTitle(name);
 
-                                        if (!layerMap.containsKey(name)) {
-                                                try {
-                                                        Layer layer = new Layer();
-                                                        layer.setName(name);
-                                                        layer.setTitle(name);
-
-                                                        //Setting the bouding box data
-                                                        DataSource ds = dsf.getDataSource(name);
-                                                        ds.open();
-                                                        Envelope env = ds.getFullExtent();
-                                                        CoordinateReferenceSystem crs = ds.getCRS();
-                                                        ds.close();
-                                                        BoundingBox bBox = new BoundingBox();
-                                                        if (crs != null) {
-                                                                int epsgCode = crs.getEPSGCode();
-                                                                if (epsgCode != -1) {
-                                                                        bBox.setCRS("EPSG:" + epsgCode);
-                                                                        layer.getCRS().add("EPSG:" + epsgCode);
-                                                                } else {
-                                                                        return;
-                                                                }
+                                                //Setting the bouding box data
+                                                DataSource ds = dsf.getDataSource(name);
+                                                ds.open();
+                                                Envelope env = ds.getFullExtent();
+                                                CoordinateReferenceSystem crs = ds.getCRS();
+                                                ds.close();
+                                                BoundingBox bBox = new BoundingBox();
+                                                if (crs != null) {
+                                                        int epsgCode = crs.getEPSGCode();
+                                                        if (epsgCode != -1) {
+                                                                bBox.setCRS("EPSG:" + epsgCode);
+                                                                layer.getCRS().add("EPSG:" + epsgCode);
                                                         } else {
                                                                 return;
                                                         }
-                                                        bBox.setMaxx(env.getMaxX());
-                                                        bBox.setMinx(env.getMinX());
-                                                        bBox.setMiny(env.getMinY());
-                                                        bBox.setMaxy(env.getMaxY());
-                                                        layer.getBoundingBox().add(bBox);
-                                                        layer.setQueryable(true);
-                                                        if (layerStyles.containsKey(name)) {
-                                                                String[] lStyles = layerStyles.get(name);
-                                                                for (int i = 0; i < lStyles.length; i++) {
-                                                                        Style style = new Style();
-                                                                        String styleName = lStyles[i];
-                                                                        style.setName(styleName);
-                                                                        style.setTitle(styleName);
-                                                                        layer.getStyle().add(style);
-                                                                }
-                                                        }
-                                                        layerMap.put(name, layer);
-                                                } catch (NoSuchTableException ex) {
-                                                } catch (DataSourceCreationException ex) {
-                                                } catch (DriverException ex) {
+                                                } else {
+                                                        return;
                                                 }
+                                                bBox.setMaxx(env.getMaxX());
+                                                bBox.setMinx(env.getMinX());
+                                                bBox.setMiny(env.getMinY());
+                                                bBox.setMaxy(env.getMaxY());
+                                                layer.getBoundingBox().add(bBox);
+                                                layer.setQueryable(true);
+                                                if (layerStyles.containsKey(name)) {
+                                                        String[] lStyles = layerStyles.get(name);
+                                                        for (int i = 0; i < lStyles.length; i++) {
+                                                                Style style = new Style();
+                                                                String styleName = lStyles[i];
+                                                                style.setName(styleName);
+                                                                style.setTitle(styleName);
+                                                                layer.getStyle().add(style);
+                                                        }
+                                                }
+                                                layerMap.put(name, layer);
+                                        } catch (NoSuchTableException ex) {
+                                        } catch (DataSourceCreationException ex) {
+                                        } catch (DriverException ex) {
                                         }
                                 }
                         }
