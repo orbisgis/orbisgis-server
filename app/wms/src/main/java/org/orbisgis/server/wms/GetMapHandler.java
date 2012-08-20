@@ -131,7 +131,6 @@ public final class GetMapHandler {
                                                 if (layerCRS.equals(crs)) {
                                                         iLayer = dataManager.createLayer(layer);
                                                 } else {
-                                                        System.out.println("reprojecting");
                                                         String newLayer = project(layer, layerCRS, crs);
                                                         iLayer = dataManager.createLayer(newLayer);
                                                         newLayers.add(newLayer);
