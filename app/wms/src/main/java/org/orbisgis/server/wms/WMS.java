@@ -29,7 +29,8 @@ package org.orbisgis.server.wms;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 import net.opengis.wms.Layer;
@@ -77,7 +78,7 @@ public final class WMS {
          *
          * @param coreWorkspace
          * @param sStyles
-         * @param styleForSource          *
+         * @param styleForSource
          */
         public void init(CoreWorkspace coreWorkspace, Map<String, Style> sStyles, Map<String, String[]> styleForSource) {
 
@@ -109,8 +110,9 @@ public final class WMS {
          * @param output
          * @param wmsResponse
          * @throws WMSException
+         * @throws UnsupportedEncodingException  
          */
-        public void processRequests(Map<String, String[]> queryParameters, OutputStream output, WMSResponse wmsResponse) throws WMSException {
+        public void processRequests(Map<String, String[]> queryParameters, OutputStream output, WMSResponse wmsResponse) throws WMSException, UnsupportedEncodingException {
 
 
                 //Spliting request parameters to determine the requestType to execute
@@ -190,11 +192,16 @@ public final class WMS {
          * @param code
          */
         public static void exceptionDescription(WMSResponse wmsResponse, OutputStream output, String errorMessage, int code) {
-                PrintWriter out = new PrintWriter(output);
+                PrintStream pr;
+                try {
+                        pr = new PrintStream(output, false, "UTF-8");
+                
                 wmsResponse.setContentType("text/xml;charset=UTF-8");
                 wmsResponse.setResponseCode(code);
-                out.print("<?xml version='1.0' encoding=\"UTF-8\"?><ServiceExceptionReport xmlns=\"http://www.opengis.net/ogc\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"1.3.0\" xsi:schemaLocation=\"http://www.opengis.net/ogc http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd\"><ServiceException>"
+                pr.append("<?xml version='1.0' encoding=\"UTF-8\"?><ServiceExceptionReport xmlns=\"http://www.opengis.net/ogc\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"1.3.0\" xsi:schemaLocation=\"http://www.opengis.net/ogc http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd\"><ServiceException>"
                         + errorMessage + "</ServiceException></ServiceExceptionReport>");
-                out.flush();
+                pr.flush();
+                } catch (UnsupportedEncodingException ex) {
+                }
         }
 }
