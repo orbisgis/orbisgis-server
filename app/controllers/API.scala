@@ -59,7 +59,7 @@ object API extends Controller {
     val uri = (request.body \ "uri").asOpt[String].flatMap(a ⇒ catching(classOf[URISyntaxException]) opt new URI(a))
 
     uri.map { u ⇒
-      (name.getOrElse(FileUtils.getFileNameWithoutExtensionU(new File(u.getPath))), u)
+      (name.getOrElse(FileUtils.getNameFromURI(u)), u)
     }.map {
       case (n, u) ⇒
         if (Application.sm.exists(n)) {

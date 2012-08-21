@@ -34,7 +34,7 @@ import java.io.File
 import org.orbisgis.core._
 import play.api.data._
 import play.api.data.Forms._
-import org.orbisgis.utils.FileUtils
+import org.apache.commons.io.{FilenameUtils => FNU}
 
 object Application extends Controller {
 
@@ -67,7 +67,7 @@ object Application extends Controller {
         try {
           val l = new File(inFile)
           if (l.exists()) {
-            val name = FileUtils.getFileNameWithoutExtensionU(l)
+            val name = FNU.removeExtension(l.getName)
             sm.register(name, l)
 	    sm.saveStatus
           }

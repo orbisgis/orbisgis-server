@@ -42,7 +42,7 @@ import java.io.ByteArrayOutputStream
 import scala.collection.mutable.{Map => MutableMap}
 import org.orbisgis.server.wms.{WMS => JavaWMS}
 import org.orbisgis.core.renderer.se.Style
-import org.orbisgis.utils.FileUtils
+import org.apache.commons.io.{FileUtils => FU}
 
 object WMS extends Controller {
   
@@ -84,7 +84,7 @@ object WMS extends Controller {
         val source = new File(style)
         if (source.exists() && source.getName.endsWith(".se")) {
           val target = new File(styleDir, source.getName())
-          FileUtils.copy(source, target)
+          FU.copyFile(source, target)
 	  styles.put(target.getName.substring(0, target.getName.length - 3),
             new Style(null, target.getAbsolutePath))
         }
