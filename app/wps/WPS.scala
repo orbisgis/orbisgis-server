@@ -27,26 +27,11 @@
  * info_at_ orbisgis.org
  */
 
-import play.api._
-import controllers._
-import java.io.File
-import org.orbisgis.core.workspace.CoreWorkspace;
-import scala.collection.JavaConversions._
-import java.util.HashMap;
+package wps
 
-object Global extends GlobalSettings {
-  override def onStart(app: Application) {
-    // init the main (and only) loaded OrbisGIS workspace
-    val c = new CoreWorkspace()
-    c.setWorkspaceFolder("workspace")
+import scala.collection.mutable.{Map => MutMap}
 
-    WMS.loadStyles
-    WMS.wmsCt.init(c, WMS.styles, WMS.sourceStyles)
-
-    WPS.init
-  }
-
-  override def onStop(app: Application) {
-    WMS.wmsCt.destroy
-  }
+class WPS {
+  
+  val processes = MutMap[String, WPSProcess]()
 }

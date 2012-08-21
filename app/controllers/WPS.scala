@@ -30,8 +30,15 @@ package controllers
 
 import play.api._
 import play.api.mvc._
+import wps.{WPS => WPSMain, WPSProcess}
 
 object WPS extends Controller {
+
+  private var wpsMain: WPSMain = _
+
+  def init() {
+    wpsMain = new WPSMain
+  }
   
   /**
   * Main end point
@@ -46,7 +53,19 @@ object WPS extends Controller {
     } else {
       request.queryString.get("Request").get.head match {
         case "GetCapabilities" =>
-          Ok(wps.xml.getcapabilities("hi", "hello"))
+          Ok(wps.xml.getcapabilities(wpsMain.processes.values))
+        case "DescribeProcess" =>
+          if (request.queryString.get("Identifier").map(_.isEmpty).getOrElse(true)) {
+            BadRequest("No identifier specified")
+          } else {
+            val idsStr = request.queryString.get("Identifier").get
+            val ids = idsStr map (wpsMain.processes.get)
+            if (ids.exists(_.isEmpty)) {
+              BadRequest("Unknown id(s): " + idsStr.filter(wpsMain.processes.get(_).isEmpty).mkString(","))
+            } else {
+              Ok(wps.xml.describeprocess(ids.flatten))
+            }
+          }
         case a => BadRequest("Unsupported request: " + a)
       }
     }

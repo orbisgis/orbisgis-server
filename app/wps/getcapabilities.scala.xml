@@ -1,8 +1,8 @@
-@(title: String, abstractText: String)<?xml version="1.0" encoding="UTF-8"?>
+@(processes: Iterable[wps.WPSProcess])<?xml version="1.0" encoding="UTF-8"?>
 <wps:Capabilities service="WPS" version="1.0.0" xml:lang="en-US" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/wps/1.0.0/http://schemas.opengis.net/wps/1.0.0/wpsDescribeProcess_response.xsd" updateSequence="1">
 	<ows:ServiceIdentification>
-		<ows:Title>@title</ows:Title>
-		<ows:Abstract>@abstractText</ows:Abstract>
+		<ows:Title>OrbisGIS WPS Server</ows:Title>
+		<ows:Abstract>The WPS Server or the OrbisGIS Server platform.</ows:Abstract>
 		<ows:Keywords>
 			<ows:Keyword>WPS</ows:Keyword>
 			<ows:Keyword>geospatial</ows:Keyword>
@@ -58,6 +58,7 @@
 		</ows:Operation>
 	</ows:OperationsMetadata>
 	<wps:ProcessOfferings>
+		@processes.map(_.toShortXml)
 	</wps:ProcessOfferings>
 	<wps:Languages>
 		<wps:Default>
