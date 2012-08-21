@@ -41,6 +41,8 @@ object WPS extends Controller {
       BadRequest("Wrong service. Excepted 'wps'")
     } else if (request.queryString.get("AcceptVersions").map(_!="1.0.0").getOrElse(false)) {
       BadRequest("Only accepted version is '1.0.0'.")
+    } else if (request.queryString.get("Request").map(_.isEmpty).getOrElse(true)) {
+      BadRequest("No request provided.")
     } else {
       request.queryString.get("Request").get.head match {
         case "GetCapabilities" =>
