@@ -29,7 +29,8 @@ package org.orbisgis.server.wms;
 
 import com.vividsolutions.jts.geom.Envelope;
 import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,9 +85,11 @@ public final class GetCapabilitiesHandler {
          *
          * @param output servlet outputStream
          * @param wmsResponse HttpServletResponse modified for WMS use
+         * @throws WMSException
+         * @throws UnsupportedEncodingException
          */
-        void getCap(OutputStream output, WMSResponse wmsResponse) throws WMSException {
-                PrintWriter out = new PrintWriter(output);
+        void getCap(OutputStream output, WMSResponse wmsResponse) throws WMSException, UnsupportedEncodingException {
+                PrintStream pr = new PrintStream(output, false, "UTF-8");
                 WMSCapabilities cap = new WMSCapabilities();
 
 
@@ -194,14 +197,14 @@ public final class GetCapabilitiesHandler {
                         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
                         wmsResponse.setContentType("text/xml;charset=UTF-8");
-                        marshaller.marshal(cap, out);
+                        marshaller.marshal(cap, pr);
 
                 } catch (Exception ex) {
                         wmsResponse.setContentType("text/xml;charset=UTF-8");
                         wmsResponse.setResponseCode(500);
-                        out.print("<?xml version='1.0' encoding=\"UTF-8\"?><ServiceExceptionReport xmlns=\"http://www.opengis.net/ogc\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"1.3.0\" xsi:schemaLocation=\"http://www.opengis.net/ogc http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd\"><ServiceException>Something went wrong</ServiceException></ServiceExceptionReport>");
-                        out.print(ex);
-                        ex.printStackTrace(out);
+                        pr.append("<?xml version='1.0' encoding=\"UTF-8\"?><ServiceExceptionReport xmlns=\"http://www.opengis.net/ogc\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"1.3.0\" xsi:schemaLocation=\"http://www.opengis.net/ogc http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd\"><ServiceException>Something went wrong</ServiceException></ServiceExceptionReport>");
+                        pr.append(ex.toString());
+                        ex.printStackTrace(pr);
                 }
         }
 

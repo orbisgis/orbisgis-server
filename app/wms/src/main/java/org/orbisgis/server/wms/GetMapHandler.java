@@ -33,7 +33,8 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -98,11 +99,12 @@ public final class GetMapHandler {
          * @param wmsResponse
          * @param serverStyles
          * @throws WMSException
+         * @throws UnsupportedEncodingException  
          */
         public void getMap(String[] layerList, String[] styleList, String crs,
                 double[] bbox, int width, int height, double pixelSize, String imageFormat,
                 boolean transparent, String bgColor, String stringSLD, String exceptionsFormat, OutputStream output,
-                WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException {
+                WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException, UnsupportedEncodingException {
 
 
                 Double dpi = 25.4 / pixelSize;
@@ -258,7 +260,7 @@ public final class GetMapHandler {
                         MapImageWriter.write(wmsResponse, output, imageFormat, img, pixelSize);
 
                 } catch (IOException ex) {
-                        ex.printStackTrace(new PrintWriter(output));
+                        ex.printStackTrace(new PrintStream(output, false, "UTF-8"));
                         wmsResponse.setContentType("text/plain");
                 } catch (LayerException lEx) {
                         throw new WMSException(lEx);
@@ -285,7 +287,7 @@ public final class GetMapHandler {
          * @param serverStyles
          * @throws WMSException
          */
-        public void getMapParameterParser(Map<String, String[]> queryParameters, OutputStream output, WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException {
+        public void getMapParameterParser(Map<String, String[]> queryParameters, OutputStream output, WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException, UnsupportedEncodingException {
 
                 String[] layerList = new String[0];
                 String[] styleList = new String[0];
