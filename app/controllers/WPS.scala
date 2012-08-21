@@ -34,7 +34,7 @@ import wps.{WPS => WPSMain, WPSProcess}
 
 object WPS extends Controller {
 
-  private var wpsMain: WPSMain = _
+  var wpsMain: WPSMain = _
 
   def init() {
     wpsMain = new WPSMain
@@ -68,6 +68,26 @@ object WPS extends Controller {
           }
         case a => BadRequest("Unsupported request: " + a)
       }
+    }
+  }
+
+  def apiAddProcess = Action { implicit request =>
+    val textContent = request.body.asText
+
+    textContent.map { text =>
+      wpsMain.addScript(text)
+      NoContent
+    }.getOrElse {
+      BadRequest("Expected text/plain body")
+    }
+  }
+
+  def apiRemoveProcess(name: String) = Action { implicit request =>
+    if (!wpsMain.processes.contains(name)) {
+      BadRequest("There is no process with name " + name)
+    } else {
+      wpsMain.removeScript(name)
+      NoContent
     }
   }
 }

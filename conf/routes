@@ -30,6 +30,10 @@ POST /wms/api/sources					controllers.API.registerSource
 
 DELETE /wms/api/sources/:name				controllers.API.deleteSource(name)
 
+POST /wms/api/wps/processes				controllers.WPS.apiAddProcess
+
+DELETE /wms/api/wps/processes/:name				controllers.WPS.apiRemoveProcess(name)
+
 # WPS end point
 
 GET  /wms/wps						controllers.WPS.wpsGet

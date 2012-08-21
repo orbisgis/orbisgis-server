@@ -29,9 +29,43 @@
 
 package wps
 
+import org.apache.commons.io.{FileUtils => FU, FilenameUtils => FNU}
+import java.io.{File, FileOutputStream}
 import scala.collection.mutable.{Map => MutMap}
+import org.gdms.sql.engine._
 
 class WPS {
-  
+
   val processes = MutMap[String, WPSProcess]()
+
+  val scriptFolder = new File("scripts")
+
+  init()
+
+  private def init() {
+  	scriptFolder.mkdirs
+  	scriptFolder.listFiles.foreach { f =>
+  	  val sc = Engine.loadScript(f)
+  	  val id = FNU.removeExtension(f.getName)
+
+  	  processes.put(id, WPSProcess(id, id, id, sc))
+  	}
+  }
+
+  def addScript(str: String) {
+  	val sc = Engine.parseScript(str)
+  	val id = "toto" + System.currentTimeMillis
+  	val target = new File(scriptFolder, id + ".bsql")
+  	sc.save(new FileOutputStream(target))
+  	
+  	processes.put(id, WPSProcess(id, id, id, sc))
+  }
+
+  def removeScript(str: String) {
+  	processes.get(str).map { w => 
+  		val f = new File(scriptFolder, w.id + ".bsql")
+  		f.delete
+  		processes.remove(str)
+  	}.getOrElse(sys.error("Unknown script: " + str))
+  }
 }
