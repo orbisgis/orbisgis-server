@@ -32,4 +32,4 @@ DELETE /wms/api/sources/:name				controllers.API.deleteSource(name)
 
 # WPS end point
 
-GET  /wms/wms						controllers.WPS.wps
+GET  /wms/wps						controllers.WPS.wpsGet

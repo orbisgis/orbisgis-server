@@ -36,5 +36,17 @@ object WPS extends Controller {
   /**
   * Main end point
   */
-  def wps = TODO
+  def wpsGet = Action { implicit request =>
+    if (request.queryString.get("service").map(s => !"wps".equalsIgnoreCase(s.head)).getOrElse(true)) {
+      BadRequest("Wrong service. Excepted 'wps'")
+    } else if (request.queryString.get("AcceptVersions").map(_!="1.0.0").getOrElse(false)) {
+      BadRequest("Only accepted version is '1.0.0'.")
+    } else {
+      request.queryString.get("Request").get.head match {
+        case "GetCapabilities" =>
+          Ok(wps.xml.getcapabilities("hi", "hello"))
+        case a => BadRequest("Unsupported request: " + a)
+      }
+    }
+  }
 }
