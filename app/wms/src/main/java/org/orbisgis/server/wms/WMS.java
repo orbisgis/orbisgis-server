@@ -195,13 +195,11 @@ public final class WMS {
                 PrintStream pr;
                 try {
                         pr = new PrintStream(output, false, "UTF-8");
-
-                        wmsResponse.setContentType("text/xml;charset=UTF-8");
-                        wmsResponse.setResponseCode(code);
-
                 } catch (UnsupportedEncodingException ex) {
                         throw new RuntimeException("Fatal Error", ex);
                 }
+                wmsResponse.setContentType("text/xml;charset=UTF-8");
+                wmsResponse.setResponseCode(code);
                 pr.append("<?xml version='1.0' encoding=\"UTF-8\"?><ServiceExceptionReport xmlns=\"http://www.opengis.net/ogc\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"1.3.0\" xsi:schemaLocation=\"http://www.opengis.net/ogc http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd\"><ServiceException>"
                         + errorMessage + "</ServiceException></ServiceExceptionReport>");
                 pr.flush();
