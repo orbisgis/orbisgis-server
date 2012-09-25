@@ -199,6 +199,11 @@ public class WMSTest {
                 wms.processRequests(h, out, r);
                 assertEquals(200, r.responseCode);
                 assertEquals("image/jpeg", r.contentType);
+                
+                h.put("FORMAT", new String[]{"image/tiff"});
+                wms.processRequests(h, out, r);
+                assertEquals(200, r.responseCode);
+                assertEquals("image/tiff", r.contentType);
 
         }
 
