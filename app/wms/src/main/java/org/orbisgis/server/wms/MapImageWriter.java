@@ -29,6 +29,8 @@ package org.orbisgis.server.wms;
 
 import com.sun.media.jai.codec.JPEGEncodeParam;
 import com.sun.media.jai.codec.PNGEncodeParam;
+import com.sun.media.jai.codec.TIFFEncodeParam;
+import com.sun.media.jai.codec.TIFFField;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -44,7 +46,7 @@ public final class MapImageWriter {
         /**
          * Supported image formats
          */
-        static final String[] FORMATS = {"image/jpeg", "image/png"};
+        static final String[] FORMATS = {"image/jpeg", "image/png", "image/tiff"};
 
         private MapImageWriter() {
         }
@@ -70,12 +72,23 @@ public final class MapImageWriter {
                         wmsResponse.setResponseCode(200);
                 } else if (format.equalsIgnoreCase(ImageFormats.PNG.toString())) {
                         writePNG(wmsResponse, output, img, pixelSize);
+                        wmsResponse.setResponseCode(200);                
+                } else if (format.equalsIgnoreCase(ImageFormats.TIFF.toString())) {
+                        writeTIFF(wmsResponse, output, img, pixelSize);
                         wmsResponse.setResponseCode(200);
-                } else {
+                }
+                else {
                         WMS.exceptionDescription(wmsResponse, output, "The format requested is invalid. Please check the server capabilities to ask for a supported format.");
                 }
         }
 
+        /**
+         * This method permits to write the result image from the wms request in a jpeg format
+         * @param wmsResponse
+         * @param output
+         * @param img
+         * @throws IOException 
+         */
         private static void writeJPEG(WMSResponse wmsResponse, OutputStream output,
                 BufferedImage img) throws IOException {
                 wmsResponse.setContentType(ImageFormats.JPEG.toString());
@@ -86,6 +99,14 @@ public final class MapImageWriter {
                 output.close();
         }
 
+        /**
+         * This method permits to write the result image from the wms request in a png format
+         * @param wmsResponse
+         * @param output
+         * @param img
+         * @param pixelSize
+         * @throws IOException 
+         */
         private static void writePNG(WMSResponse wmsResponse, OutputStream output,
                 BufferedImage img, double pixelSize) throws IOException {
                 wmsResponse.setContentType(ImageFormats.PNG.toString());
@@ -95,6 +116,31 @@ public final class MapImageWriter {
                 penc.setPhysicalDimension(dpm, dpm, 1);
                 JAI.create("Encode", img, output, "PNG", penc);
 
+                output.close();
+        }
+        
+        /**
+         * This method permits to write the result image from the wms request in a tiff format
+         * @param wmsResponse
+         * @param output
+         * @param img
+         * @throws IOException 
+         */
+        private static void writeTIFF(WMSResponse wmsResponse, OutputStream output,
+                BufferedImage img, double pixelSize) throws IOException {
+                wmsResponse.setContentType(ImageFormats.TIFF.toString());
+                int XRES_TAG = 282;
+                int YRES_TAG = 283;
+                int dpm = (int) (1000 / pixelSize + 1);
+                long[] resolution = { dpm, 1 };
+                
+                TIFFField xRes = new TIFFField(XRES_TAG,
+                TIFFField.TIFF_RATIONAL, 1, new long[][] { resolution });
+                TIFFField yRes = new TIFFField(YRES_TAG,
+                TIFFField.TIFF_RATIONAL, 1, new long[][] { resolution });
+                TIFFEncodeParam tep = new TIFFEncodeParam();
+                tep.setExtraFields(new TIFFField[] { xRes, yRes });                 
+                JAI.create("Encode", img, output, "TIFF", tep);
                 output.close();
         }
 }

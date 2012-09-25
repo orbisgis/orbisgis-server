@@ -44,5 +44,11 @@ public enum ImageFormats {
                 public String toString() {
                         return "image/png";
                 }
+        },
+        TIFF {
+                @Override
+                public String toString() {
+                        return "image/tiff";
+                }
         }
 }

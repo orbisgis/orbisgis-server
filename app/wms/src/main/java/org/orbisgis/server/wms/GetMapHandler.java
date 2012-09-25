@@ -255,7 +255,7 @@ public final class GetMapHandler {
 
                         NullProgressMonitor pm = new NullProgressMonitor();
                         renderer.draw(mt, g2, width, height, layers, pm);
-
+                                                        
                         g2.dispose();
                         MapImageWriter.write(wmsResponse, output, imageFormat, img, pixelSize);
 
