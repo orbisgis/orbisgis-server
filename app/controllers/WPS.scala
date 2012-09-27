@@ -31,6 +31,9 @@ package controllers
 import play.api._
 import play.api.mvc._
 import wps.{WPS => WPSMain, WPSProcess}
+import java.io.File
+import java.util.Calendar
+import org.apache.commons.io.{FileUtils => FU}
 
 object WPS extends Controller {
 
@@ -44,21 +47,21 @@ object WPS extends Controller {
   * Main end point
   */
   def wpsGet = Action { implicit request =>
-    if (request.queryString.get("service").map(s => !"wps".equalsIgnoreCase(s.head)).getOrElse(true)) {
+    if (request.queryString.get("SERVICE").map(s => !"wps".equalsIgnoreCase(s.head)).getOrElse(true)) {
       BadRequest("Wrong service. Excepted 'wps'")
     } else if (request.queryString.get("AcceptVersions").map(_!="1.0.0").getOrElse(false)) {
       BadRequest("Only accepted version is '1.0.0'.")
-    } else if (request.queryString.get("Request").map(_.isEmpty).getOrElse(true)) {
+    } else if (request.queryString.get("REQUEST").map(_.isEmpty).getOrElse(true)) {
       BadRequest("No request provided.")
     } else {
-      request.queryString.get("Request").get.head match {
+      request.queryString.get("REQUEST").get.head match {
         case "GetCapabilities" =>
           Ok(wps.xml.getcapabilities(wpsMain.processes.values))
         case "DescribeProcess" =>
-          if (request.queryString.get("Identifier").map(_.isEmpty).getOrElse(true)) {
+          if (request.queryString.get("IDENTIFIER").map(_.isEmpty).getOrElse(true)) {
             BadRequest("No identifier specified")
           } else {
-            val idsStr = request.queryString.get("Identifier").get
+            val idsStr = request.queryString.get("IDENTIFIER").get
             val ids = idsStr map (wpsMain.processes.get)
             if (ids.exists(_.isEmpty)) {
               BadRequest("Unknown id(s): " + idsStr.filter(wpsMain.processes.get(_).isEmpty).mkString(","))
@@ -69,6 +72,31 @@ object WPS extends Controller {
         case a => BadRequest("Unsupported request: " + a)
       }
     }
+  }
+
+  def wpsPost = Action(parse.xml) { implicit request =>
+     (request.body \\ "Execute" headOption).flatMap { e =>
+        (e \\ "Identifier" headOption).map(_.text).flatMap {name => 
+          (e \\ "DataInputs" headOption).map { di =>
+            val inputs = (di \\ "Input").map { i => 
+              val f = File.createTempFile("gdms-input-", ".json")
+                FU.write(f, (i \\ "Data" \\ "ComplexData" head).text)
+              ((i \\ "Identifier" head).text, f )
+            }
+            val p = wpsMain.processes.get(name)
+            val outputs = p.map(_.execute(inputs.toList)).map { _ map { a =>
+              (a._1, FU.readFileToString(a._2))
+            }}
+            outputs.map { op =>
+              Ok(wps.xml.executeProcess_response(p.get, op , wps.Succeeded(Calendar.getInstance.getTime)))
+            }.getOrElse {
+              BadRequest
+            }
+          }
+        }
+     }.getOrElse {
+        BadRequest
+     }
   }
 
   def apiAddProcess = Action { implicit request =>
@@ -89,5 +117,9 @@ object WPS extends Controller {
       wpsMain.removeScript(name)
       NoContent
     }
+  }
+
+  def manage = Action { implicit request =>
+    Ok(views.html.wpsmanage(wpsMain.processes.values))
   }
 }

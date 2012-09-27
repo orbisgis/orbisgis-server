@@ -45,20 +45,16 @@ class WPS {
   private def init() {
   	scriptFolder.mkdirs
   	scriptFolder.listFiles.foreach { f =>
-  	  val sc = Engine.loadScript(f)
-  	  val id = FNU.removeExtension(f.getName)
+  	  val str = FU.readFileToString(f)
+      val p = parseScript(str)
 
-  	  processes.put(id, WPSProcess(id, id, id, sc))
+  	  processes.put(p.id, p)
   	}
   }
 
   def addScript(str: String) {
-  	val sc = Engine.parseScript(str)
-  	val id = "toto" + System.currentTimeMillis
-  	val target = new File(scriptFolder, id + ".bsql")
-  	sc.save(new FileOutputStream(target))
-  	
-  	processes.put(id, WPSProcess(id, id, id, sc))
+    val p = parseScript(str)
+    processes.put(p.id, p)
   }
 
   def removeScript(str: String) {
@@ -67,5 +63,39 @@ class WPS {
   		f.delete
   		processes.remove(str)
   	}.getOrElse(sys.error("Unknown script: " + str))
+  }
+
+  private def parseScript(str: String): WPSProcess = {
+    val sc = Engine.parseScript(str)
+
+    val idS = str.indexOf("@identifier ") + 12
+    val id = str.substring(idS, str.indexOf('\n', idS))
+
+    val titleS = str.indexOf("@title ") + 7
+    val title = str.substring(titleS, str.indexOf('\n', titleS))
+
+    val abstractS = str.indexOf("@abstract ") + 10;
+    val abstractText = str.substring(abstractS, str.indexOf("@/abstract", abstractS)).replace("--", "").trim
+
+    var inpos: Int = str.indexOf("@input ")
+    var inputs: List[String] = Nil
+    while (inpos >=0) {
+      val input = str.substring(inpos + 13, str.indexOf('\n', inpos + 7))
+        inputs = input :: inputs
+        inpos = str.indexOf("@input ", inpos + 8)
+    }
+
+    var outpos: Int = str.indexOf("@output ")
+    var outputs: List[String] = Nil
+    while (outpos >=0) {
+      val output = str.substring(outpos + 14, str.indexOf('\n', outpos + 8))
+        outputs = output :: outputs
+        outpos = str.indexOf("@output ", outpos + 9)
+    }
+
+    val target = new File(scriptFolder, id + ".bsql")
+    sc.save(new FileOutputStream(target))
+
+    WPSProcess(id, title, abstractText, sc, inputs.reverse, outputs.reverse)
   }
 }

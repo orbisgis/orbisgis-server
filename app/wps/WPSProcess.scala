@@ -29,13 +29,40 @@
 
 package wps
 
+import java.io.File
+import org.gdms.data.DataSourceFactory
+import org.gdms.data.importer.FileImportDefinition
 import org.gdms.sql.engine.SQLScript
+import org.gdms.sql.engine.Engine
 
-case class WPSProcess(id: String, title: String, abstractText: String, script: SQLScript) {
+case class WPSProcess(id: String, title: String, abstractText: String, script: SQLScript, inputs: List[String], outputs: List[String]) {
   
   def toShortXml() = <wps:Process wps:processVersion="1">
     <ows:Identifier>{ id }</ows:Identifier>
     <ows:Title>{ title }</ows:Title>
     <ows:Abstract>{ abstractText }</ows:Abstract>
   </wps:Process>
+
+  def execute(inputData: List[(String, File)]): List[(String, File)] = {
+  	val dsf = new DataSourceFactory
+  	val sm = dsf.getSourceManager
+  	inputData.map(i => sm.importFrom(i._1, new FileImportDefinition(i._2)))
+
+  	val scriptFolder = new File("scripts")
+  	val scriptFile = new File(scriptFolder, id + ".bsql")
+  	val script = Engine.loadScript(scriptFile)
+
+  	script.execute
+
+  	val files = outputs.map{ o =>
+  	  val f = File.createTempFile("wps-out-", ".json")
+  	  sm.exportTo(o, f)
+  	  (o,f)
+  	}
+
+  	sm.getSourceNames.map(sm.delete)
+  	dsf.freeResources
+
+  	files
+  }
 }

@@ -6,8 +6,48 @@
 		<ows:Title>@p.title</ows:Title>
 		<ows:Abstract>@p.abstractText</ows:Abstract>
 		<DataInputs>
+			@p.inputs.map { i =>
+			<Input minOccurs="1" maxOccurs="1">
+				<ows:Identifier>@i</ows:Identifier>
+				<ows:Title>@i</ows:Title>
+				<ComplexData>
+					<Default>
+						<Format>
+							<MimeType>application/json</MimeType>
+							<Encoding>UTF-8</Encoding>
+						</Format>
+					</Default>
+					<Supported>
+						<Format>
+							<MimeType>application/json</MimeType>
+							<Encoding>UTF-8</Encoding>
+						</Format>
+					</Supported>
+				</ComplexData>
+			</Input>
+			}
 		</DataInputs>
 		<ProcessOutputs>
+			@p.outputs.map { o =>
+			<Output>
+				<ows:Identifier>@o</ows:Identifier>
+				<ows:Title>@o</ows:Title>
+				<ComplexData>
+					<Default>
+						<Format>
+							<MimeType>application/json</MimeType>
+							<Encoding>UTF-8</Encoding>
+						</Format>
+					</Default>
+					<Supported>
+						<Format>
+							<MimeType>application/json</MimeType>
+							<Encoding>UTF-8</Encoding>
+						</Format>
+					</Supported>
+				</ComplexData>
+			</Output>
+			}
 		</ProcessOutputs>
 	</ProcessDescription>
 	}
