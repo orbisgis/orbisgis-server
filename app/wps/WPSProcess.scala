@@ -27,26 +27,42 @@
  * info_at_ orbisgis.org
  */
 
-import play.api._
-import controllers._
+package wps
+
 import java.io.File
-import org.orbisgis.core.workspace.CoreWorkspace;
-import scala.collection.JavaConversions._
-import java.util.HashMap;
+import org.gdms.data.DataSourceFactory
+import org.gdms.data.importer.FileImportDefinition
+import org.gdms.sql.engine.SQLScript
+import org.gdms.sql.engine.Engine
 
-object Global extends GlobalSettings {
-  override def onStart(app: Application) {
-    // init the main (and only) loaded OrbisGIS workspace
-    val c = new CoreWorkspace()
-    c.setWorkspaceFolder("workspace")
+case class WPSProcess(id: String, title: String, abstractText: String, script: SQLScript, inputs: List[String], outputs: List[String]) {
+  
+  def toShortXml() = <wps:Process wps:processVersion="1">
+    <ows:Identifier>{ id }</ows:Identifier>
+    <ows:Title>{ title }</ows:Title>
+    <ows:Abstract>{ abstractText }</ows:Abstract>
+  </wps:Process>
 
-    WMS.loadStyles
-    WMS.wmsCt.init(c, WMS.styles, WMS.sourceStyles)
+  def execute(inputData: List[(String, File)]): List[(String, File)] = {
+  	val dsf = new DataSourceFactory
+  	val sm = dsf.getSourceManager
+  	inputData.map(i => sm.importFrom(i._1, new FileImportDefinition(i._2)))
 
-    WPS.init
-  }
+  	val scriptFolder = new File("scripts")
+  	val scriptFile = new File(scriptFolder, id + ".bsql")
+  	val script = Engine.loadScript(scriptFile)
 
-  override def onStop(app: Application) {
-    WMS.wmsCt.destroy
+  	script.execute
+
+  	val files = outputs.map{ o =>
+  	  val f = File.createTempFile("wps-out-", ".json")
+  	  sm.exportTo(o, f)
+  	  (o,f)
+  	}
+
+  	sm.getSourceNames.map(sm.delete)
+  	dsf.freeResources
+
+  	files
   }
 }

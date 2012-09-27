@@ -22,8 +22,22 @@ POST /wms/sources/clear					controllers.Application.clearFiles
 
 POST /wms/styles/clear					controllers.WMS.clearStyles
 
+# REST API
+
 GET /wms/api/sources					controllers.API.listSources
 
 POST /wms/api/sources					controllers.API.registerSource
 
 DELETE /wms/api/sources/:name				controllers.API.deleteSource(name)
+
+POST /wps/api/processes				controllers.WPS.apiAddProcess
+
+DELETE /wps/api/processes/:name				controllers.WPS.apiRemoveProcess(name)
+
+# WPS end point
+
+GET  /wps/manage					controllers.WPS.manage
+
+GET  /wps/wps						controllers.WPS.wpsGet
+
+POST  /wps/wps						controllers.WPS.wpsPost
