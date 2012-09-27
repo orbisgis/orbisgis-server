@@ -83,6 +83,8 @@ object WPS extends Controller {
                 FU.write(f, (i \\ "Data" \\ "ComplexData" head).text)
               ((i \\ "Identifier" head).text, f )
             }
+            val fft = File.createTempFile("gdms-i-name", ".txt")
+            FU.write(fft, name)
             val p = wpsMain.processes.get(name)
             val outputs = p.map(_.execute(inputs.toList)).map { _ map { a =>
               (a._1, FU.readFileToString(a._2))

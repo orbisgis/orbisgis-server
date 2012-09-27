@@ -52,6 +52,7 @@ case class WPSProcess(id: String, title: String, abstractText: String, script: S
   	val scriptFile = new File(scriptFolder, id + ".bsql")
   	val script = Engine.loadScript(scriptFile)
 
+    script.setDataSourceFactory(dsf)
   	script.execute
 
   	val files = outputs.map{ o =>

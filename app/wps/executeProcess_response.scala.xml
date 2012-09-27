@@ -5,9 +5,9 @@
     <wps:ProcessOutputs>
     	@outputs.map { o =>
     	  <wps:Output>
-    	  	<ows:Identifier>o._1</ows:Identifier>
-			<ows:Title>o._1</ows:Title>
-			<wps:Data>o._2</wps:Data>
+    	  	<ows:Identifier>@o._1</ows:Identifier>
+			<ows:Title>@o._1</ows:Title>
+			<wps:Data>@XmlFormat.raw(o._2)</wps:Data>
     	  </wps:Output>
     	}
     </wps:ProcessOutputs>
