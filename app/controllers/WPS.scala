@@ -78,7 +78,7 @@ object WPS extends Controller {
     }
   }
 
-  def wpsPost = Action(parse.xml) { implicit request =>
+  def wpsPost = Action(parse.xml(maxLength=1024*1024*1024)) { implicit request =>
      (request.body \\ "Execute" headOption).flatMap { e =>
         (e \\ "Identifier" headOption).map(_.text).flatMap {name => 
           (e \\ "DataInputs" headOption).map { di =>
