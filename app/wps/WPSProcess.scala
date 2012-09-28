@@ -48,11 +48,7 @@ case class WPSProcess(id: String, title: String, abstractText: String, script: S
   	val sm = dsf.getSourceManager
   	inputData.map(i => sm.importFrom(i._1, new FileImportDefinition(i._2)))
 
-  	val scriptFolder = new File("scripts")
-  	val scriptFile = new File(scriptFolder, id + ".bsql")
-  	val script = Engine.loadScript(scriptFile)
-
-    script.setDataSourceFactory(dsf)
+  	script.setDataSourceFactory(dsf)
   	script.execute
 
   	val files = outputs.map{ o =>
