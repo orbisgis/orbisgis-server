@@ -41,3 +41,5 @@ GET  /wps/manage					controllers.WPS.manage
 GET  /wps/wps						controllers.WPS.wpsGet
 
 POST  /wps/wps						controllers.WPS.wpsPost
+
+GET /wps/tempResource/:name			controllers.WPS.tempResource(name)

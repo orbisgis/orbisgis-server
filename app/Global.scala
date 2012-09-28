@@ -32,6 +32,7 @@ import controllers._
 import java.io.File
 import org.orbisgis.core.workspace.CoreWorkspace;
 import scala.collection.JavaConversions._
+import org.apache.commons.io.{FileUtils => FU}
 import java.util.HashMap;
 
 object Global extends GlobalSettings {
@@ -48,5 +49,7 @@ object Global extends GlobalSettings {
 
   override def onStop(app: Application) {
     WMS.wmsCt.destroy
+
+    FU.cleanDirectory(WPS.wpsMain.scriptFolder)
   }
 }

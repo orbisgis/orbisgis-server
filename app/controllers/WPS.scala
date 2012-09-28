@@ -30,7 +30,9 @@ package controllers
 
 import play.api._
 import play.api.mvc._
+import play.api.libs.iteratee._
 import wps.{WPS => WPSMain, WPSProcess}
+import scala.collection.mutable.{Map => MutMap}
 import java.io.File
 import java.util.Calendar
 import org.apache.commons.io.{FileUtils => FU}
@@ -38,6 +40,8 @@ import org.apache.commons.io.{FileUtils => FU}
 object WPS extends Controller {
 
   var wpsMain: WPSMain = _
+
+  private val tempRes = MutMap[String, File]()
 
   def init() {
     wpsMain = new WPSMain
@@ -86,11 +90,14 @@ object WPS extends Controller {
             val fft = File.createTempFile("gdms-i-name", ".txt")
             FU.write(fft, name)
             val p = wpsMain.processes.get(name)
-            val outputs = p.map(_.execute(inputs.toList)).map { _ map { a =>
-              (a._1, FU.readFileToString(a._2))
-            }}
+            val outputs = p.map(_.execute(inputs.toList))
             outputs.map { op =>
-              Ok(wps.xml.executeProcess_response(p.get, op , wps.Succeeded(Calendar.getInstance.getTime)))
+              val nop = op map { case (a, b) => 
+                val tid = System.currentTimeMillis.toString
+                tempRes.put(tid, b)
+                (a, tid)
+              }
+              Ok(wps.xml.executeProcess_response(p.get, nop , wps.Succeeded(Calendar.getInstance.getTime)))
             }.getOrElse {
               BadRequest
             }
@@ -123,5 +130,15 @@ object WPS extends Controller {
 
   def manage = Action { implicit request =>
     Ok(views.html.wpsmanage(wpsMain.processes.values))
+  }
+
+  def tempResource(req: String) = Action { implicit request =>
+    tempRes.get(req).map { f => 
+      tempRes.remove(req)
+      SimpleResult(
+        header = ResponseHeader(200, Map(CONTENT_TYPE -> "application/json")),
+        body = Enumerator.fromFile(f)
+        )
+      }.getOrElse { NotFound }
   }
 }
