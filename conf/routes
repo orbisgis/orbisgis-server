@@ -30,7 +30,7 @@ POST /wms/api/sources					controllers.API.registerSource
 
 DELETE /wms/api/sources/:name				controllers.API.deleteSource(name)
 
-POST /wps/api/processes				controllers.WPS.apiAddProcess
+POST /wps/api/processes                                 controllers.WPS.apiAddProcess
 
 DELETE /wps/api/processes/:name				controllers.WPS.apiRemoveProcess(name)
 
@@ -42,4 +42,18 @@ GET  /wps/wps						controllers.WPS.wpsGet
 
 POST  /wps/wps						controllers.WPS.wpsPost
 
-GET /wps/tempResource/:name			controllers.WPS.tempResource(name)
+GET /wps/tempResource/:name                             controllers.WPS.tempResource(name)
+
+# REST Catalog API
+
+GET /map/workspaces                                      controllers.CatalogAPI.listWorkspaces
+
+#GET /map/workspaces/:name/contexts                      controllers.CatalogAPI.listContexts(name)
+
+#GET /map/workspaces/:name/contexts/:id                  controllers.CatalogAPI.getContext(name,id)
+
+#POST /map/workspaces/:name/contexts                     controllers.CatalogAPI.addContext(name)
+
+#POST /map/workspaces/:name/contexts/:id                 controllers.CatalogAPI.replaceContext(name,id)
+
+#DELETE /map/workspaces/:name/contexts/:id               controllers.CatalogAPI.removeContext(name,id)
