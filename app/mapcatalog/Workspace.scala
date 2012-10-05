@@ -38,7 +38,7 @@ class Workspace (var name: String) {
    * Extract the description from the XML parameter
    */
   def fromXML(workspace: scala.xml.Node) {
-    name = (workspace \ "@name").text
+    name = (workspace \ "name").text
   }
   
   
@@ -46,7 +46,7 @@ class Workspace (var name: String) {
    * Return the description of this map context in XML
    */  
   def toXML = 
-    <workspace name={name}>
-      
+    <workspace>
+      <name>{name}</name>
     </workspace>
 }

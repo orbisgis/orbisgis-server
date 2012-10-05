@@ -29,10 +29,9 @@
 
 package controllers
 
-import play.api._
 import play.api.mvc._
 import mapcatalog.MapCatalog
-import templates.Xml
+import play.api.templates.Xml
 
 /**
  * Host collections of ows map context
@@ -45,7 +44,7 @@ object CatalogAPI extends Controller {
    * @return The list of workspaces
    */
   def listWorkspace = Action {
-    Xml(mapCatalog.getWorkspaceList)
+    Ok(content = mapCatalog.getWorkspaceList)
   }
 
   /**
