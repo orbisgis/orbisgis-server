@@ -32,6 +32,21 @@ package mapcatalog
 /**
  * Workspace contain a collection of Maps
  */
-class Workspace (name: String) {
+class Workspace (var name: String) {
   
+  /**
+   * Extract the description from the XML parameter
+   */
+  def fromXML(workspace: scala.xml.Node) {
+    name = (workspace \ "@name").text
+  }
+  
+  
+  /**
+   * Return the description of this map context in XML
+   */  
+  def toXML = 
+    <workspace name={name}>
+      
+    </workspace>
 }

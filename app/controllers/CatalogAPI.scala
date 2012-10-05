@@ -31,21 +31,27 @@ package controllers
 
 import play.api._
 import play.api.mvc._
-import play.api.libs.json._
-import scala.util.control.Exception._
+import mapcatalog.MapCatalog
+import templates.Xml
 
 /**
  * Host collections of ows map context
  * @author Nicolas Fortin
  */
 object CatalogAPI extends Controller {
-  private val CATALOG_PATH = "map-catalogs"
+  val mapCatalog = new MapCatalog()
   
   /**
    * @return The list of workspaces
    */
-  def listWorkspaces = Action {
+  def listWorkspace = Action {
+    Xml(mapCatalog.getWorkspaceList)
+  }
 
-    Ok()
+  /**
+   * Save the state of the loaded map catalog
+   */
+  def onStop() {
+    mapCatalog.saveState
   }
 }

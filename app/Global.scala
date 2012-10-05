@@ -49,7 +49,7 @@ object Global extends GlobalSettings {
 
   override def onStop(app: Application) {
     WMS.wmsCt.destroy
-
+    CatalogAPI.onStop
     FU.cleanDirectory(WPS.wpsMain.scriptFolder)
   }
 }

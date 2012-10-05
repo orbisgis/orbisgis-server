@@ -33,17 +33,11 @@ package mapcatalog
  * MapContext information
  * @param id Identifier of this map context, unique for a workspace
  */
-class MapContext (id: Integer, defaultTitle : String) {
+class MapContext (id: Int, defaultTitle : String) {
   /**
    * Extract the description from the XML parameter
    */
   def fromXML(content : String) {
-    
-  }
-  /**
-   * Return the description of this map context in XML
-   */
-  def toXML() {
     
   }
 }
