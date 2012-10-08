@@ -27,29 +27,36 @@
  * info_at_ orbisgis.org
  */
 
-package controllers
+package org.orbisgis.server.mapcatalog;
 
-import play.api.mvc._
-import org.orbisgis.server.mapcatalog.MapCatalog
+import java.io.File;
+import org.apache.log4j.Logger;
 
 /**
- * Host collections of ows map context
- * @author Nicolas Fortin
+ *
  */
-object CatalogAPI extends Controller {
-  val mapCatalog = new MapCatalog()
-  
-  /**
-   * @return The list of workspaces
-   */
-  def listWorkspace = Action {
-    Ok(content = mapCatalog.getWorkspaceList)
-  }
+public class MapCatalog {
+        private Logger LOGGER = Logger.getLogger(MapCatalog.class);
+        private File catalogFolder = new File("map-catalogs" + File.pathSeparator);
+        private File workspaceFile = new File(catalogFolder, "mapcatalog.xml");
 
-  /**
-   * Save the state of the loaded map catalog
-   */
-  def onStop() {
-    mapCatalog.saveState
-  }
+        public MapCatalog() {
+
+        }
+        /**
+         * Serialisation of the map catalog into a file
+         */
+        public void saveState() {
+                
+        }
+        /**
+         * @return The XML content or null if the document cannot be builded
+         */
+        public String getWorkspaceList() {
+                StringBuilder response = new StringBuilder();
+                response.append("<workspaces>");
+                
+                response.append("</workspaces>");                
+                return response.toString();
+        }
 }

@@ -11,3 +11,6 @@ tmp
 /workspace/
 /styles/
 /scripts/
+.idea/
+.idea_modules/
+*.iml

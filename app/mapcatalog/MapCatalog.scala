@@ -55,7 +55,7 @@ class MapCatalog {
       saveState
     }
   }
-  def getWorkspaceList = 
+  def getWorkspaceList =
     <workspaces>
       {workspaces.foreach{case (name,workspace) => <workspace>{name}</workspace>}}
     </workspaces>
