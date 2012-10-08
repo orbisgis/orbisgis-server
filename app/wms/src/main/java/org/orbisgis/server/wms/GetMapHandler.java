@@ -107,7 +107,7 @@ public final class GetMapHandler {
                 WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException, UnsupportedEncodingException {
 
 
-                Double dpi = 25.4 / pixelSize;
+                double dpi = 25.4 / pixelSize;
 
                 DataManager dataManager = Services.getService(DataManager.class);
 
@@ -295,7 +295,8 @@ public final class GetMapHandler {
                 String crs;
                 int width;
                 int height;
-                double pixelSize = 0.084;
+                //Use a 72 dpi resolution by default
+                double pixelSize = 0.35;
                 String imageFormat = "undefined";
                 boolean transparent = false;
                 String bgColor = "#FFFFFF";
