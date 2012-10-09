@@ -46,7 +46,8 @@ GET /wps/tempResource/:name                             controllers.WPS.tempReso
 
 # REST Catalog API
 
-GET /map/workspaces                                      controllers.CatalogAPI.listWorkspace
+# Workspace list , like /map/workspaces?key=Jdj7oOplmlsS
+GET /map/workspaces                                      controllers.CatalogAPI.listWorkspace(key: String ?= "")
 
 #GET /map/workspaces/:name/contexts                      controllers.CatalogAPI.listContexts(name)
 

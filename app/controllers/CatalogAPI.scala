@@ -30,7 +30,7 @@
 package controllers
 
 import play.api.mvc._
-import org.orbisgis.server.mapcatalog.MapCatalog
+import mapcatalog.MapCatalog
 
 /**
  * Host collections of ows map context
@@ -38,11 +38,19 @@ import org.orbisgis.server.mapcatalog.MapCatalog
  */
 object CatalogAPI extends Controller {
   val mapCatalog = new MapCatalog()
-  
+
   /**
+   *
+   */
+  private def getLastCatalogId() {
+
+    0
+  }
+  /**
+   * @param key Client identifier
    * @return The list of workspaces
    */
-  def listWorkspace = Action {
+  def listWorkspace(key : String) = Action {
     Ok(content = mapCatalog.getWorkspaceList)
   }
 

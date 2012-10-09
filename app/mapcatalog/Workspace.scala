@@ -35,10 +35,10 @@ package mapcatalog
 class Workspace (var name: String) {
   
   /**
-   * Extract the description from the XML parameter
+   * Extract the description and map context from the XML parameter
    */
   def fromXML(workspace: scala.xml.Node) {
-    name = (workspace \ "name").text
+    name = (workspace \ "name").text.trim
   }
   
   

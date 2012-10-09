@@ -29,15 +29,29 @@
 
 package mapcatalog
 
+import scala.xml._
+import java.util.Date
+
 /**
  * MapContext information
  * @param id Identifier of this map context, unique for a workspace
  */
-class MapContext (id: Int, defaultTitle : String) {
+class MapContext (var id: Int) {
+  var titleStr : String = "none"
+  var titleLng : String = ""
+  var abstractStr : String = ""
+  var abstractLng : String = ""
+  var mapDate : String = ""     // Date extracted from the original document
+
   /**
    * Extract the description from the XML parameter
    */
-  def fromXML(content : String) {
-    
+  def fromXML(context: Node) {
+    id = (context \ "@id").text.toInt
+    mapDate = (context \ "@date").text
+    titleStr = (context \ "title").text
+    titleLng = ((context \ "title") \ "@xml:lang").text
+    abstractStr = (context \ "abstract").text
+    abstractLng = ((context \ "abstract") \ "@xml:lang").text
   }
 }

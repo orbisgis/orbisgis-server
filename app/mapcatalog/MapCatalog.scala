@@ -32,6 +32,7 @@ package mapcatalog
 
 import java.io.{File, FileOutputStream}
 import org.apache.log4j.Logger;
+import scala.xml.XML
 
 /**
  * Host collections of ows map context
@@ -43,22 +44,20 @@ class MapCatalog {
   private val workspaceFile = new File(catalogFolder,"mapcatalog.xml")
   private var workspaces = Map[String,Workspace]()
   init()
-  
   /**
    * Create folders if not exists and load configuration file
    */
   private def init() {
     catalogFolder.mkdirs    
     if(workspaceFile.exists) {
-      fromXML(xml.XML.loadFile(workspaceFile))
+      LOGGER.info("Loading map catalog configuration file..")
+      fromXML(XML.loadFile(workspaceFile))
     } else {
       saveState
     }
   }
-  def getWorkspaceList =
-    <workspaces>
-      {workspaces.foreach{case (name,workspace) => <workspace>{name}</workspace>}}
-    </workspaces>
+
+  def getWorkspaceList = mapcatalog.xml.listWorkspaces(workspaces.values)
   
   /**
    * Extract the description from the XML parameter
@@ -71,6 +70,7 @@ class MapCatalog {
       newWorkspace.fromXML(workspace)
       workspaces += (newWorkspace.name -> newWorkspace)
     }
+    LOGGER.info("there are "+workspaces.size+" loaded workspaces")
   }
   
   def toXML =
