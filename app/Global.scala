@@ -29,14 +29,13 @@
 
 import play.api._
 import controllers._
-import java.io.File
-import org.orbisgis.core.workspace.CoreWorkspace;
+import org.orbisgis.core.workspace.CoreWorkspace
 import scala.collection.JavaConversions._
 import org.apache.commons.io.{FileUtils => FU}
-import java.util.HashMap;
 
 object Global extends GlobalSettings {
   override def onStart(app: Application) {
+    Logger.info("Application start...")
     // init the main (and only) loaded OrbisGIS workspace
     val c = new CoreWorkspace()
     c.setWorkspaceFolder("workspace")
@@ -44,12 +43,13 @@ object Global extends GlobalSettings {
     WMS.loadStyles
     WMS.wmsCt.init(c, WMS.styles, WMS.sourceStyles)
 
-    WPS.init
+    WPS.init()
   }
 
   override def onStop(app: Application) {
-    WMS.wmsCt.destroy
-    CatalogAPI.onStop
+    Logger.info("Application shutdown...")
+    WMS.wmsCt.destroy()
+    CatalogAPI.onStop()
     FU.cleanDirectory(WPS.wpsMain.scriptFolder)
   }
 }

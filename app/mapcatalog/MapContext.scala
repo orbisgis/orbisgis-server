@@ -31,27 +31,53 @@ package mapcatalog
 
 import scala.xml._
 import java.util.Date
+import java.text.SimpleDateFormat
+import XmlTools.getAttributes
 
 /**
  * MapContext information
  * @param id Identifier of this map context, unique for a workspace
  */
 class MapContext (var id: Int) {
-  var titleStr : String = "none"
-  var titleLng : String = ""
-  var abstractStr : String = ""
-  var abstractLng : String = ""
-  var mapDate : String = ""     // Date extracted from the original document
+  var titleStr = "none"
+  var titleLng = ""
+  var abstractStr = ""
+  var abstractLng = ""
+  var mapDate = ""     // When the original document has been uploaded
 
+  private def readTitleAbstractXML(context : Node) {
+    if(!(context \ "Title" isEmpty)) {
+      titleStr = (context \ "Title").text.trim
+      titleLng = getAttributes((context \ "Title").head)("lang")
+    }
+    if(!(context \ "Abstract" isEmpty)) {
+      abstractStr = (context \ "Abstract").text.trim
+      abstractLng = getAttributes((context \ "Abstract").head)("lang")
+    }
+  }
+
+  def toXML =
+  <context id={id.toString} date={mapDate}>
+    <Title xml:lang={titleLng}>{titleStr}</Title>
+    { if (!abstractStr.isEmpty) { <Abstract xml:lang={abstractLng}>{abstractStr}</Abstract> } }
+  </context>
   /**
    * Extract the description from the XML parameter
    */
   def fromXML(context: Node) {
     id = (context \ "@id").text.toInt
     mapDate = (context \ "@date").text
-    titleStr = (context \ "title").text
-    titleLng = ((context \ "title") \ "@xml:lang").text
-    abstractStr = (context \ "abstract").text
-    abstractLng = ((context \ "abstract") \ "@xml:lang").text
+    readTitleAbstractXML(context)
+  }
+
+  /**
+   * Extract from the full Ows Map Context file the General Description
+   * @param context
+   */
+  def fromFullContextXML(context: Node) {
+    mapDate = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss z").format(new Date())
+    if(!(context \ "General" isEmpty)) {
+      readTitleAbstractXML((context \ "General").head)
+    }
   }
 }

@@ -29,24 +29,55 @@
 
 package mapcatalog
 
+import collection.mutable
+
 /**
  * Workspace contain a collection of Maps
  */
 class Workspace (var name: String) {
-  
+  val contexts = mutable.MutableList[MapContext]()
   /**
    * Extract the description and map context from the XML parameter
    */
   def fromXML(workspace: scala.xml.Node) {
-    name = (workspace \ "name").text.trim
+    name = (workspace \ "@name").text.trim
+    // Load maps
+    workspace \ "context" foreach{ context =>
+      val newContext = new MapContext(-1)
+      newContext.fromXML(context)
+      contexts += newContext
+    }
   }
-  
-  
+
+  /**
+   * @return The maximum map context id
+   */
+  def getMaxId: Int = {
+    if(!contexts.isEmpty) {
+      contexts.map( context => context.id).max
+    } else {
+      -1
+    }
+  }
+
+  /**
+   * Add a new Map Context
+   * @param context MapContext instance
+   */
+  def addContext(context : MapContext) {
+    contexts+=context
+  }
+
+  /**
+   *
+   * @return Content of this workspace
+   */
+  def getContextList = mapcatalog.xml.getContextList(contexts)
   /**
    * Return the description of this map context in XML
    */  
   def toXML = 
-    <workspace>
-      <name>{name}</name>
+    <workspace name={name} count={contexts.size.toString}>
+      {contexts.map{context => context.toXML}}
     </workspace>
 }

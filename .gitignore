@@ -14,3 +14,4 @@ tmp
 .idea/
 .idea_modules/
 *.iml
+/map-catalogs/

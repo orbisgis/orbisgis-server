@@ -30,19 +30,22 @@
 package mapcatalog
 
 
-import java.io.{File, FileOutputStream}
-import org.apache.log4j.Logger;
+import java.io.File
+import org.apache.log4j.Logger
 import scala.xml.XML
+import scala.collection.mutable.HashMap
 
 /**
  * Host collections of ows map context
  * @author Nicolas Fortin
  */
 class MapCatalog {
-  private val LOGGER  = Logger.getLogger("mapcatalog.MapCatalog");
+  private val LOGGER  = Logger.getLogger("mapcatalog.MapCatalog")
   private val catalogFolder  = new File("map-catalogs/")
   private val workspaceFile = new File(catalogFolder,"mapcatalog.xml")
-  private var workspaces = Map[String,Workspace]()
+  //Todo use data base instead of storing all context description in memory
+  private var workspaces = HashMap[String,Workspace]()
+  private var lastContextId = 0
   init()
   /**
    * Create folders if not exists and load configuration file
@@ -53,29 +56,93 @@ class MapCatalog {
       LOGGER.info("Loading map catalog configuration file..")
       fromXML(XML.loadFile(workspaceFile))
     } else {
-      saveState
+      // First run
+      // Create the default workspace
+      addWorkspace(new Workspace("default"))
+      saveState()
     }
   }
 
+  /**
+    * @param workspaceName Name of the workspace
+    * @throws IllegalArgumentException workspace does not exist
+    * @return
+    */
+  def getContextList(workspaceName: String) : play.api.templates.Xml = {
+    if (!workspaces.keySet.contains(workspaceName)) {
+      //Workspace name does not exists
+      throw new IllegalArgumentException("<error>The workspace "+workspaceName+" does not exists</error>")
+    }
+    workspaces(workspaceName).getContextList
+  }
+
+  /**
+   * Add a workspace in the workspace list.
+   * @param newWorkspace
+   */
+  private def addWorkspace(newWorkspace : Workspace) {
+    workspaces+=(newWorkspace.name -> newWorkspace)
+  }
+  /**
+   *
+   * @param workspaceName The name of the workspace
+   * @param node The content of the workspace
+   * @throws IllegalArgumentException workspace does not exist
+   * @return The short description of the MapContext in XML form
+   */
+  def addContext(workspaceName: String, node: scala.xml.Node ) : play.api.templates.Xml = {
+    // Three steps,
+    // first extract Title, Description, compute Time and unique ID
+    // Then save the entire context in a file
+    // Return the short description of the context
+    if (!workspaces.keySet.contains(workspaceName)) {
+      //Workspace name does not exists
+      throw new IllegalArgumentException("<error>The workspace "+workspaceName+" does not exists</error>")
+    }
+    // Save the context
+    scala.xml.XML.save(new File(catalogFolder, lastContextId + ".xml").getAbsolutePath,node)
+
+    // Create the context object
+    val newContext = new MapContext(lastContextId)
+    newContext.fromFullContextXML(node)
+    workspaces.get(workspaceName).get.addContext(newContext)
+    //Increment last context id
+    lastContextId+=1
+    // Return the new content information
+    mapcatalog.xml.getShortContext(newContext)
+  }
+
+  /**
+   *
+   * @return XML content of the map catalog
+   */
   def getWorkspaceList = mapcatalog.xml.listWorkspaces(workspaces.values)
   
   /**
    * Extract the description from the XML parameter
    */
   def fromXML(node: scala.xml.Node) {
-    workspaces = Map[String,Workspace]() //Clear the workspace
+    workspaces = HashMap[String,Workspace]() //Clear the workspace
+    lastContextId=(-1)
     // Iterate over workspace nodes and fetch for the name
     node\"workspace" foreach{(workspace)=>
       val newWorkspace = new Workspace("none")
       newWorkspace.fromXML(workspace)
       workspaces += (newWorkspace.name -> newWorkspace)
     }
+    // Find the next unused context id
+    if (!workspaces.isEmpty) {
+      lastContextId = workspaces.values.map(workspace => workspace.getMaxId).max
+      lastContextId += 1
+    } else {
+      lastContextId = 0
+    }
     LOGGER.info("there are "+workspaces.size+" loaded workspaces")
   }
   
   def toXML =
     <workspaces>
-      {workspaces.foreach{case (name,workspace) => workspace.toXML}}
+      {workspaces.values.map { workspace => workspace.toXML}}
     </workspaces>
     
   /**

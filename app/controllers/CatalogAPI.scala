@@ -31,6 +31,7 @@ package controllers
 
 import play.api.mvc._
 import mapcatalog.MapCatalog
+import org.apache.log4j.Logger
 
 /**
  * Host collections of ows map context
@@ -38,14 +39,12 @@ import mapcatalog.MapCatalog
  */
 object CatalogAPI extends Controller {
   val mapCatalog = new MapCatalog()
-
-  /**
-   *
-   */
-  private def getLastCatalogId() {
-
-    0
+  private val LOGGER  = Logger.getLogger(CatalogAPI.getClass)
+  def addContext(key: String , name : String, path : String)
+  = Action(parse.xml(maxLength=1024*1024*1024)) { implicit request =>
+    Created(content = mapCatalog.addContext(name, request.body.last))
   }
+
   /**
    * @param key Client identifier
    * @return The list of workspaces
@@ -53,11 +52,13 @@ object CatalogAPI extends Controller {
   def listWorkspace(key : String) = Action {
     Ok(content = mapCatalog.getWorkspaceList)
   }
-
+  def listContexts(key: String , name : String) = Action {
+    Ok(content = mapCatalog.getContextList(name))
+  }
   /**
    * Save the state of the loaded map catalog
    */
   def onStop() {
-    mapCatalog.saveState
+    mapCatalog.saveState()
   }
 }

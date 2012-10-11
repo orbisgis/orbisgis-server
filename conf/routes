@@ -49,13 +49,13 @@ GET /wps/tempResource/:name                             controllers.WPS.tempReso
 # Workspace list , like /map/workspaces?key=Jdj7oOplmlsS
 GET /map/workspaces                                      controllers.CatalogAPI.listWorkspace(key: String ?= "")
 
-#GET /map/workspaces/:name/contexts                      controllers.CatalogAPI.listContexts(name)
+GET /map/workspaces/:name/contexts                      controllers.CatalogAPI.listContexts(key: String ?= "", name)
 
 #GET /map/workspaces/:name/contexts/:id                  controllers.CatalogAPI.getContext(name,id)
 
-#POST /map/workspaces/:name/contexts                     controllers.CatalogAPI.addContext(name, path="")
+POST /map/workspaces/:name/contexts                     controllers.CatalogAPI.addContext(key: String ?= "", name, path="")
 
-#POST /map/workspaces/:name/contexts/*path               controllers.CatalogAPI.addContext(name, path)
+POST /map/workspaces/:name/contexts/*path               controllers.CatalogAPI.addContext(key: String ?= "",name, path)
 
 #POST /map/workspaces/:name/contexts/:id                 controllers.CatalogAPI.replaceContext(name,id)
 
