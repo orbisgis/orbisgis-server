@@ -30,9 +30,9 @@
 package mapcatalog
 
 
-import java.io.File
+import java.io.{FileReader, File}
 import org.apache.log4j.Logger
-import scala.xml.XML
+import scala.xml.{Elem, XML}
 import scala.collection.mutable.HashMap
 
 /**
@@ -63,6 +63,19 @@ class MapCatalog {
     }
   }
 
+  /**
+   * Return the full content of a map context
+   * @param workspaceName Name of the workspace
+   * @param mapId Identifier of the map
+   * @return
+   */
+  def getContext(workspaceName: String, mapId: Int): Elem = {
+    if (!workspaces.keySet.contains(workspaceName)) {
+      //Workspace name does not exists
+      throw new IllegalArgumentException("<error>The workspace "+workspaceName+" does not exists</error>")
+    }
+    scala.xml.XML.loadFile(new File(catalogFolder,mapId+".xml"))
+  }
   /**
     * @param workspaceName Name of the workspace
     * @throws IllegalArgumentException workspace does not exist

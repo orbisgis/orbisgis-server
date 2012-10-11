@@ -51,7 +51,7 @@ GET /map/workspaces                                      controllers.CatalogAPI.
 
 GET /map/workspaces/:name/contexts                      controllers.CatalogAPI.listContexts(key: String ?= "", name)
 
-#GET /map/workspaces/:name/contexts/:id                  controllers.CatalogAPI.getContext(name,id)
+GET /map/workspaces/:name/contexts/:id                  controllers.CatalogAPI.getContext(key: String ?= "",name,id)
 
 POST /map/workspaces/:name/contexts                     controllers.CatalogAPI.addContext(key: String ?= "", name, path="")
 

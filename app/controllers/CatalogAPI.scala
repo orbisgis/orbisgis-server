@@ -40,11 +40,16 @@ import org.apache.log4j.Logger
 object CatalogAPI extends Controller {
   val mapCatalog = new MapCatalog()
   private val LOGGER  = Logger.getLogger(CatalogAPI.getClass)
+
+
   def addContext(key: String , name : String, path : String)
   = Action(parse.xml(maxLength=1024*1024*1024)) { implicit request =>
     Created(content = mapCatalog.addContext(name, request.body.last))
   }
 
+  def getContext(key: String ,name : String ,id : String) = Action {
+    Ok(content = mapCatalog.getContext(name,id.toInt))
+  }
   /**
    * @param key Client identifier
    * @return The list of workspaces
