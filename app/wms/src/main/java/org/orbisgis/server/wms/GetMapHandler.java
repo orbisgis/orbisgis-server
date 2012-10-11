@@ -145,7 +145,10 @@ public final class GetMapHandler {
                                         layers.addLayer(iLayer);
                                 }
                         } catch (LayerException e) {
-                                WMS.exceptionDescription(wmsResponse, output, "At least one of the chosen layer is invalid. Make sure of the available layers by requesting the server capabilities.");
+                                WMS.exceptionDescription(wmsResponse, output,
+                                        "At least one of the chosen layer is invalid. "
+                                        + "Make sure of the available layers by requesting "
+                                        + "the server capabilities.");
                                 return;
                         }
 
@@ -157,15 +160,20 @@ public final class GetMapHandler {
                                         try {
                                                 layers.addLayer(sld.getLayer(i));
                                         } catch (LayerException ex) {
-                                                WMS.exceptionDescription(wmsResponse, output, "At least one of the chosen layer is invalid. Make sure of the available layers by requesting the server capabilities.");
+                                                WMS.exceptionDescription(wmsResponse, output,
+                                                        "At least one of the chosen layer is "
+                                                        + "invalid. Make sure of the available "
+                                                        + "layers by requesting the server capabilities.");
                                                 return;
                                         } catch (SeExceptions.InvalidStyle ex) {
-                                                WMS.exceptionDescription(wmsResponse, output, "The se style is invalid. Please give a SE valid SLD file.");
+                                                WMS.exceptionDescription(wmsResponse, output,
+                                                        "The se style is invalid. Please give a SE valid SLD file.");
                                                 return;
                                         }
                                 }
                         } catch (URISyntaxException ex) {
-                                WMS.exceptionDescription(wmsResponse, output, "The SLD URI is invalid. Please enter a valid SLD file URI path.");
+                                WMS.exceptionDescription(wmsResponse, output,
+                                        "The SLD URI is invalid. Please enter a valid SLD file URI path.");
                                 return;
                         }
                 }
@@ -186,7 +194,10 @@ public final class GetMapHandler {
                                                         Style style = serverStyles.get(styleString);
                                                         layers.getChildren()[j].setStyle(0, style);
                                                 } else {
-                                                        WMS.exceptionDescription(wmsResponse, output, "One of the requested SE styles doesn't exist on this server. Please look for an existing style in the server extended capabilities.");
+                                                        WMS.exceptionDescription(wmsResponse, output,
+                                                                "One of the requested SE styles doesn't "
+                                                                + "exist on this server. Please look for an "
+                                                                + "existing style in the server extended capabilities.");
                                                         return;
                                                 }
 
@@ -208,7 +219,8 @@ public final class GetMapHandler {
                                                 layers.getChildren()[i].setStyle(0, theStyle);
                                         }
                                 } catch (SeExceptions.InvalidStyle ex) {
-                                        WMS.exceptionDescription(wmsResponse, output, "The se style is invalid. Please give a SE valid style in the SLD file..");
+                                        WMS.exceptionDescription(wmsResponse, output,
+                                                "The se style is invalid. Please give a SE valid style in the SLD file..");
                                         return;
                                 }
                         }
@@ -216,9 +228,9 @@ public final class GetMapHandler {
 
                         //Setting the envelope according to given bounding box
                         Envelope env;
-
+                        //bbox: {minx, miny, maxx, maxy}
                         if (bbox.length == 4) {
-                                env = new Envelope(bbox[0], bbox[1], bbox[2], bbox[3]);
+                                env = new Envelope(bbox[0], bbox[2], bbox[1], bbox[3]);
                         } else {
                                 env = layers.getEnvelope();
                         }
@@ -287,7 +299,9 @@ public final class GetMapHandler {
          * @param serverStyles
          * @throws WMSException
          */
-        public void getMapParameterParser(Map<String, String[]> queryParameters, OutputStream output, WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException, UnsupportedEncodingException {
+        public void getMapParameterParser(Map<String, String[]> queryParameters, OutputStream output,
+                        WMSResponse wmsResponse, Map<String, Style> serverStyles)
+                        throws WMSException, UnsupportedEncodingException {
 
                 String[] layerList = new String[0];
                 String[] styleList = new String[0];
@@ -367,7 +381,8 @@ public final class GetMapHandler {
                         exceptionsFormat = queryParameters.get("EXCEPTIONS")[0];
                 }
 
-                getMap(layerList, styleList, crs, bbox, width, height, pixelSize, imageFormat, transparent, bgColor, sld, exceptionsFormat, output, wmsResponse, serverStyles);
+                getMap(layerList, styleList, crs, bbox, width, height, pixelSize,
+                        imageFormat, transparent, bgColor, sld, exceptionsFormat, output, wmsResponse, serverStyles);
         }
 
         GetMapHandler(Map<String, Layer> lMap) {
