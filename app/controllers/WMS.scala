@@ -158,7 +158,7 @@ object WMS extends Controller {
     Async {
       p.map { o ⇒
         SimpleResult(
-          header = ResponseHeader(code, Map(CONTENT_LENGTH -> o.length.toString())),
+          header = ResponseHeader(code, Map(CONTENT_LENGTH -> o.length.toString(), CONTENT_TYPE -> ct)),
           body = Enumerator(o))
       }
     }
