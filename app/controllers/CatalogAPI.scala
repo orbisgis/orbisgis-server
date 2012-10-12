@@ -32,6 +32,7 @@ package controllers
 import play.api.mvc._
 import mapcatalog.MapCatalog
 import org.apache.log4j.Logger
+import scala.xml.XML
 
 /**
  * Host collections of ows map context
@@ -41,14 +42,13 @@ object CatalogAPI extends Controller {
   val mapCatalog = new MapCatalog()
   private val LOGGER  = Logger.getLogger(CatalogAPI.getClass)
 
-
   def addContext(key: String , name : String, path : String)
-  = Action(parse.xml(maxLength=1024*1024*1024)) { implicit request =>
-    Created(content = mapCatalog.addContext(name, request.body.last))
+  = Action(parse.temporaryFile) { implicit request =>
+    Created(mapCatalog.addContext(name,request.body))
   }
 
   def getContext(key: String ,name : String ,id : String) = Action {
-    Ok(content = mapCatalog.getContext(name,id.toInt))
+    Ok(scala.xml.XML.loadFile(mapCatalog.getContext(name,id.toInt)))
   }
   /**
    * @param key Client identifier

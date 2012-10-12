@@ -76,8 +76,8 @@ class MapContext (var id: Int) {
    */
   def fromFullContextXML(context: Node) {
     mapDate = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss z").format(new Date())
-    if(!(context \ "General" isEmpty)) {
-      readTitleAbstractXML((context \ "General").head)
+    if(!(context.head \ "General" isEmpty)) {
+      readTitleAbstractXML((context.head \ "General").head)
     }
   }
 }

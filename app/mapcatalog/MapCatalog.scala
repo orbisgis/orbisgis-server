@@ -34,6 +34,7 @@ import java.io.{FileReader, File}
 import org.apache.log4j.Logger
 import scala.xml.{Elem, XML}
 import scala.collection.mutable.HashMap
+import org.apache.commons.io.{FileUtils => FU}
 
 /**
  * Host collections of ows map context
@@ -44,7 +45,7 @@ class MapCatalog {
   private val catalogFolder  = new File("map-catalogs/")
   private val workspaceFile = new File(catalogFolder,"mapcatalog.xml")
   //Todo use data base instead of storing all context description in memory
-  private var workspaces = HashMap[String,Workspace]()
+  private val workspaces = HashMap[String,Workspace]()
   private var lastContextId = 0
   init()
   /**
@@ -69,12 +70,12 @@ class MapCatalog {
    * @param mapId Identifier of the map
    * @return
    */
-  def getContext(workspaceName: String, mapId: Int): Elem = {
+  def getContext(workspaceName: String, mapId: Int): File = {
     if (!workspaces.keySet.contains(workspaceName)) {
       //Workspace name does not exists
       throw new IllegalArgumentException("<error>The workspace "+workspaceName+" does not exists</error>")
     }
-    scala.xml.XML.loadFile(new File(catalogFolder,mapId+".xml"))
+    new File(catalogFolder,mapId+".xml")
   }
   /**
     * @param workspaceName Name of the workspace
@@ -103,7 +104,7 @@ class MapCatalog {
    * @throws IllegalArgumentException workspace does not exist
    * @return The short description of the MapContext in XML form
    */
-  def addContext(workspaceName: String, node: scala.xml.Node ) : play.api.templates.Xml = {
+  def addContext(workspaceName: String, tempFile: play.api.libs.Files.TemporaryFile ) : play.api.templates.Xml = {
     // Three steps,
     // first extract Title, Description, compute Time and unique ID
     // Then save the entire context in a file
@@ -112,12 +113,18 @@ class MapCatalog {
       //Workspace name does not exists
       throw new IllegalArgumentException("<error>The workspace "+workspaceName+" does not exists</error>")
     }
+    if(!tempFile.file.exists()) {
+      throw new IllegalArgumentException("<error>The provided file name does not exists "+tempFile.file+"</error>")
+    }
     // Save the context
-    scala.xml.XML.save(new File(catalogFolder, lastContextId + ".xml").getAbsolutePath,node)
+    val contextDestFile = new File(catalogFolder, lastContextId + ".xml")
+    FU.copyFile(tempFile.file,contextDestFile)
 
+    // Parse the content
+    val doc = XML.loadFile(tempFile.file)
     // Create the context object
     val newContext = new MapContext(lastContextId)
-    newContext.fromFullContextXML(node)
+    newContext.fromFullContextXML(doc)
     workspaces.get(workspaceName).get.addContext(newContext)
     //Increment last context id
     lastContextId+=1
@@ -135,7 +142,7 @@ class MapCatalog {
    * Extract the description from the XML parameter
    */
   def fromXML(node: scala.xml.Node) {
-    workspaces = HashMap[String,Workspace]() //Clear the workspace
+    workspaces.clear() //Clear the workspace
     lastContextId=(-1)
     // Iterate over workspace nodes and fetch for the name
     node\"workspace" foreach{(workspace)=>
@@ -163,7 +170,7 @@ class MapCatalog {
    */
   def saveState() {
     LOGGER.info("Save map catalog to "+workspaceFile.getAbsolutePath)
-    scala.xml.XML.save(workspaceFile getAbsolutePath, toXML)
+    scala.xml.XML.save(workspaceFile getAbsolutePath, toXML, enc = "UTF-8", xmlDecl = true )
   }
   
 }
