@@ -1,0 +1,6 @@
+@(contexts : Iterable[mapcatalog.MapContext])<?xml version="1.0" encoding="UTF-8"?>
+<contexts>@contexts.map { context => <context id="@context.id" date="@context.mapDate">
+    <title xml:lang="@context.titleLng">@context.titleStr.</title>
+    <abstract xml:lang="@context.abstractLng">@context.abstractStr</abstract>
+</context>}
+</contexts>

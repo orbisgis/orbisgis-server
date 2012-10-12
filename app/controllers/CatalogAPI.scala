@@ -27,29 +27,43 @@
  * info_at_ orbisgis.org
  */
 
-import play.api._
-import controllers._
-import org.orbisgis.core.workspace.CoreWorkspace
-import scala.collection.JavaConversions._
-import org.apache.commons.io.{FileUtils => FU}
+package controllers
 
-object Global extends GlobalSettings {
-  override def onStart(app: Application) {
-    Logger.info("Application start...")
-    // init the main (and only) loaded OrbisGIS workspace
-    val c = new CoreWorkspace()
-    c.setWorkspaceFolder("workspace")
+import play.api.mvc._
+import mapcatalog.MapCatalog
+import org.apache.log4j.Logger
+import scala.xml.XML
 
-    WMS.loadStyles
-    WMS.wmsCt.init(c, WMS.styles, WMS.sourceStyles)
+/**
+ * Host collections of ows map context
+ * @author Nicolas Fortin
+ */
+object CatalogAPI extends Controller {
+  val mapCatalog = new MapCatalog()
+  private val LOGGER  = Logger.getLogger(CatalogAPI.getClass)
 
-    WPS.init()
+  def addContext(key: String , name : String, path : String)
+  = Action(parse.temporaryFile) { implicit request =>
+    Created(mapCatalog.addContext(name,request.body))
   }
 
-  override def onStop(app: Application) {
-    Logger.info("Application shutdown...")
-    WMS.wmsCt.destroy()
-    CatalogAPI.onStop()
-    FU.cleanDirectory(WPS.wpsMain.scriptFolder)
+  def getContext(key: String ,name : String ,id : String) = Action {
+    Ok(scala.xml.XML.loadFile(mapCatalog.getContext(name,id.toInt)))
+  }
+  /**
+   * @param key Client identifier
+   * @return The list of workspaces
+   */
+  def listWorkspace(key : String) = Action {
+    Ok(content = mapCatalog.getWorkspaceList)
+  }
+  def listContexts(key: String , name : String) = Action {
+    Ok(content = mapCatalog.getContextList(name))
+  }
+  /**
+   * Save the state of the loaded map catalog
+   */
+  def onStop() {
+    mapCatalog.saveState()
   }
 }

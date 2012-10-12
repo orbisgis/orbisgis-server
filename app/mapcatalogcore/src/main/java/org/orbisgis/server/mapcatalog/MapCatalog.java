@@ -27,29 +27,36 @@
  * info_at_ orbisgis.org
  */
 
-import play.api._
-import controllers._
-import org.orbisgis.core.workspace.CoreWorkspace
-import scala.collection.JavaConversions._
-import org.apache.commons.io.{FileUtils => FU}
+package org.orbisgis.server.mapcatalog;
 
-object Global extends GlobalSettings {
-  override def onStart(app: Application) {
-    Logger.info("Application start...")
-    // init the main (and only) loaded OrbisGIS workspace
-    val c = new CoreWorkspace()
-    c.setWorkspaceFolder("workspace")
+import java.io.File;
+import org.apache.log4j.Logger;
 
-    WMS.loadStyles
-    WMS.wmsCt.init(c, WMS.styles, WMS.sourceStyles)
+/**
+ *
+ */
+public class MapCatalog {
+        private Logger LOGGER = Logger.getLogger(MapCatalog.class);
+        private File catalogFolder = new File("map-catalogs" + File.pathSeparator);
+        private File workspaceFile = new File(catalogFolder, "mapcatalog.xml");
 
-    WPS.init()
-  }
+        public MapCatalog() {
 
-  override def onStop(app: Application) {
-    Logger.info("Application shutdown...")
-    WMS.wmsCt.destroy()
-    CatalogAPI.onStop()
-    FU.cleanDirectory(WPS.wpsMain.scriptFolder)
-  }
+        }
+        /**
+         * Serialisation of the map catalog into a file
+         */
+        public void saveState() {
+                
+        }
+        /**
+         * @return The XML content or null if the document cannot be builded
+         */
+        public String getWorkspaceList() {
+                StringBuilder response = new StringBuilder();
+                response.append("<workspaces>");
+                
+                response.append("</workspaces>");                
+                return response.toString();
+        }
 }
