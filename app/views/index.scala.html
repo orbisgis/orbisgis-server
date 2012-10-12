@@ -2,12 +2,12 @@
 
 @import helper.twitterBootstrap._
 
-@main("Data manager") {
+@main("OrbisGIS services") {
 <div class="container">
 <div class="page-header">
-    <h1>Data manager</h1>
+    <h1>WMS manager</h1>
     </div>
-<h2>Files</h2>
+<h2>Georeferenced data sources</h2>
 <table class="table table-striped table-bordered">
     <thead>
     <tr>
@@ -34,18 +34,19 @@
     <button type='submit' class="btn btn-success">Add file</button>
 }
 </div>
-<h2>Styles</h2>
+<h2>Styles (Symbology Encoding 2.0)</h2>
 <table class="table table-striped table-bordered">
 <thead>
     <tr>
     <th>Name</th>
+    <th>Path</th>
     <th>Actions</th>
     </tr>
     </thead>
     <tbody>
     @styles.map { l =>
     <tr>
-    <td><b>@l.getName</b></td><td>
+    <td><b>@l.getName</b></td><td>@l.getAbsolutePath</td><td>
      <div class="input-prepend">   
     @helper.form(action = routes.WMS.renameStyle(l.getName), 'class -> "form-inline") {
          <a class="btn btn-danger" href="@controllers.routes.WMS.removeStyle(l.getName)">Remove</a><button class="btn" type="submit">Rename</button><input class="span3" id="newname" name="newname" type="text" placeholder="new@(l.getName)">
