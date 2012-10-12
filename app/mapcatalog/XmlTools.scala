@@ -26,30 +26,21 @@
  * or contact directly:
  * info_at_ orbisgis.org
  */
+package mapcatalog
 
-import play.api._
-import controllers._
-import org.orbisgis.core.workspace.CoreWorkspace
-import scala.collection.JavaConversions._
-import org.apache.commons.io.{FileUtils => FU}
+import scala.xml.Node
 
-object Global extends GlobalSettings {
-  override def onStart(app: Application) {
-    Logger.info("Application start...")
-    // init the main (and only) loaded OrbisGIS workspace
-    val c = new CoreWorkspace()
-    c.setWorkspaceFolder("workspace")
-
-    WMS.loadStyles
-    WMS.wmsCt.init(c, WMS.styles, WMS.sourceStyles)
-
-    WPS.init()
-  }
-
-  override def onStop(app: Application) {
-    Logger.info("Application shutdown...")
-    WMS.wmsCt.destroy()
-    CatalogAPI.onStop()
-    FU.cleanDirectory(WPS.wpsMain.scriptFolder)
+/**
+ * Some tools to manage XML nodes
+ * @author Nicolas Fortin
+ */
+object XmlTools {
+  /**
+   * Fetch the properties of the node and return a map
+   * @param node XML Node
+   * @return Attributes Map[Key,Value]
+   */
+  def getAttributes(node : Node) : Map[String,String] = {
+    node.attributes.map( prop => (prop.key,prop.value.text)).toMap
   }
 }

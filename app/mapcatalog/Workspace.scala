@@ -27,29 +27,57 @@
  * info_at_ orbisgis.org
  */
 
-import play.api._
-import controllers._
-import org.orbisgis.core.workspace.CoreWorkspace
-import scala.collection.JavaConversions._
-import org.apache.commons.io.{FileUtils => FU}
+package mapcatalog
 
-object Global extends GlobalSettings {
-  override def onStart(app: Application) {
-    Logger.info("Application start...")
-    // init the main (and only) loaded OrbisGIS workspace
-    val c = new CoreWorkspace()
-    c.setWorkspaceFolder("workspace")
+import collection.mutable
 
-    WMS.loadStyles
-    WMS.wmsCt.init(c, WMS.styles, WMS.sourceStyles)
-
-    WPS.init()
+/**
+ * Workspace contain a collection of Maps
+ */
+class Workspace (var name: String) {
+  val contexts = mutable.MutableList[MapContext]()
+  /**
+   * Extract the description and map context from the XML parameter
+   */
+  def fromXML(workspace: scala.xml.Node) {
+    name = (workspace \ "@name").text.trim
+    // Load maps
+    workspace \ "context" foreach{ context =>
+      val newContext = new MapContext(-1)
+      newContext.fromXML(context)
+      contexts += newContext
+    }
   }
 
-  override def onStop(app: Application) {
-    Logger.info("Application shutdown...")
-    WMS.wmsCt.destroy()
-    CatalogAPI.onStop()
-    FU.cleanDirectory(WPS.wpsMain.scriptFolder)
+  /**
+   * @return The maximum map context id
+   */
+  def getMaxId: Int = {
+    if(!contexts.isEmpty) {
+      contexts.map( context => context.id).max
+    } else {
+      -1
+    }
   }
+
+  /**
+   * Add a new Map Context
+   * @param context MapContext instance
+   */
+  def addContext(context : MapContext) {
+    contexts+=context
+  }
+
+  /**
+   *
+   * @return Content of this workspace
+   */
+  def getContextList = mapcatalog.xml.getContextList(contexts)
+  /**
+   * Return the description of this map context in XML
+   */  
+  def toXML = 
+    <workspace name={name} count={contexts.size.toString}>
+      {contexts.map{context => context.toXML}}
+    </workspace>
 }

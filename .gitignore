@@ -13,6 +13,5 @@ tmp
 /scripts/
 .idea/
 .idea_modules/
-app/wms/.idea/
-app/wms/logs/
-app/wms/orbiswms-lib.iml
+*.iml
+/map-catalogs/
