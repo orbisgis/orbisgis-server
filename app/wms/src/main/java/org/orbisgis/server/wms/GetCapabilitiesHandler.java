@@ -37,20 +37,7 @@ import java.util.Map;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import net.opengis.wms.BoundingBox;
-import net.opengis.wms.Capability;
-import net.opengis.wms.ContactInformation;
-import net.opengis.wms.DCPType;
-import net.opengis.wms.Get;
-import net.opengis.wms.HTTP;
-import net.opengis.wms.Layer;
-import net.opengis.wms.OnlineResource;
-import net.opengis.wms.OperationType;
-import net.opengis.wms.Post;
-import net.opengis.wms.Request;
-import net.opengis.wms.Service;
-import net.opengis.wms.Style;
-import net.opengis.wms.WMSCapabilities;
+import net.opengis.wms.*;
 import org.gdms.data.DataSource;
 import org.gdms.data.DataSourceCreationException;
 import org.gdms.data.DataSourceFactory;
@@ -194,12 +181,13 @@ public final class GetCapabilitiesHandler {
                 try {
                         //Marshalling the WMS Capabilities into an XML response
                         Marshaller marshaller = jaxbContext.createMarshaller();
+                       
                         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
                         wmsResponse.setContentType("text/xml;charset=UTF-8");
                         marshaller.marshal(cap, pr);
 
-                } catch (Exception ex) {
+                } catch (JAXBException ex) {
                         wmsResponse.setContentType("text/xml;charset=UTF-8");
                         wmsResponse.setResponseCode(500);
                         pr.append("<?xml version='1.0' encoding=\"UTF-8\"?><ServiceExceptionReport xmlns=\"http://www.opengis.net/ogc\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"1.3.0\" xsi:schemaLocation=\"http://www.opengis.net/ogc http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd\"><ServiceException>Something went wrong</ServiceException></ServiceExceptionReport>");
