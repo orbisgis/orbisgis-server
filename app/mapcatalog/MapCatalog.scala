@@ -97,14 +97,16 @@ class MapCatalog {
   private def addWorkspace(newWorkspace : Workspace) {
     workspaces+=(newWorkspace.name -> newWorkspace)
   }
+
+  private def getFilePathForContext(workspaceName: String,id : Int) : File =  {
+    new File(catalogFolder, id + ".xml")
+  }
+
+
   /**
    *
-   * @param workspaceName The name of the workspace
-   * @param node The content of the workspace
-   * @throws IllegalArgumentException workspace does not exist
-   * @return The short description of the MapContext in XML form
    */
-  def addContext(workspaceName: String, tempFile: play.api.libs.Files.TemporaryFile ) : play.api.templates.Xml = {
+  private def processContext(workspaceName: String, tempFile: play.api.libs.Files.TemporaryFile, id : Int ) : MapContext = {
     // Three steps,
     // first extract Title, Description, compute Time and unique ID
     // Then save the entire context in a file
@@ -117,7 +119,7 @@ class MapCatalog {
       throw new IllegalArgumentException("<error>The provided file name does not exists "+tempFile.file+"</error>")
     }
     // Save the context
-    val contextDestFile = new File(catalogFolder, lastContextId + ".xml")
+    val contextDestFile = getFilePathForContext(workspaceName,id)
     FU.copyFile(tempFile.file,contextDestFile)
 
     // Parse the content
@@ -126,6 +128,56 @@ class MapCatalog {
     val newContext = new MapContext(lastContextId)
     newContext.fromFullContextXML(doc)
     workspaces.get(workspaceName).get.addContext(newContext)
+    newContext
+  }
+
+  /**
+   *
+   * @param workspaceName The name of the workspace
+   * @param tempFile The content of the context
+   * @param id map context id
+   * @throws IllegalArgumentException workspace does not exist
+   * @return The short description of the MapContext in XML form
+   */
+  def replaceContext(workspaceName: String, tempFile: play.api.libs.Files.TemporaryFile, id : Int ) : play.api.templates.Xml = {
+    if (!getFilePathForContext(workspaceName,id).exists()) {
+      //Workspace name does not exists
+      throw new IllegalArgumentException("<error>The specified context does not exists</error>")
+    }
+    val newContext = processContext(workspaceName,tempFile,id)
+    // Return the new content information
+    mapcatalog.xml.getShortContext(newContext)
+  }
+
+  /**
+   * Delete the specified context
+   * @param workspaceName The name of the workspace
+   * @param id map context id
+   * @throws IllegalArgumentException workspace does not exist
+   * @return The short description of the MapContext in XML form
+   */
+  def removeContext(workspaceName: String, id : Int ) = {
+    if (!getFilePathForContext(workspaceName,id).exists()) {
+      //Workspace name does not exists
+      throw new IllegalArgumentException("<error>The specified context does not exists</error>")
+    }
+    val contextFile = getFilePathForContext(workspaceName,id)
+    if (!contextFile.exists()) {
+      //Workspace name does not exists
+      throw new IllegalArgumentException("<error>The specified context does not exists</error>")
+    }
+    workspaces.get(workspaceName).get.removeContext(id)
+    contextFile.delete()
+  }
+  /**
+   *
+   * @param workspaceName The name of the workspace
+   * @param tempFile The content of the context
+   * @throws IllegalArgumentException workspace does not exist
+   * @return The short description of the MapContext in XML form
+   */
+  def addContext(workspaceName: String, tempFile: play.api.libs.Files.TemporaryFile ) : play.api.templates.Xml = {
+    val newContext = processContext(workspaceName,tempFile,lastContextId)
     //Increment last context id
     lastContextId+=1
     // Return the new content information

@@ -57,8 +57,8 @@ POST /map/workspaces/:name/contexts                     controllers.CatalogAPI.a
 
 POST /map/workspaces/:name/contexts/*path               controllers.CatalogAPI.addContext(key: String ?= "",name, path)
 
-#POST /map/workspaces/:name/contexts/:id                 controllers.CatalogAPI.replaceContext(key: String ?= "",name,id)
+POST /map/workspaces/:name/contexts/:id                 controllers.CatalogAPI.replaceContext(key: String ?= "",name,id)
 
-#DELETE /map/workspaces/:name/contexts/:id               controllers.CatalogAPI.removeContext(key: String ?= "",name,id)
+DELETE /map/workspaces/:name/contexts/:id               controllers.CatalogAPI.removeContext(key: String ?= "",name,id)
 
 #DELETE /map/workspaces/:name/path/*path                 controllers.CatalogAPI.removePath(key: String ?= "",path)

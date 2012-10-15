@@ -59,7 +59,7 @@ class MapContext (var id: Int) {
   def toXML =
   <context id={id.toString} date={mapDate}>
     <Title xml:lang={titleLng}>{titleStr}</Title>
-    { if (!abstractStr.isEmpty) { <Abstract xml:lang={abstractLng}>{abstractStr}</Abstract> } }
+    { if (!(abstractStr.isEmpty)) { <Abstract xml:lang={abstractLng}>{abstractStr}</Abstract> } }
   </context>
   /**
    * Extract the description from the XML parameter

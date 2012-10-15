@@ -35,7 +35,7 @@ import collection.mutable
  * Workspace contain a collection of Maps
  */
 class Workspace (var name: String) {
-  val contexts = mutable.MutableList[MapContext]()
+  var contexts = mutable.MutableList[MapContext]()
   /**
    * Extract the description and map context from the XML parameter
    */
@@ -68,6 +68,13 @@ class Workspace (var name: String) {
     contexts+=context
   }
 
+  /**
+   *
+   * @param id Context id
+   */
+  def removeContext(id : Int) {
+    contexts = contexts.filterNot(context => context.id==id)
+  }
   /**
    *
    * @return Content of this workspace
