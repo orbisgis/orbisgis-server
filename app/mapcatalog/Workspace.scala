@@ -61,6 +61,12 @@ class Workspace (var name: String) {
   }
 
   /**
+   * @param mapId Map identifier
+   * @return True if this workspace contain this Map Id
+   */
+  def hasContext(mapId : Int) : Boolean = contexts.count(context => context.id == mapId) != 0
+
+  /**
    * Add a new Map Context
    * @param context MapContext instance
    */
@@ -84,7 +90,7 @@ class Workspace (var name: String) {
    * Return the description of this map context in XML
    */  
   def toXML = 
-    <workspace name={name} count={contexts.size.toString}>
+    <workspace name={name}>
       {contexts.map{context => context.toXML}}
     </workspace>
 }

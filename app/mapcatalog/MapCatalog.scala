@@ -30,9 +30,9 @@
 package mapcatalog
 
 
-import java.io.{FileReader, File}
+import java.io.File
 import org.apache.log4j.Logger
-import scala.xml.{Elem, XML}
+import scala.xml.XML
 import scala.collection.mutable.HashMap
 import org.apache.commons.io.{FileUtils => FU}
 
@@ -75,7 +75,11 @@ class MapCatalog {
       //Workspace name does not exists
       throw new IllegalArgumentException("<error>The workspace "+workspaceName+" does not exists</error>")
     }
-    new File(catalogFolder,mapId+".xml")
+    if(workspaces.get(workspaceName).get.hasContext(mapId)) {
+      getFilePathForContext(workspaceName, mapId)
+    } else {
+      throw new IllegalArgumentException("<error>The workspace "+workspaceName+" does not contain the specified map context</error>")
+    }
   }
   /**
     * @param workspaceName Name of the workspace
@@ -125,7 +129,7 @@ class MapCatalog {
     // Parse the content
     val doc = XML.loadFile(tempFile.file)
     // Create the context object
-    val newContext = new MapContext(lastContextId)
+    val newContext = new MapContext(id)
     newContext.fromFullContextXML(doc)
     workspaces.get(workspaceName).get.addContext(newContext)
     newContext
@@ -144,6 +148,7 @@ class MapCatalog {
       //Workspace name does not exists
       throw new IllegalArgumentException("<error>The specified context does not exists</error>")
     }
+    workspaces.get(workspaceName).get.removeContext(id)
     val newContext = processContext(workspaceName,tempFile,id)
     // Return the new content information
     mapcatalog.xml.getShortContext(newContext)
