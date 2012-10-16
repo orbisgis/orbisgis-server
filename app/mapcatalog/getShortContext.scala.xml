@@ -1,5 +1,6 @@
 @(context : mapcatalog.MapContext)<?xml version="1.0" encoding="UTF-8"?>
+        @langString(tag : String, value : String, lang : String) = {@if(!(value.isEmpty)) {<@tag @if(!(lang.isEmpty)) { xml:lang="@lang"}>@value</@tag>}}
 <context id="@context.id" date="@context.mapDate">
-    <title xml:lang="@context.titleLng">@context.titleStr</title>
-    <abstract xml:lang="@context.abstractLng">@context.abstractStr</abstract>
+@langString("title",context.titleStr,context.titleLng)
+@langString("abstract",context.abstractStr,context.abstractLng)
 </context>

@@ -32,7 +32,6 @@ package controllers
 import play.api.mvc._
 import mapcatalog.MapCatalog
 import org.apache.log4j.Logger
-import scala.xml.XML
 
 /**
  * Host collections of ows map context
@@ -42,21 +41,70 @@ object CatalogAPI extends Controller {
   val mapCatalog = new MapCatalog()
   private val LOGGER  = Logger.getLogger(CatalogAPI.getClass)
 
+  /**
+   * Add a new map context
+   * @param key Authentication key
+   * @param name Workspace name
+   * @param path Context path, can be empty
+   * @return context description
+   */
   def addContext(key: String , name : String, path : String)
   = Action(parse.temporaryFile) { implicit request =>
-    Created(mapCatalog.addContext(name,request.body))
+    val body = mapCatalog.addContext(name,request.body)
+    mapCatalog.saveState // Save application state
+    Created(body)
   }
 
+  /**
+   * Return the entire map context
+   * @param key Authentication key
+   * @param name Workspace name
+   * @param id map context id
+   * @return
+   */
   def getContext(key: String ,name : String ,id : String) = Action {
     Ok(scala.xml.XML.loadFile(mapCatalog.getContext(name,id.toInt)))
   }
   /**
-   * @param key Client identifier
+   * @param key Authentication key
    * @return The list of workspaces
    */
   def listWorkspace(key : String) = Action {
     Ok(content = mapCatalog.getWorkspaceList)
   }
+
+  /**
+   * Update a map context
+   * @param key Authentication key
+   * @param name Workspace name
+   * @param id map context id
+   * @return
+   */
+  def removeContext(key: String, name: String, id: String) = Action {
+    mapCatalog.removeContext(name,id.toInt)
+    NoContent
+  }
+  /**
+   * Update a map context
+   * @param key Authentication key
+   * @param name Workspace name
+   * @param id map context id
+   * @return
+   */
+  def replaceContext(key: String , name : String, id : String)
+  = Action(parse.temporaryFile) { implicit request =>
+    LOGGER.info("Replace context..")
+    val body = mapCatalog.replaceContext(name,request.body,id.toInt)
+    mapCatalog.saveState // Save application state
+    Ok(body)
+  }
+
+  /**
+   * List all context in a workspace
+   * @param key Authentication key
+   * @param name Workspace name
+   * @return XML result
+   */
   def listContexts(key: String , name : String) = Action {
     Ok(content = mapCatalog.getContextList(name))
   }
