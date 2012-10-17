@@ -35,7 +35,7 @@ import collection.mutable
  * Workspace contain a collection of Maps
  */
 class Workspace (var name: String) {
-  val contexts = mutable.MutableList[MapContext]()
+  var contexts = mutable.MutableList[MapContext]()
   /**
    * Extract the description and map context from the XML parameter
    */
@@ -61,6 +61,12 @@ class Workspace (var name: String) {
   }
 
   /**
+   * @param mapId Map identifier
+   * @return True if this workspace contain this Map Id
+   */
+  def hasContext(mapId : Int) : Boolean = contexts.count(context => context.id == mapId) != 0
+
+  /**
    * Add a new Map Context
    * @param context MapContext instance
    */
@@ -70,6 +76,13 @@ class Workspace (var name: String) {
 
   /**
    *
+   * @param id Context id
+   */
+  def removeContext(id : Int) {
+    contexts = contexts.filterNot(context => context.id==id)
+  }
+  /**
+   *
    * @return Content of this workspace
    */
   def getContextList = mapcatalog.xml.getContextList(contexts)
@@ -77,7 +90,7 @@ class Workspace (var name: String) {
    * Return the description of this map context in XML
    */  
   def toXML = 
-    <workspace name={name} count={contexts.size.toString}>
+    <workspace name={name}>
       {contexts.map{context => context.toXML}}
     </workspace>
 }
