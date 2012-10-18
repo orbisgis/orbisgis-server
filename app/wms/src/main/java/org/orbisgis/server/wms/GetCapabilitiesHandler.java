@@ -32,8 +32,10 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -47,11 +49,11 @@ import org.gdms.source.SourceEvent;
 import org.gdms.source.SourceListener;
 import org.gdms.source.SourceManager;
 import org.gdms.source.SourceRemovalEvent;
-import org.jproj.CoordinateReferenceSystem;
-import org.jproj.Registry;
+import org.geotools.referencing.CRS;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
-import scala.actors.threadpool.Arrays;
 
 /**
  * Creates the answer to a getCapabilities request and writes it into the output
@@ -204,9 +206,12 @@ public final class GetCapabilitiesHandler {
                 } catch (JAXBException ex) {
                         throw new RuntimeException(ex);
                 }
-
-                String[] codes = Registry.getAvailableCodes("EPSG", true);
-                authCRS = Arrays.asList(codes);
+                Set<String> codes = CRS.getSupportedCodes("EPSG");
+                LinkedList<String> ll = new LinkedList<String>();
+                for(String s : codes){
+                        ll.add("EPSG:"+s);
+                }
+                authCRS = ll;
 
                 final DataSourceFactory dsf = Services.getService(DataManager.class).getDataSourceFactory();
                 final SourceManager sm = dsf.getSourceManager();
@@ -230,10 +235,14 @@ public final class GetCapabilitiesHandler {
                                                 ds.close();
                                                 BoundingBox bBox = new BoundingBox();
                                                 if (crs != null) {
-                                                        int epsgCode = crs.getEPSGCode();
-                                                        if (epsgCode != -1) {
-                                                                bBox.setCRS("EPSG:" + epsgCode);
-                                                                layer.getCRS().add("EPSG:" + epsgCode);
+                                                        Integer code = null;
+                                                        try {
+                                                                code = CRS.lookupEpsgCode(crs, true);
+                                                        } catch (FactoryException ex) {
+                                                        }
+                                                        if (code != null) {
+                                                                bBox.setCRS("EPSG:" + code);
+                                                                layer.getCRS().add("EPSG:" + code);
                                                         } else {
                                                                 return;
                                                         }
