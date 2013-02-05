@@ -60,7 +60,6 @@ public class SLDTest  {
                 sb.append("file://");
                 sb.append(System.getProperty("user.dir"));
                 sb.append(path);
-                System.out.println(sb);
                 SLD sld = new SLD(sb.toString());
                 assertTrue(sld.getSLDLayers().size()==1);
         }
