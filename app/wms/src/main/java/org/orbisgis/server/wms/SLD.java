@@ -42,6 +42,7 @@ import net.opengis.se._2_0.core.StyleReferenceType;
 import net.opengis.se._2_0.core.StyleType;
 import net.opengis.sld._1_2.NamedLayerElement;
 import net.opengis.sld._1_2.StyledLayerDescriptorElement;
+import net.opengis.sld._1_2.UserStyleElement;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
 import org.orbisgis.core.layerModel.ILayer;
@@ -68,16 +69,11 @@ public class SLD {
          * @throws WMSException
          */
         public SLD(String sld) throws URISyntaxException, WMSException {
-
                 URI uri = new URI(sld);
-
                 try {
                         Unmarshaller u = Services.JAXBCONTEXT.createUnmarshaller();
-
                         StyledLayerDescriptorElement sldElem = (StyledLayerDescriptorElement) u.unmarshal(uri.toURL());
-
                         init(sldElem);
-
                 } catch (JAXBException jaxbException) {
                         throw new WMSException(jaxbException);
                 } catch (MalformedURLException malformedURLException) {
@@ -85,6 +81,14 @@ public class SLD {
                 } catch (SeExceptions.InvalidStyle invalidStyleException) {
                         throw new WMSException(invalidStyleException);
                 }
+        }
+
+        /**
+         * Gets a copy of the inner list of {@code SLDLayer} instances.
+         * @return
+         */
+        public List<SLDLayer> getSLDLayers() {
+                return layers == null ? new ArrayList<SLDLayer>() : new ArrayList<SLDLayer>(layers);
         }
 
         /**
@@ -139,16 +143,11 @@ public class SLD {
                  *
                  * @param name
                  */
-                public SLDLayer(String name) {
+                public SLDLayer(String name, StyleType sldStyle) {
+                        if(name == null || sldStyle == null){
+                                throw new NullPointerException("You can't build SLDLayer instances with null input");
+                        }
                         this.name = name;
-                }
-
-                /**
-                 * Adds the style reference to the layer
-                 *
-                 * @param sldStyle
-                 */
-                public void addStyle(StyleType sldStyle) {
                         style = sldStyle;
                 }
 
@@ -172,45 +171,58 @@ public class SLD {
         }
 
         private void init(StyledLayerDescriptorElement sldType) throws SeExceptions.InvalidStyle, WMSException {
-
                 List<NamedLayerElement> sldLayers = sldType.getNamedLayer();
-
                 this.layers = new ArrayList<SLDLayer>();
-
                 for (NamedLayerElement l : sldLayers) {
-
                         String name = l.getName();
+                        List<Object> styles = l.getNamedStyleOrUserStyle();
+                        for (Object object : styles) {
+                                if(object instanceof UserStyleElement){
+                                        UserStyleElement nse = (UserStyleElement) object;
+                                        List<JAXBElement<? extends AbstractStyleType>> as = nse.getAbstractStyle();
+                                        for (JAXBElement<? extends AbstractStyleType> stEl : as) {
+                                                SLDLayer sldLayer = processStyle(stEl.getValue(), name);
+                                                if(sldLayer != null){
+                                                        this.layers.add(sldLayer);
+                                                }
+                                        }
 
-                        SLDLayer sldLayer = new SLDLayer(name);
-                        JAXBElement<? extends AbstractStyleType> style = l.getAbstractStyle();
-
-                        //If the style is given inline in the SLD file
-                        if (style.getValue() instanceof StyleType) {
-                                StyleType se = (StyleType) style.getValue();
-                                sldLayer.addStyle(se);
-                        } else //If the SE file is given by an external URL - Not Working Yet
-                        if (style.getValue() instanceof StyleReferenceType) {
-                                StyleReferenceType seRef = (StyleReferenceType) style.getValue();
-                                OnlineResourceType seOR = seRef.getOnlineResource();
-                                String seHref = seOR.getHref();
-                                try {
-                                        URI uri = new URI(seHref);
-                                        Unmarshaller u = Services.JAXBCONTEXT.createUnmarshaller();
-                                        JAXBElement<? extends AbstractStyleType> abstractStyle = (JAXBElement<? extends AbstractStyleType>) u.unmarshal(uri.toURL());
-                                        StyleType se = (StyleType) abstractStyle.getValue();
-                                        sldLayer.addStyle(se);
-
-                                } catch (JAXBException jaxbException) {
-                                        throw new WMSException(jaxbException);
-                                } catch (MalformedURLException malformedURLException) {
-                                        throw new WMSException(malformedURLException);
-                                } catch (URISyntaxException ex) {
-                                        throw new WMSException(ex);
                                 }
                         }
-
-                        this.layers.add(sldLayer);
-
                 }
+        }
+
+        /**
+         * This recursive method will try to build a SLDLayer instance using the
+         * given AbstractStyleType instance. We currently process StyleType
+         * instances and StylereferenceType
+         * @param se
+         * @param name
+         * @return
+         * @throws WMSException
+         */
+        private SLDLayer processStyle(AbstractStyleType se, String name) throws WMSException{
+                if (se instanceof StyleType) {
+                        return new SLDLayer(name, (StyleType) se);
+                } else if (se instanceof StyleReferenceType) {
+                        StyleReferenceType seRef = (StyleReferenceType) se;
+                        OnlineResourceType seOR = seRef.getOnlineResource();
+                        String seHref = seOR.getHref();
+                        try {
+                                URI uri = new URI(seHref);
+                                Unmarshaller u = Services.JAXBCONTEXT.createUnmarshaller();
+                                JAXBElement<? extends AbstractStyleType> abstractStyle =
+                                        (JAXBElement<? extends AbstractStyleType>) u.unmarshal(uri.toURL());
+                                StyleType st = (StyleType) abstractStyle.getValue();
+                                return processStyle(st, name);
+                        } catch (JAXBException jaxbException) {
+                                throw new WMSException(jaxbException);
+                        } catch (MalformedURLException malformedURLException) {
+                                throw new WMSException(malformedURLException);
+                        } catch (URISyntaxException ex) {
+                                throw new WMSException(ex);
+                        }
+                }
+                return null;
         }
 }
