@@ -29,8 +29,12 @@ package org.orbisgis.server.wms;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
+
+import net.opengis.wms.Layer;
 import org.gdms.data.DataSourceFactory;
 import org.gdms.source.SourceManager;
 import org.junit.After;
@@ -96,6 +100,25 @@ public class WMSTest {
                 FileUtils.deleteDir(fprj);
         }
 
+        @Test
+        public void testReprojection() throws UnsupportedEncodingException, WMSException {
+            DummyResponse r = new DummyResponse("http://localhost:9000/wms/wms");
+            HashMap<String, String[]> h = new HashMap<String, String[]>();
+
+            h.put("REQUEST", new String[]{"GetMap"});
+            h.put("SERVICE", new String[]{"WMS"});
+            h.put("LAYERS", new String[]{"cantons"});
+            h.put("STYLES", new String[]{""});
+            h.put("CRS", new String[]{"EPSG:4326"});
+            h.put("BBOX", new String[]{"2677441.0", "1197822.0", "1620431.0", "47680.0"});
+            h.put("WIDTH", new String[]{"874"});
+            h.put("HEIGHT", new String[]{"593"});
+            h.put("FORMAT", new String[]{"image/png"});
+            h.put("VERSION", new String[]{"1.3.0"});
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            wms.processRequests(h, out, r);
+        }
         /**
          * Checks the error response for any missing parameter;
          *

@@ -42,6 +42,7 @@ import java.util.Map;
 import net.opengis.wms.Layer;
 import org.gdms.data.DataSourceFactory;
 import org.gdms.data.file.FileSourceDefinition;
+import org.gdms.data.values.ValueFactory;
 import org.gdms.driver.DataSet;
 import org.gdms.driver.DriverException;
 import org.gdms.driver.driverManager.DriverManager;
@@ -133,7 +134,7 @@ public final class GetMapHandler {
                                                 if (layerCRS.equals(crs)) {
                                                         iLayer = dataManager.createLayer(layer);
                                                 } else {
-                                                        String newLayer = project(layer, layerCRS, crs);
+                                                        String newLayer = project(layer, crs);
                                                         iLayer = dataManager.createLayer(newLayer);
                                                         newLayers.add(newLayer);
                                                 }
@@ -390,23 +391,21 @@ public final class GetMapHandler {
                 layerMap = lMap;
         }
 
-        private String project(String layer, String sourceCrs, String targetCrs) throws WMSException {
+        private String project(String layer, String targetCrs) throws WMSException {
                 DataSourceFactory dsf = Services.getService(DataManager.class).getDataSourceFactory();
 
                 // maybe we already converted it and there is nothing to do
-                final String newName = layer + "-" + targetCrs;
+                final String newName = layer + "_" + targetCrs.hashCode();
                 if (!dsf.getSourceManager().exists(newName)) {
                         SQLStatement reProject;
                         try {
                                 // maybe this could be factored out, but SQLStatement is not really thread safe...
-                                reProject = Engine.parse("SELECT ST_Transform(the_geom, @{src}, @{tgt}) FROM @{data};", dsf.getProperties());
+                                reProject = Engine.parse("SELECT ST_Transform(the_geom, @{tgt}) as the_geom FROM @{projTable};", dsf.getProperties());
                         } catch (Exception ex) {
                                 throw new RuntimeException("Gdms failed to parse the projection query. Shoudln't happen.", ex);
                         }
-
-                        reProject.setFieldParameter("src", sourceCrs);
-                        reProject.setFieldParameter("tgt", targetCrs);
-                        reProject.setTableParameter("data", layer);
+                        reProject.setValueParameter("tgt", ValueFactory.createValue(targetCrs));
+                        reProject.setTableParameter("projTable", layer);
                         reProject.setDataSourceFactory(dsf);
 
                         reProject.prepare();
@@ -416,8 +415,7 @@ public final class GetMapHandler {
                                 fsd.createDataSource(d, new NullProgressMonitor());
                                 dsf.getSourceManager().register(newName, fsd);
                         } catch (DriverException ex) {
-                                throw new WMSException("Failed to project " + layer + " from " + sourceCrs
-                                        + " to " + targetCrs, ex);
+                                throw new WMSException("Failed to project " + layer + " to " + targetCrs, ex);
                         }
                         reProject.cleanUp();
                 }
