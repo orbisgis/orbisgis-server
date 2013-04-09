@@ -418,18 +418,11 @@ public final class GetMapHandler {
                                 Value newCRS = ValueFactory.createValue(targetCrs);
                                 DiskBufferDriver driver = new DiskBufferDriver(dsf, sds.getMetadata());
                                 long rowCount = sds.getRowCount();
-                                int fieldCount = sds.getMetadata().getFieldCount();
                                 int spatialFieldIndex = MetadataUtilities.getSpatialFieldIndex(sds.getMetadata());
                                 ST_Transform transformFunction = new ST_Transform();
 
                                 for (long i = 0; i < rowCount; i++) {
-                                    final Value[] fieldsValues = new Value[fieldCount];
-                                    for (int j = 0; j < fieldCount; j++) {
-                                        fieldsValues[j] = sds.getFieldValue(i, j);
-                                    }
-                                    final Value[] newValues = new Value[fieldsValues.length];
-                                    System.arraycopy(fieldsValues, 0, newValues, 0,
-                                            fieldsValues.length);
+                                    final Value[] newValues = sds.getRow(i).clone();
                                     // Use transform method and update geometry field, put it in the new file
                                     newValues[spatialFieldIndex] = transformFunction.evaluate(dsf,
                                             sds.getFieldValue(i, spatialFieldIndex), newCRS);
