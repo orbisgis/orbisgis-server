@@ -125,8 +125,6 @@ public final class GetMapHandler {
 
                 DataManager dataManager = Services.getService(DataManager.class);
 
-                List<String> newLayers = new ArrayList<String>();
-
                 LayerCollection layers = new LayerCollection("Map");
 
                 SLD sld = null;
@@ -149,7 +147,6 @@ public final class GetMapHandler {
                                                 } else {
                                                         String newLayer = project(layer, crs);
                                                         iLayer = dataManager.createLayer(newLayer);
-                                                        newLayers.add(newLayer);
                                                 }
                                         } else {
                                                 throw new LayerException();
@@ -291,10 +288,6 @@ public final class GetMapHandler {
                 } catch (LayerException lEx) {
                         throw new WMSException(lEx);
                 } finally {
-                        SourceManager sManager = dataManager.getSourceManager();
-                        for (String s : newLayers) {
-                                sManager.delete(s);
-                        }
                         try {
                                 layers.close();
                         } catch (LayerException ex1) {
@@ -404,14 +397,31 @@ public final class GetMapHandler {
                 layerMap = lMap;
         }
 
-        private String project(String layer, String targetCrs) throws WMSException {
+        /**
+         * When a source need to be reprojected a new source is created with a specific name, this function compute the name.
+         * This function only concatenate strings, it does not manage projection.
+         * @param sourceName Source name
+         * @param targetCrs Coordinate reference system != of the source one.
+         * @return A new source name that should contain the projection data.
+         */
+        public static String getProjectionSourceName(String sourceName, String targetCrs) {
+            return sourceName + "_" + targetCrs.hashCode();
+        }
+        /**
+         * Compute the targetCrs version of the provided layer and return the source name
+         * @param sourceName Input data source
+         * @param targetCrs convert to this crs
+         * @return The source name having the geometry converted into targetCrs
+         * @throws WMSException
+         */
+        private String project(String sourceName, String targetCrs) throws WMSException {
                 DataSourceFactory dsf = Services.getService(DataManager.class).getDataSourceFactory();
 
                 // maybe we already converted it and there is nothing to do
-                final String newName = layer + "_" + targetCrs.hashCode();
+                final String newName = getProjectionSourceName(sourceName,targetCrs);
                 if (!dsf.getSourceManager().exists(newName)) {
                         try {
-                            DataSource sds = dsf.getDataSource(layer);
+                            DataSource sds = dsf.getDataSource(sourceName);
                             sds.open();
                             try {
                                 // create a new datasource
@@ -429,6 +439,7 @@ public final class GetMapHandler {
                                     driver.addValues(newValues);
                                 }
                                 driver.writingFinished();
+                                driver.close();
                                 dsf.getSourceManager().register(newName,driver.getFile());
                             } finally {
                                 sds.close();

@@ -34,9 +34,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.vividsolutions.jts.geom.Geometry;
 import net.opengis.wms.Layer;
+import org.gdms.data.DataSource;
+import org.gdms.data.DataSourceCreationException;
 import org.gdms.data.DataSourceFactory;
+import org.gdms.data.NoSuchTableException;
+import org.gdms.data.schema.MetadataUtilities;
+import org.gdms.data.values.Value;
+import org.gdms.data.values.ValueFactory;
 import org.gdms.source.SourceManager;
+import org.gdms.sql.function.spatial.geometry.crs.ST_Transform;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -101,23 +109,48 @@ public class WMSTest {
         }
 
         @Test
-        public void testReprojection() throws UnsupportedEncodingException, WMSException {
+        public void testReprojection() throws Exception {
             DummyResponse r = new DummyResponse("http://localhost:9000/wms/wms");
             HashMap<String, String[]> h = new HashMap<String, String[]>();
-
+            final String toCRS = "EPSG:4326";
             h.put("REQUEST", new String[]{"GetMap"});
             h.put("SERVICE", new String[]{"WMS"});
             h.put("LAYERS", new String[]{"cantons"});
             h.put("STYLES", new String[]{""});
-            h.put("CRS", new String[]{"EPSG:4326"});
+            h.put("CRS", new String[]{toCRS});
             h.put("BBOX", new String[]{"2677441.0", "1197822.0", "1620431.0", "47680.0"});
             h.put("WIDTH", new String[]{"874"});
             h.put("HEIGHT", new String[]{"593"});
             h.put("FORMAT", new String[]{"image/png"});
             h.put("VERSION", new String[]{"1.3.0"});
+            // Get the original source
+            DataSource source = wms.getContext().getDataManager().getDataSource("cantons");
+            source.open();
+            Value geom;
+            try {
+                int geomIndex = MetadataUtilities.getGeometryFieldIndex(source.getMetadata());
+                geom = source.getFieldValue(0, geomIndex);
+            } finally {
+                source.close();
+            }
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             wms.processRequests(h, out, r);
+
+            // Get the projection source name
+            String sourceName = GetMapHandler.getProjectionSourceName("cantons",toCRS);
+            DataSource projSource = wms.getContext().getDataManager().getDataSource(sourceName);
+            projSource.open();
+            try {
+                int geomIndex = MetadataUtilities.getGeometryFieldIndex(projSource.getMetadata());
+                Geometry projGeom = projSource.getFieldValue(0,geomIndex).getAsGeometry();
+                ST_Transform transformFunction = new ST_Transform();
+                Value res = transformFunction.evaluate(wms.getContext().getDataSourceFactory(),geom, ValueFactory.createValue(toCRS));
+                assertTrue(res.getAsGeometry().equals(projGeom));
+            } finally {
+                projSource.close();
+            }
+
         }
         /**
          * Checks the error response for any missing parameter;
