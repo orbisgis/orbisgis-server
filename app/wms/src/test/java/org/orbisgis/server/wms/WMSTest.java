@@ -27,8 +27,11 @@
  */
 package org.orbisgis.server.wms;
 
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,11 +46,13 @@ import org.gdms.data.NoSuchTableException;
 import org.gdms.data.schema.MetadataUtilities;
 import org.gdms.data.values.Value;
 import org.gdms.data.values.ValueFactory;
+import org.gdms.geometryUtils.GeometryTypeUtil;
 import org.gdms.source.SourceManager;
 import org.gdms.sql.function.spatial.geometry.crs.ST_Transform;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
 import org.orbisgis.core.renderer.se.Style;
@@ -118,11 +123,12 @@ public class WMSTest {
             h.put("LAYERS", new String[]{"cantons"});
             h.put("STYLES", new String[]{""});
             h.put("CRS", new String[]{toCRS});
-            h.put("BBOX", new String[]{"2677441.0", "1197822.0", "1620431.0", "47680.0"});
+            h.put("BBOX", new String[]{"-5.372757617915", "9.326100042301633", "41.3630420705024", "51.089386147807105"});
             h.put("WIDTH", new String[]{"874"});
             h.put("HEIGHT", new String[]{"593"});
             h.put("FORMAT", new String[]{"image/png"});
             h.put("VERSION", new String[]{"1.3.0"});
+            h.put("TRANSPARENT", new String[]{"TRUE"});
             // Get the original source
             DataSource source = wms.getContext().getDataManager().getDataSource("cantons");
             source.open();
@@ -133,10 +139,8 @@ public class WMSTest {
             } finally {
                 source.close();
             }
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            wms.processRequests(h, out, r);
-
+            FileOutputStream fileOutputStream = new FileOutputStream(new File("target/testReprojection.png"));
+            wms.processRequests(h, fileOutputStream, r);
             // Get the projection source name
             String sourceName = GetMapHandler.getProjectionSourceName("cantons",toCRS);
             DataSource projSource = wms.getContext().getDataManager().getDataSource(sourceName);

@@ -36,31 +36,14 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-
-import com.vividsolutions.jts.geom.Geometry;
 import net.opengis.wms.Layer;
 import org.gdms.data.DataSource;
 import org.gdms.data.DataSourceFactory;
-import org.gdms.data.NoSuchTableException;
-import org.gdms.data.crs.SpatialReferenceSystem;
-import org.gdms.data.file.FileSourceDefinition;
-import org.gdms.data.schema.DefaultMetadata;
-import org.gdms.data.schema.Metadata;
 import org.gdms.data.schema.MetadataUtilities;
-import org.gdms.data.types.Type;
-import org.gdms.data.types.TypeFactory;
 import org.gdms.data.values.Value;
 import org.gdms.data.values.ValueFactory;
-import org.gdms.driver.DataSet;
 import org.gdms.driver.DiskBufferDriver;
-import org.gdms.driver.DriverException;
-import org.gdms.driver.driverManager.DriverManager;
-import org.gdms.source.SourceManager;
-import org.gdms.sql.engine.Engine;
-import org.gdms.sql.engine.SQLStatement;
 import org.gdms.sql.function.spatial.geometry.crs.ST_Transform;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
@@ -72,7 +55,6 @@ import org.orbisgis.core.renderer.ImageRenderer;
 import org.orbisgis.core.renderer.Renderer;
 import org.orbisgis.core.renderer.se.SeExceptions;
 import org.orbisgis.core.renderer.se.Style;
-import org.orbisgis.core.renderer.se.parameter.color.ColorHelper;
 import org.orbisgis.progress.NullProgressMonitor;
 
 /**
@@ -267,14 +249,12 @@ public final class GetMapHandler {
                         Graphics2D g2 = img.createGraphics();
 
                         Color color;
-                        if (transparent) {
-                                color = ColorHelper.getColorWithAlpha(Color.decode(bgColor), 0.0);
-                        } else {
+                        if (!transparent) {
                                 color = Color.decode(bgColor);
+                                g2.setBackground(color);
+                                g2.clearRect(0, 0, width, height);
                         }
 
-                        g2.setBackground(color);
-                        g2.clearRect(0, 0, width, height);
 
                         NullProgressMonitor pm = new NullProgressMonitor();
                         renderer.draw(mt, g2, width, height, layers, pm);
@@ -374,7 +354,7 @@ public final class GetMapHandler {
                 }
 
                 if (queryParameters.containsKey("TRANSPARENT")) {
-                        transparent = Boolean.getBoolean(queryParameters.get("TRANSPARENT")[0]);
+                        transparent = Boolean.valueOf(queryParameters.get("TRANSPARENT")[0]);
                 }
 
                 if (queryParameters.containsKey("BGCOLOR")) {
