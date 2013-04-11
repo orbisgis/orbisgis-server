@@ -27,15 +27,32 @@
  */
 package org.orbisgis.server.wms;
 
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
+
+import com.vividsolutions.jts.geom.Geometry;
+import net.opengis.wms.Layer;
+import org.gdms.data.DataSource;
+import org.gdms.data.DataSourceCreationException;
 import org.gdms.data.DataSourceFactory;
+import org.gdms.data.NoSuchTableException;
+import org.gdms.data.schema.MetadataUtilities;
+import org.gdms.data.values.Value;
+import org.gdms.data.values.ValueFactory;
+import org.gdms.geometryUtils.GeometryTypeUtil;
 import org.gdms.source.SourceManager;
+import org.gdms.sql.function.spatial.geometry.crs.ST_Transform;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
 import org.orbisgis.core.renderer.se.Style;
@@ -96,6 +113,49 @@ public class WMSTest {
                 FileUtils.deleteDir(fprj);
         }
 
+        @Test
+        public void testReprojection() throws Exception {
+            DummyResponse r = new DummyResponse("http://localhost:9000/wms/wms");
+            HashMap<String, String[]> h = new HashMap<String, String[]>();
+            final String toCRS = "EPSG:4326";
+            h.put("REQUEST", new String[]{"GetMap"});
+            h.put("SERVICE", new String[]{"WMS"});
+            h.put("LAYERS", new String[]{"cantons"});
+            h.put("STYLES", new String[]{""});
+            h.put("CRS", new String[]{toCRS});
+            h.put("BBOX", new String[]{"-5.372757617915", "9.326100042301633", "41.3630420705024", "51.089386147807105"});
+            h.put("WIDTH", new String[]{"874"});
+            h.put("HEIGHT", new String[]{"593"});
+            h.put("FORMAT", new String[]{"image/png"});
+            h.put("VERSION", new String[]{"1.3.0"});
+            h.put("TRANSPARENT", new String[]{"TRUE"});
+            // Get the original source
+            DataSource source = wms.getContext().getDataManager().getDataSource("cantons");
+            source.open();
+            Value geom;
+            try {
+                int geomIndex = MetadataUtilities.getGeometryFieldIndex(source.getMetadata());
+                geom = source.getFieldValue(0, geomIndex);
+            } finally {
+                source.close();
+            }
+            FileOutputStream fileOutputStream = new FileOutputStream(new File("target/testReprojection.png"));
+            wms.processRequests(h, fileOutputStream, r);
+            // Get the projection source name
+            String sourceName = GetMapHandler.getProjectionSourceName("cantons",toCRS);
+            DataSource projSource = wms.getContext().getDataManager().getDataSource(sourceName);
+            projSource.open();
+            try {
+                int geomIndex = MetadataUtilities.getGeometryFieldIndex(projSource.getMetadata());
+                Geometry projGeom = projSource.getFieldValue(0,geomIndex).getAsGeometry();
+                ST_Transform transformFunction = new ST_Transform();
+                Value res = transformFunction.evaluate(wms.getContext().getDataSourceFactory(),geom, ValueFactory.createValue(toCRS));
+                assertTrue(res.getAsGeometry().equals(projGeom));
+            } finally {
+                projSource.close();
+            }
+
+        }
         /**
          * Checks the error response for any missing parameter;
          *
