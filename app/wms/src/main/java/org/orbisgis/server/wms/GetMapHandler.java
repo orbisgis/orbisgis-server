@@ -36,18 +36,26 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import net.opengis.wms.Layer;
+import org.gdms.data.DataSource;
 import org.gdms.data.DataSourceFactory;
-import org.gdms.data.file.FileSourceDefinition;
-import org.gdms.driver.DataSet;
+import org.gdms.data.schema.DefaultMetadata;
+import org.gdms.data.schema.Metadata;
+import org.gdms.data.schema.MetadataUtilities;
+import org.gdms.data.types.CRSConstraint;
+import org.gdms.data.types.Constraint;
+import org.gdms.data.types.Type;
+import org.gdms.data.types.TypeFactory;
+import org.gdms.data.values.Value;
+import org.gdms.data.values.ValueFactory;
+import org.gdms.driver.DiskBufferDriver;
 import org.gdms.driver.DriverException;
-import org.gdms.driver.driverManager.DriverManager;
 import org.gdms.source.SourceManager;
-import org.gdms.sql.engine.Engine;
-import org.gdms.sql.engine.SQLStatement;
+import org.gdms.sql.function.spatial.geometry.crs.ST_Transform;
+import org.geotools.referencing.CRS;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
 import org.orbisgis.core.layerModel.ILayer;
@@ -58,7 +66,6 @@ import org.orbisgis.core.renderer.ImageRenderer;
 import org.orbisgis.core.renderer.Renderer;
 import org.orbisgis.core.renderer.se.SeExceptions;
 import org.orbisgis.core.renderer.se.Style;
-import org.orbisgis.core.renderer.se.parameter.color.ColorHelper;
 import org.orbisgis.progress.NullProgressMonitor;
 
 /**
@@ -111,8 +118,6 @@ public final class GetMapHandler {
 
                 DataManager dataManager = Services.getService(DataManager.class);
 
-                List<String> newLayers = new ArrayList<String>();
-
                 LayerCollection layers = new LayerCollection("Map");
 
                 SLD sld = null;
@@ -133,9 +138,8 @@ public final class GetMapHandler {
                                                 if (layerCRS.equals(crs)) {
                                                         iLayer = dataManager.createLayer(layer);
                                                 } else {
-                                                        String newLayer = project(layer, layerCRS, crs);
+                                                        String newLayer = project(layer, crs);
                                                         iLayer = dataManager.createLayer(newLayer);
-                                                        newLayers.add(newLayer);
                                                 }
                                         } else {
                                                 throw new LayerException();
@@ -256,14 +260,12 @@ public final class GetMapHandler {
                         Graphics2D g2 = img.createGraphics();
 
                         Color color;
-                        if (transparent) {
-                                color = ColorHelper.getColorWithAlpha(Color.decode(bgColor), 0.0);
-                        } else {
+                        if (!transparent) {
                                 color = Color.decode(bgColor);
+                                g2.setBackground(color);
+                                g2.clearRect(0, 0, width, height);
                         }
 
-                        g2.setBackground(color);
-                        g2.clearRect(0, 0, width, height);
 
                         NullProgressMonitor pm = new NullProgressMonitor();
                         renderer.draw(mt, g2, width, height, layers, pm);
@@ -277,10 +279,6 @@ public final class GetMapHandler {
                 } catch (LayerException lEx) {
                         throw new WMSException(lEx);
                 } finally {
-                        SourceManager sManager = dataManager.getSourceManager();
-                        for (String s : newLayers) {
-                                sManager.delete(s);
-                        }
                         try {
                                 layers.close();
                         } catch (LayerException ex1) {
@@ -367,7 +365,7 @@ public final class GetMapHandler {
                 }
 
                 if (queryParameters.containsKey("TRANSPARENT")) {
-                        transparent = Boolean.getBoolean(queryParameters.get("TRANSPARENT")[0]);
+                        transparent = Boolean.valueOf(queryParameters.get("TRANSPARENT")[0]);
                 }
 
                 if (queryParameters.containsKey("BGCOLOR")) {
@@ -390,38 +388,95 @@ public final class GetMapHandler {
                 layerMap = lMap;
         }
 
-        private String project(String layer, String sourceCrs, String targetCrs) throws WMSException {
+        /**
+         * When a source need to be reprojected a new source is created with a specific name, this function compute the name.
+         * This function only concatenate strings, it does not manage projection.
+         * @param sourceName Source name
+         * @param targetCrs Coordinate reference system != of the source one.
+         * @return A new source name that should contain the projection data.
+         */
+        public static String getProjectionSourceName(String sourceName, String targetCrs) {
+            return sourceName + "_" + targetCrs.hashCode();
+        }
+        /**
+         * Compute the targetCrs version of the provided layer and return the source name
+         * @param sourceName Input data source
+         * @param targetCrs convert to this crs
+         * @return The source name having the geometry converted into targetCrs
+         * @throws WMSException
+         */
+        private String project(String sourceName, String targetCrs) throws WMSException {
                 DataSourceFactory dsf = Services.getService(DataManager.class).getDataSourceFactory();
 
                 // maybe we already converted it and there is nothing to do
-                final String newName = layer + "-" + targetCrs;
+                final String newName = getProjectionSourceName(sourceName,targetCrs);
                 if (!dsf.getSourceManager().exists(newName)) {
-                        SQLStatement reProject;
                         try {
-                                // maybe this could be factored out, but SQLStatement is not really thread safe...
-                                reProject = Engine.parse("SELECT ST_Transform(the_geom, @{src}, @{tgt}) FROM @{data};", dsf.getProperties());
+                            DataSource sds = dsf.getDataSource(sourceName);
+                            sds.open();
+                            try {
+                                // create a new datasource
+                                Value newCRS = ValueFactory.createValue(targetCrs);
+                                Metadata md = sds.getMetadata();
+                                int spatialFieldIndex = MetadataUtilities.getSpatialFieldIndex(md);
+                                DiskBufferDriver driver = new DiskBufferDriver(dsf, getProjectedMetadata(md, targetCrs));
+                                ST_Transform transformFunction = new ST_Transform();
+                                long rowCount = sds.getRowCount();
+                                for (long i = 0; i < rowCount; i++) {
+                                    final Value[] newValues = sds.getRow(i).clone();
+                                    // Use transform method and update geometry field, put it in the new file
+                                    newValues[spatialFieldIndex] = transformFunction.evaluate(dsf,
+                                            sds.getFieldValue(i, spatialFieldIndex), newCRS);
+                                    driver.addValues(newValues);
+                                }
+                                driver.writingFinished();
+                                driver.close();
+                                SourceManager sm = dsf.getSourceManager();
+                                String randomName = sm.nameAndRegister(driver.getFile());
+                                sm.rename(randomName, newName);
+                            } finally {
+                                sds.close();
+                            }
                         } catch (Exception ex) {
-                                throw new RuntimeException("Gdms failed to parse the projection query. Shoudln't happen.", ex);
+                            throw new WMSException(ex);
                         }
 
-                        reProject.setFieldParameter("src", sourceCrs);
-                        reProject.setFieldParameter("tgt", targetCrs);
-                        reProject.setTableParameter("data", layer);
-                        reProject.setDataSourceFactory(dsf);
-
-                        reProject.prepare();
-                        try {
-                                DataSet d = reProject.execute();
-                                FileSourceDefinition fsd = new FileSourceDefinition(dsf.getTempFile("gdms"), DriverManager.DEFAULT_SINGLE_TABLE_NAME);
-                                fsd.createDataSource(d, new NullProgressMonitor());
-                                dsf.getSourceManager().register(newName, fsd);
-                        } catch (DriverException ex) {
-                                throw new WMSException("Failed to project " + layer + " from " + sourceCrs
-                                        + " to " + targetCrs, ex);
-                        }
-                        reProject.cleanUp();
                 }
 
                 return newName;
+        }
+
+        /**
+         * Change the CRS constraint associated to md so that it match the given CRS.
+         * @param md The original metadata
+         * @param targetCrs The string representation of the target crs
+         * @return The new Metadata
+         * @throws DriverException If we encounter a problem while handling metada
+         * @throws NoSuchAuthorityCodeException If targetCrs is not a known EPSG code
+         * @throws FactoryException If we failed at building the new CRS.
+         */
+        private Metadata getProjectedMetadata(Metadata md, String targetCrs)
+                        throws DriverException, NoSuchAuthorityCodeException, FactoryException {
+                int spatialFieldIndex = MetadataUtilities.getSpatialFieldIndex(md);
+                Type geomType = md.getFieldType(spatialFieldIndex);
+                Constraint[] constraints = geomType.getConstraints().clone();
+                for(int i=0; i<constraints.length; i++){
+                        Constraint c = constraints[i];
+                        if(c.getConstraintCode() == Constraint.CRS){
+                                constraints[i] = new CRSConstraint(CRS.decode(targetCrs));
+                                break;
+                        }
+                }
+                Type newType = TypeFactory.createType(geomType.getTypeCode(), constraints);
+                String[] names = md.getFieldNames();
+                Type[] types = new Type[names.length];
+                for(int i=0; i<types.length; i++){
+                        if(i == spatialFieldIndex){
+                                types[i] = newType;
+                        } else {
+                                types[i] = md.getFieldType(i);
+                        }
+                }
+                return new DefaultMetadata(types, names);
         }
 }
