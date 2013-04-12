@@ -51,6 +51,7 @@ import org.gdms.data.values.Value;
 import org.gdms.data.values.ValueFactory;
 import org.gdms.driver.DiskBufferDriver;
 import org.gdms.driver.DriverException;
+import org.gdms.source.SourceManager;
 import org.gdms.sql.function.spatial.geometry.crs.ST_Transform;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
@@ -430,7 +431,9 @@ public final class GetMapHandler {
                                 }
                                 driver.writingFinished();
                                 driver.close();
-                                dsf.getSourceManager().register(newName,driver.getFile());
+                                SourceManager sm = dsf.getSourceManager();
+                                String randomName = sm.nameAndRegister(driver.getFile());
+                                sm.rename(randomName, newName);
                             } finally {
                                 sds.close();
                             }
