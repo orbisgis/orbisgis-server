@@ -40,11 +40,21 @@ import java.util.Map;
 import net.opengis.wms.Layer;
 import org.gdms.data.DataSource;
 import org.gdms.data.DataSourceFactory;
+import org.gdms.data.schema.DefaultMetadata;
+import org.gdms.data.schema.Metadata;
 import org.gdms.data.schema.MetadataUtilities;
+import org.gdms.data.types.CRSConstraint;
+import org.gdms.data.types.Constraint;
+import org.gdms.data.types.Type;
+import org.gdms.data.types.TypeFactory;
 import org.gdms.data.values.Value;
 import org.gdms.data.values.ValueFactory;
 import org.gdms.driver.DiskBufferDriver;
+import org.gdms.driver.DriverException;
 import org.gdms.sql.function.spatial.geometry.crs.ST_Transform;
+import org.geotools.referencing.CRS;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
 import org.orbisgis.core.layerModel.ILayer;
@@ -406,11 +416,11 @@ public final class GetMapHandler {
                             try {
                                 // create a new datasource
                                 Value newCRS = ValueFactory.createValue(targetCrs);
-                                DiskBufferDriver driver = new DiskBufferDriver(dsf, sds.getMetadata());
-                                long rowCount = sds.getRowCount();
-                                int spatialFieldIndex = MetadataUtilities.getSpatialFieldIndex(sds.getMetadata());
+                                Metadata md = sds.getMetadata();
+                                int spatialFieldIndex = MetadataUtilities.getSpatialFieldIndex(md);
+                                DiskBufferDriver driver = new DiskBufferDriver(dsf, getProjectedMetadata(md, targetCrs));
                                 ST_Transform transformFunction = new ST_Transform();
-
+                                long rowCount = sds.getRowCount();
                                 for (long i = 0; i < rowCount; i++) {
                                     final Value[] newValues = sds.getRow(i).clone();
                                     // Use transform method and update geometry field, put it in the new file
@@ -431,5 +441,39 @@ public final class GetMapHandler {
                 }
 
                 return newName;
+        }
+
+        /**
+         * Change the CRS constraint associated to md so that it match the given CRS.
+         * @param md The original metadata
+         * @param targetCrs The string representation of the target crs
+         * @return The new Metadata
+         * @throws DriverException If we encounter a problem while handling metada
+         * @throws NoSuchAuthorityCodeException If targetCrs is not a known EPSG code
+         * @throws FactoryException If we failed at building the new CRS.
+         */
+        private Metadata getProjectedMetadata(Metadata md, String targetCrs)
+                        throws DriverException, NoSuchAuthorityCodeException, FactoryException {
+                int spatialFieldIndex = MetadataUtilities.getSpatialFieldIndex(md);
+                Type geomType = md.getFieldType(spatialFieldIndex);
+                Constraint[] constraints = geomType.getConstraints().clone();
+                for(int i=0; i<constraints.length; i++){
+                        Constraint c = constraints[i];
+                        if(c.getConstraintCode() == Constraint.CRS){
+                                constraints[i] = new CRSConstraint(CRS.decode(targetCrs));
+                                break;
+                        }
+                }
+                Type newType = TypeFactory.createType(geomType.getTypeCode(), constraints);
+                String[] names = md.getFieldNames();
+                Type[] types = new Type[names.length];
+                for(int i=0; i<types.length; i++){
+                        if(i == spatialFieldIndex){
+                                types[i] = newType;
+                        } else {
+                                types[i] = md.getFieldType(i);
+                        }
+                }
+                return new DefaultMetadata(types, names);
         }
 }
