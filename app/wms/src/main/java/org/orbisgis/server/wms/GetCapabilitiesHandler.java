@@ -202,9 +202,13 @@ public final class GetCapabilitiesHandler {
                 layerMap = lMap;
                 layerStyles = lS;
                 try {
-                        jaxbContext = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:net.opengis.wms:oasis.names.tc.ciq.xsdschema.xal._2");
+                        jaxbContext = JAXBContext.newInstance(
+                                "net.opengis.wms:net.opengis.sld._1_2:"
+                                + "net.opengis.se._2_0.core:"
+                                + "net.opengis.wms:"
+                                + "oasis.names.tc.ciq.xsdschema.xal._2");
                 } catch (JAXBException ex) {
-                        throw new RuntimeException(ex);
+                        throw new RuntimeException("Failed to build the JAXB Context, can't build the associated XML.",ex);
                 }
                 Set<String> codes = CRS.getSupportedCodes("EPSG");
                 LinkedList<String> ll = new LinkedList<String>();
@@ -284,7 +288,9 @@ public final class GetCapabilitiesHandler {
                                 String name = e.getName();
                                 String newName = e.getNewName();
 
-                                if (!sm.getSource(name).isSystemTableSource() && layerMap.containsKey(name)) {
+                                if (sm.getSource(name) != null
+                                                && !sm.getSource(name).isSystemTableSource()
+                                                && layerMap.containsKey(name)) {
                                         layerMap.put(newName, layerMap.remove(name));
                                 }
 
