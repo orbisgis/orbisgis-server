@@ -183,7 +183,7 @@ public final class GetCapabilitiesHandler {
                 try {
                         //Marshalling the WMS Capabilities into an XML response
                         Marshaller marshaller = jaxbContext.createMarshaller();
-                       
+
                         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
                         wmsResponse.setContentType("text/xml;charset=UTF-8");
@@ -202,11 +202,7 @@ public final class GetCapabilitiesHandler {
                 layerMap = lMap;
                 layerStyles = lS;
                 try {
-                        jaxbContext = JAXBContext.newInstance(
-                                "net.opengis.wms:net.opengis.sld._1_2:"
-                                + "net.opengis.se._2_0.core:"
-                                + "net.opengis.wms:"
-                                + "oasis.names.tc.ciq.xsdschema.xal._2");
+                        jaxbContext = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:oasis.names.tc.ciq.xsdschema.xal._2");
                 } catch (JAXBException ex) {
                         throw new RuntimeException("Failed to build the JAXB Context, can't build the associated XML.",ex);
                 }
