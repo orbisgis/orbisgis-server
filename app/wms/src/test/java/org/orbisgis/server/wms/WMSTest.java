@@ -83,7 +83,9 @@ public class WMSTest {
                 f.delete();
                 CoreWorkspace c = new CoreWorkspace();
                 c.setWorkspaceFolder(f.getAbsolutePath());
-                wms.init(c, Collections.<String, Style>emptyMap(), Collections.<String, String[]>emptyMap());
+                WMSProperties props = new WMSProperties();
+                props.putProperty(WMSProperties.TITLE,"test");
+                wms.init(c, Collections.<String, Style>emptyMap(), Collections.<String, String[]>emptyMap(), props);
 
                 fshp = File.createTempFile("gdms", ".shp");
                 fshp.delete();

@@ -63,7 +63,8 @@ import org.orbisgis.core.Services;
  */
 public final class GetCapabilitiesHandler {
 
-        private Map<String, Layer> layerMap = new HashMap<String, Layer>();
+    private final WMSProperties properties;
+    private Map<String, Layer> layerMap = new HashMap<String, Layer>();
         private Map<String, String[]> layerStyles;
         private final JAXBContext jaxbContext;
         private List<String> authCRS;
@@ -85,11 +86,11 @@ public final class GetCapabilitiesHandler {
                 //Setting service WMS metadata
                 Service s = new Service();
                 s.setName("WMS");
-                s.setTitle("WMS Service for OrbisWMS");
+                s.setTitle((String)properties.getProperty(WMSProperties.TITLE));
 
                 OnlineResource oR = new OnlineResource();
-                oR.setHref("http://www.orbisgis.org");
-                oR.setTitle("OrbisGIS Website");
+                oR.setHref((String)properties.getProperty(WMSProperties.RESOURCE_URL));
+                oR.setTitle((String)properties.getProperty(WMSProperties.RESOURCE_NAME));
                 s.setOnlineResource(oR);
 
                 ContactInformation cI = new ContactInformation();
@@ -198,7 +199,8 @@ public final class GetCapabilitiesHandler {
                 }
         }
 
-        GetCapabilitiesHandler(Map<String, Layer> lMap, Map<String, String[]> lS) {
+        GetCapabilitiesHandler(Map<String, Layer> lMap, Map<String, String[]> lS, WMSProperties props) {
+                this.properties = props;
                 layerMap = lMap;
                 layerStyles = lS;
                 try {
