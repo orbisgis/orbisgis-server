@@ -68,6 +68,7 @@ object Global extends GlobalSettings {
       val a =Play.current.configuration.getString(key)
       a match {
         case str : Some[String] => wp.putProperty(key, str.get)
+        case _ =>
       }
     })
     wp

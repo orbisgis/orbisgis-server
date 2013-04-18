@@ -42,10 +42,12 @@ public class WMSProperties {
     public static final String RESOURCE_NAME = "wms.service.resource.name";
     public static final String ABSTRACT = "wms.service.abstract";
     public static final String KEYWORDS = "wms.service.keywords";
-    public static final String CAP_GET = "wms.capabilities.onlineresource.get";
-    public static final String CAP_POST = "wms.capabilities.onlineresource.post";
-    public static final String FEATURE_GET = "wms.capabilities.featureinfo.get";
-    public static final String FEATURE_POST = "wms.capabilities.featureinfo.post";
+    public static final String CAP_GET = "wms.capabilities.capabilities.get";
+    public static final String CAP_POST = "wms.capabilities.capabilities.post";
+    public static final String MAP_GET = "wms.capabilities.map.get";
+    public static final String MAP_POST = "wms.capabilities.map.post";
+    public static final String FEATURE_GET = "wms.capabilities.featureInfo.get";
+    public static final String FEATURE_POST = "wms.capabilities.featureInfo.post";
 
     private HashMap<String,Object> values = new HashMap<String, Object>();
 
@@ -62,6 +64,8 @@ public class WMSProperties {
         ret.add(KEYWORDS);
         ret.add(CAP_POST);
         ret.add(CAP_GET);
+        ret.add(MAP_POST);
+        ret.add(MAP_GET);
         ret.add(FEATURE_POST);
         ret.add(FEATURE_GET);
         return ret;

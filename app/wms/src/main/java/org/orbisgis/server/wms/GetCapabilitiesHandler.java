@@ -65,9 +65,9 @@ public final class GetCapabilitiesHandler {
 
     private final WMSProperties properties;
     private Map<String, Layer> layerMap = new HashMap<String, Layer>();
-        private Map<String, String[]> layerStyles;
-        private final JAXBContext jaxbContext;
-        private List<String> authCRS;
+    private Map<String, String[]> layerStyles;
+    private final JAXBContext jaxbContext;
+    private List<String> authCRS;
 
         /**
          * Handles the getCapabilities request and gives the XML formated server
@@ -78,26 +78,12 @@ public final class GetCapabilitiesHandler {
          * @throws WMSException
          * @throws UnsupportedEncodingException
          */
-        void getCap(OutputStream output, WMSResponse wmsResponse) throws WMSException, UnsupportedEncodingException {
+        public void getCap(OutputStream output, WMSResponse wmsResponse) throws WMSException, UnsupportedEncodingException {
                 PrintStream pr = new PrintStream(output, false, "UTF-8");
                 WMSCapabilities cap = new WMSCapabilities();
 
-
                 //Setting service WMS metadata
-                Service s = new Service();
-                s.setName("WMS");
-                s.setTitle((String)properties.getProperty(WMSProperties.TITLE));
-
-                OnlineResource oR = new OnlineResource();
-                oR.setHref((String)properties.getProperty(WMSProperties.RESOURCE_URL));
-                oR.setTitle((String)properties.getProperty(WMSProperties.RESOURCE_NAME));
-                s.setOnlineResource(oR);
-
-                ContactInformation cI = new ContactInformation();
-                cI.setContactElectronicMailAddress("info@orbisgis.org");
-                s.setContactInformation(cI);
-
-                cap.setService(s);
+                cap.setService(getService());
 
                 //Setting Capability parameters
 
@@ -117,63 +103,13 @@ public final class GetCapabilitiesHandler {
                 c.setLayer(availableLayers);
 
                 //Setting the request capabilities
-
                 //GetMap capabilities
                 Request req = new Request();
-                OperationType opMap = new OperationType();
-                for (ImageFormats im : ImageFormats.values()) {
-                        opMap.getFormat().add(im.toString());
-                }
-                OnlineResource oRMap = new OnlineResource();
-                oRMap.setHref(wmsResponse.getRequestUrl());
-                oRMap.setTitle("GetMap");
-                Get get = new Get();
-                get.setOnlineResource(oRMap);
-                HTTP http = new HTTP();
-                http.setGet(get);
-                Post post = new Post();
-                post.setOnlineResource(oRMap);
-                http.setPost(post);
-                DCPType dcpType = new DCPType();
-                dcpType.setHTTP(http);
-                opMap.getDCPType().add(dcpType);
-                req.setGetMap(opMap);
-
+                req.setGetMap(getMapOperation(wmsResponse));
                 //GetCap capabilities
-                OperationType opCap = new OperationType();
-                opCap.getFormat().add("text/xml");
-                OnlineResource oRCap = new OnlineResource();
-                oRCap.setHref(wmsResponse.getRequestUrl());
-                oRCap.setTitle("GetCapabilities");
-                Get getCap = new Get();
-                getCap.setOnlineResource(oRCap);
-                HTTP httpCap = new HTTP();
-                httpCap.setGet(getCap);
-                Post postCap = new Post();
-                postCap.setOnlineResource(oRMap);
-                http.setPost(postCap);
-                DCPType dcpTypeCap = new DCPType();
-                dcpTypeCap.setHTTP(httpCap);
-                opCap.getDCPType().add(dcpTypeCap);
-                req.setGetCapabilities(opCap);
-
-                //GetFeatureinfo capabilities
-                OperationType opFeature = new OperationType();
-                opFeature.getFormat().add("text/xml");
-                OnlineResource oRFeature = new OnlineResource();
-                oRFeature.setHref(wmsResponse.getRequestUrl());
-                oRFeature.setTitle("GetFeatureInfo");
-                Get getFeature = new Get();
-                getFeature.setOnlineResource(oRFeature);
-                HTTP httpFeature = new HTTP();
-                httpFeature.setGet(getFeature);
-                Post postFeature = new Post();
-                postFeature.setOnlineResource(oRMap);
-                http.setPost(postFeature);
-                DCPType dcpTypeFeature = new DCPType();
-                dcpTypeFeature.setHTTP(httpFeature);
-                opFeature.getDCPType().add(dcpTypeFeature);
-                req.setGetFeatureInfo(opFeature);
+                req.setGetCapabilities(getCapOperation(wmsResponse));
+                //GetFeatureInfo capabilities
+                req.setGetFeatureInfo(getFeatureOperation(wmsResponse));
 
 
                 c.setRequest(req);
@@ -199,7 +135,100 @@ public final class GetCapabilitiesHandler {
                 }
         }
 
-        GetCapabilitiesHandler(Map<String, Layer> lMap, Map<String, String[]> lS, WMSProperties props) {
+    /**
+     * Prepare the Service JAXB object in order to build the XML response.
+     * @return A Service instance
+     */
+    private Service getService(){
+        Service s = new Service();
+        s.setName("WMS");
+        s.setTitle((String)properties.getProperty(WMSProperties.TITLE));
+        OnlineResource oR = new OnlineResource();
+        oR.setHref((String)properties.getProperty(WMSProperties.RESOURCE_URL));
+        oR.setTitle((String)properties.getProperty(WMSProperties.RESOURCE_NAME));
+        s.setOnlineResource(oR);
+        ContactInformation cI = new ContactInformation();
+        cI.setContactElectronicMailAddress("info@orbisgis.org");
+        s.setContactInformation(cI);
+        return s;
+    }
+
+    private OperationType getFeatureOperation(WMSResponse wmsResponse) {
+        OperationType opFeature = new OperationType();
+        opFeature.getFormat().add("text/xml");
+        //GET
+        Get getFeature = new Get();
+        getFeature.setOnlineResource(buildOnlineResource(wmsResponse,WMSProperties.FEATURE_GET, "GetFeatureInfo"));
+        //POST
+        Post postFeature = new Post();
+        postFeature.setOnlineResource(buildOnlineResource(wmsResponse,WMSProperties.FEATURE_POST, "GetFeatureInfo"));
+        //Both in HTTP
+        HTTP httpFeature = new HTTP();
+        httpFeature.setGet(getFeature);
+        httpFeature.setPost(postFeature);
+        DCPType dcpTypeFeature = new DCPType();
+        dcpTypeFeature.setHTTP(httpFeature);
+        opFeature.getDCPType().add(dcpTypeFeature);
+        return opFeature;
+    }
+
+
+    /**
+     * Gets the parameters of the GetCapabilities capability answer.
+     * @return The operation type representing the GetCapabilities operation.
+     */
+    private OperationType getCapOperation(WMSResponse wmsResponse) {
+        OperationType opCap = new OperationType();
+        opCap.getFormat().add("text/xml");
+        Get getCap = new Get();
+        getCap.setOnlineResource(buildOnlineResource(wmsResponse,WMSProperties.CAP_GET, "GetCapabilities"));
+        Post postCap = new Post();
+        postCap.setOnlineResource(buildOnlineResource(wmsResponse,WMSProperties.CAP_POST, "GetCapabilities"));
+        HTTP httpCap = new HTTP();
+        httpCap.setGet(getCap);
+        httpCap.setPost(postCap);
+        DCPType dcpTypeCap = new DCPType();
+        dcpTypeCap.setHTTP(httpCap);
+        opCap.getDCPType().add(dcpTypeCap);
+        return opCap;
+    }
+
+    /**
+     * Gets the parameters of the GetMap capability answer.
+     * @return The operation type representing the getMap operation.
+     */
+    private OperationType getMapOperation(WMSResponse wmsResponse) {
+        OperationType opMap = new OperationType();
+        for (ImageFormats im : ImageFormats.values()) {
+            opMap.getFormat().add(im.toString());
+        }
+        Get get = new Get();
+        get.setOnlineResource(buildOnlineResource(wmsResponse,WMSProperties.MAP_GET, "GetMap"));
+        Post post = new Post();
+        post.setOnlineResource(buildOnlineResource(wmsResponse,WMSProperties.MAP_POST, "GetMap"));
+        //We feed the http object
+        HTTP http = new HTTP();
+        http.setGet(get);
+        http.setPost(post);
+        DCPType dcpType = new DCPType();
+        dcpType.setHTTP(http);
+        opMap.getDCPType().add(dcpType);
+        return opMap;
+    }
+
+    private OnlineResource buildOnlineResource(WMSResponse wmsResponse, String key, String title){
+        OnlineResource oRGet = new OnlineResource();
+        String map = (String)properties.getProperty(key);
+        if(map == null){
+            oRGet.setHref(wmsResponse.getRequestUrl());
+        } else {
+            oRGet.setHref(map);
+        }
+        oRGet.setTitle(title);
+        return oRGet;
+    }
+
+    GetCapabilitiesHandler(Map<String, Layer> lMap, Map<String, String[]> lS, WMSProperties props) {
                 this.properties = props;
                 layerMap = lMap;
                 layerStyles = lS;
