@@ -39,18 +39,28 @@ import java.util.Set;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
+import javax.xml.bind.annotation.XmlNs;
+import javax.xml.bind.annotation.XmlSchema;
+
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Polygon;
 import net.opengis.wms.*;
 import org.gdms.data.DataSource;
 import org.gdms.data.DataSourceCreationException;
 import org.gdms.data.DataSourceFactory;
 import org.gdms.data.NoSuchTableException;
+import org.gdms.data.values.Value;
+import org.gdms.data.values.ValueFactory;
 import org.gdms.driver.DriverException;
 import org.gdms.source.SourceEvent;
 import org.gdms.source.SourceListener;
 import org.gdms.source.SourceManager;
 import org.gdms.source.SourceRemovalEvent;
+import org.gdms.sql.function.FunctionException;
+import org.gdms.sql.function.spatial.geometry.crs.ST_Transform;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
@@ -60,6 +70,7 @@ import org.orbisgis.core.Services;
  * stream
  *
  * @author Tony MARTIN
+ * @author Alexis Guéganno
  */
 public final class GetCapabilitiesHandler {
 
@@ -81,27 +92,31 @@ public final class GetCapabilitiesHandler {
         public void getCap(OutputStream output, WMSResponse wmsResponse) throws WMSException, UnsupportedEncodingException {
                 PrintStream pr = new PrintStream(output, false, "UTF-8");
                 WMSCapabilities cap = new WMSCapabilities();
-
                 //Setting service WMS metadata
                 cap.setService(getService());
-
                 //Setting Capability parameters
-
                 //Setting Layers capabilities
                 Capability c = new Capability();
+                //Bounding box of the highest layer is dummy
+                Envelope dummy = new Envelope(-180,180,90,-90);
+                EXGeographicBoundingBox bb = getGeographicBoundingBox(dummy, "EPSG:4326");
                 Layer availableLayers = new Layer();
+                availableLayers.setEXGeographicBoundingBox(bb);
+                BoundingBox bBox = new BoundingBox();
+                bBox.setCRS("EPSG:4326");
+                bBox.setMaxx(180);
+                bBox.setMinx(-180);
+                bBox.setMaxy(90);
+                bBox.setMiny(90);
+                availableLayers.getBoundingBox().add(bBox);
                 for (Layer e : layerMap.values()) {
                         availableLayers.getLayer().add(e);
                 }
                 //Server supported CRS
-
-
                 availableLayers.getCRS().addAll(authCRS);
-
-                availableLayers.setName("Server available layers");
-
+                availableLayers.setName("Available_layers");
+                availableLayers.setTitle("Server available layers");
                 c.setLayer(availableLayers);
-
                 //Setting the request capabilities
                 //GetMap capabilities
                 Request req = new Request();
@@ -110,11 +125,7 @@ public final class GetCapabilitiesHandler {
                 req.setGetCapabilities(getCapOperation(wmsResponse));
                 //GetFeatureInfo capabilities
                 req.setGetFeatureInfo(getFeatureOperation(wmsResponse));
-
-
                 c.setRequest(req);
-
-
                 cap.setCapability(c);
 
                 try {
@@ -229,108 +240,166 @@ public final class GetCapabilitiesHandler {
     }
 
     GetCapabilitiesHandler(Map<String, Layer> lMap, Map<String, String[]> lS, WMSProperties props) {
-                this.properties = props;
-                layerMap = lMap;
-                layerStyles = lS;
+        this.properties = props;
+        layerMap = lMap;
+        layerStyles = lS;
+        try {
+            jaxbContext = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:oasis.names.tc.ciq.xsdschema.xal._2");
+        } catch (JAXBException ex) {
+            throw new RuntimeException("Failed to build the JAXB Context, can't build the associated XML.",ex);
+        }
+        Set<String> codes = CRS.getSupportedCodes("EPSG");
+        LinkedList<String> ll = new LinkedList<String>();
+        for(String s : codes){
+            ll.add("EPSG:"+s);
+        }
+        authCRS = ll;
+
+        final DataSourceFactory dsf = Services.getService(DataManager.class).getDataSourceFactory();
+        final SourceManager sm = dsf.getSourceManager();
+        SourceListener sourceListener = new CapListener(dsf);
+        String[] layerNames = sm.getSourceNames();
+        for (int i = 0; i < layerNames.length; i++) {
+            SourceEvent sEvent = new SourceEvent(layerNames[i], sm.getSource(layerNames[i]).isWellKnownName(), sm);
+            sourceListener.sourceAdded(sEvent);
+        }
+        sm.addSourceListener(sourceListener);
+    }
+
+    private EXGeographicBoundingBox getDummyGeographic(){
+        EXGeographicBoundingBox ret = new EXGeographicBoundingBox();
+        ret.setEastBoundLongitude(180);
+        ret.setWestBoundLongitude(-180);
+        ret.setNorthBoundLatitude(90);
+        ret.setSouthBoundLatitude(-90);
+        return ret;
+
+    }
+
+    private EXGeographicBoundingBox getGeographicBoundingBox(Envelope env, String epsgCode){
+        Envelope newEnvelope;
+        if("EPSG:4326".equals(epsgCode)){
+            newEnvelope = env;
+        } else {
+            try{
+                GeometryFactory gf = new GeometryFactory();
+                Polygon poly = (Polygon) gf.toGeometry(env);
+                ST_Transform transformFunction = new ST_Transform();
+                CoordinateReferenceSystem inputCRS = CRS.decode(epsgCode);
+                Value val = transformFunction.evaluate(null,
+                        ValueFactory.createValue(poly, inputCRS),
+                        ValueFactory.createValue("EPSG:4326"));
+                newEnvelope = val.getAsGeometry().getEnvelopeInternal();
+            } catch (FunctionException fe){
+                return getDummyGeographic();
+            }  catch (NoSuchAuthorityCodeException fe){
+                return getDummyGeographic();
+            }  catch (FactoryException fe){
+                return getDummyGeographic();
+            }
+        }
+        EXGeographicBoundingBox ret = new EXGeographicBoundingBox();
+        ret.setEastBoundLongitude(newEnvelope.getMaxX());
+        ret.setWestBoundLongitude(newEnvelope.getMinX());
+        ret.setNorthBoundLatitude(newEnvelope.getMaxY());
+        ret.setSouthBoundLatitude(newEnvelope.getMinY());
+        return ret;
+    }
+
+    /**
+     * This listener is used to maintain a map of JAXB Layer instance up to date, whatever the changes in the
+     * registered sources are. That means we update the map on name changes and when layers are added or removed.
+     */
+    private class CapListener implements SourceListener {
+
+        private DataSourceFactory dsf;
+
+        public CapListener(DataSourceFactory dsf){
+            this.dsf = dsf;
+        }
+
+        @Override
+        public void sourceAdded(SourceEvent e) {
+            String name = e.getName();
+            SourceManager sm = dsf.getSourceManager();
+            if (e.isWellKnownName() && !sm.getSource(name).isSystemTableSource() && !layerMap.containsKey(name)) {
                 try {
-                        jaxbContext = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:oasis.names.tc.ciq.xsdschema.xal._2");
-                } catch (JAXBException ex) {
-                        throw new RuntimeException("Failed to build the JAXB Context, can't build the associated XML.",ex);
-                }
-                Set<String> codes = CRS.getSupportedCodes("EPSG");
-                LinkedList<String> ll = new LinkedList<String>();
-                for(String s : codes){
-                        ll.add("EPSG:"+s);
-                }
-                authCRS = ll;
+                    Layer layer = new Layer();
+                    layer.setName(name);
+                    layer.setTitle(name);
 
-                final DataSourceFactory dsf = Services.getService(DataManager.class).getDataSourceFactory();
-                final SourceManager sm = dsf.getSourceManager();
-
-                SourceListener sourceListener = new SourceListener() {
-
-                        @Override
-                        public void sourceAdded(SourceEvent e) {
-                                String name = e.getName();
-                                if (e.isWellKnownName() && !sm.getSource(name).isSystemTableSource() && !layerMap.containsKey(name)) {
-                                        try {
-                                                Layer layer = new Layer();
-                                                layer.setName(name);
-                                                layer.setTitle(name);
-
-                                                //Setting the bouding box data
-                                                DataSource ds = dsf.getDataSource(name);
-                                                ds.open();
-                                                Envelope env = ds.getFullExtent();
-                                                CoordinateReferenceSystem crs = ds.getCRS();
-                                                ds.close();
-                                                BoundingBox bBox = new BoundingBox();
-                                                if (crs != null) {
-                                                        Integer code = null;
-                                                        try {
-                                                                code = CRS.lookupEpsgCode(crs, true);
-                                                        } catch (FactoryException ex) {
-                                                        }
-                                                        if (code != null) {
-                                                                bBox.setCRS("EPSG:" + code);
-                                                                layer.getCRS().add("EPSG:" + code);
-                                                        } else {
-                                                                return;
-                                                        }
-                                                } else {
-                                                        return;
-                                                }
-                                                bBox.setMaxx(env.getMaxX());
-                                                bBox.setMinx(env.getMinX());
-                                                bBox.setMiny(env.getMinY());
-                                                bBox.setMaxy(env.getMaxY());
-                                                layer.getBoundingBox().add(bBox);
-                                                layer.setQueryable(true);
-                                                if (layerStyles.containsKey(name)) {
-                                                        String[] lStyles = layerStyles.get(name);
-                                                        for (int i = 0; i < lStyles.length; i++) {
-                                                                Style style = new Style();
-                                                                String styleName = lStyles[i];
-                                                                style.setName(styleName);
-                                                                style.setTitle(styleName);
-                                                                layer.getStyle().add(style);
-                                                        }
-                                                }
-                                                layerMap.put(name, layer);
-                                        } catch (NoSuchTableException ex) {
-                                        } catch (DataSourceCreationException ex) {
-                                        } catch (DriverException ex) {
-                                        }
-                                }
+                    //Setting the bounding box data
+                    DataSource ds = dsf.getDataSource(name);
+                    ds.open();
+                    Envelope env = ds.getFullExtent();
+                    CoordinateReferenceSystem crs = ds.getCRS();
+                    ds.close();
+                    BoundingBox bBox = getBoundingBox(env, crs);
+                    if(bBox == null){
+                        return;
+                    }
+                    layer.getCRS().add(bBox.getCRS());
+                    layer.getBoundingBox().add(bBox);
+                    layer.setEXGeographicBoundingBox(getGeographicBoundingBox(env, bBox.getCRS()));
+                    layer.setQueryable(true);
+                    if (layerStyles.containsKey(name)) {
+                        String[] lStyles = layerStyles.get(name);
+                        for (int i = 0; i < lStyles.length; i++) {
+                            Style style = new Style();
+                            String styleName = lStyles[i];
+                            style.setName(styleName);
+                            style.setTitle(styleName);
+                            layer.getStyle().add(style);
                         }
-
-                        @Override
-                        public void sourceRemoved(SourceRemovalEvent e) {
-                                String name = e.getName();
-                                layerMap.remove(name);
-                        }
-
-                        @Override
-                        public void sourceNameChanged(SourceEvent e) {
-                                String name = e.getName();
-                                String newName = e.getNewName();
-
-                                if (sm.getSource(name) != null
-                                                && !sm.getSource(name).isSystemTableSource()
-                                                && layerMap.containsKey(name)) {
-                                        layerMap.put(newName, layerMap.remove(name));
-                                }
-
-                        }
-                };
-
-                String[] layerNames = sm.getSourceNames();
-                for (int i = 0; i < layerNames.length; i++) {
-                        SourceEvent sEvent = new SourceEvent(layerNames[i], sm.getSource(layerNames[i]).isWellKnownName(), sm);
-                        sourceListener.sourceAdded(sEvent);
+                    }
+                    layerMap.put(name, layer);
+                } catch (NoSuchTableException ex) {
+                } catch (DataSourceCreationException ex) {
+                } catch (DriverException ex) {
                 }
+            }
+        }
 
-                sm.addSourceListener(sourceListener);
+        private BoundingBox getBoundingBox(Envelope env, CoordinateReferenceSystem crs){
+            BoundingBox bBox = new BoundingBox();
+            if (crs != null) {
+            Integer code = null;
+            try {
+            code = CRS.lookupEpsgCode(crs, true);
+            } catch (FactoryException ex) {
+            }
+            if (code != null) {
+                bBox.setCRS("EPSG:" + code);
+            } else {
+                return null;
+            }
+            } else {
+                return null;
+            }
+            bBox.setMaxx(env.getMaxX());
+            bBox.setMinx(env.getMinX());
+            bBox.setMiny(env.getMinY());
+            bBox.setMaxy(env.getMaxY());
+            return bBox;
+        }
+
+        @Override
+        public void sourceRemoved(SourceRemovalEvent e) {
+            String name = e.getName();
+            layerMap.remove(name);
+        }
+
+        @Override
+        public void sourceNameChanged(SourceEvent e) {
+            String name = e.getName();
+            String newName = e.getNewName();
+            SourceManager sm = dsf.getSourceManager();
+            if (sm.getSource(name) != null
+                    && !sm.getSource(name).isSystemTableSource()
+                    && layerMap.containsKey(name)) {
+                layerMap.put(newName, layerMap.remove(name));
+            }
 
         }
+    }
 }
