@@ -27,6 +27,7 @@
  */
 package org.orbisgis.server.wms;
 
+import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
 import com.vividsolutions.jts.geom.Envelope;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -39,8 +40,6 @@ import java.util.Set;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.annotation.XmlNs;
-import javax.xml.bind.annotation.XmlSchema;
 
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
@@ -131,6 +130,8 @@ public final class GetCapabilitiesHandler {
                 try {
                         //Marshalling the WMS Capabilities into an XML response
                         Marshaller marshaller = jaxbContext.createMarshaller();
+                        NamespacePrefixMapper mapper = new NamespaceMapper();
+                        marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", mapper);
 
                         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
