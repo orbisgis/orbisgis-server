@@ -51,7 +51,9 @@ public class SLDTest  {
                 CoreWorkspace c = new CoreWorkspace();
                 c.setWorkspaceFolder(f.getAbsolutePath());
                 WMS wms = new WMS();
-                wms.init(c, Collections.<String, Style>emptyMap(), Collections.<String, String[]>emptyMap());
+                WMSProperties props = new WMSProperties();
+                props.putProperty(WMSProperties.TITLE,"test");
+                wms.init(c, Collections.<String, Style>emptyMap(), Collections.<String, String[]>emptyMap(), props);
         }
 
         @Test

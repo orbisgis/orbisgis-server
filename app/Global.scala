@@ -27,21 +27,29 @@
  * info_at_ orbisgis.org
  */
 
+import java.util
 import play.api._
 import controllers._
 import org.orbisgis.core.workspace.CoreWorkspace
 import scala.collection.JavaConversions._
 import org.apache.commons.io.{FileUtils => FU}
+import org.orbisgis.server.wms.WMSProperties
 
 object Global extends GlobalSettings {
+
+  /**
+   * Feeds the workspace used by the WMS server and starts the application.
+   * @param app
+   */
   override def onStart(app: Application) {
     Logger.info("Application start...")
     // init the main (and only) loaded OrbisGIS workspace
     val c = new CoreWorkspace()
     c.setWorkspaceFolder("workspace")
+    val s : Option[String] = Play.current.configuration.getString("db.driver")
 
     WMS.loadStyles
-    WMS.wmsCt.init(c, WMS.styles, WMS.sourceStyles)
+    WMS.wmsCt.init(c, WMS.styles, WMS.sourceStyles, wMSProperties())
 
     WPS.init()
   }
@@ -51,5 +59,18 @@ object Global extends GlobalSettings {
     WMS.wmsCt.destroy()
     CatalogAPI.onStop()
     FU.cleanDirectory(WPS.wpsMain.scriptFolder)
+  }
+
+  private def wMSProperties() : WMSProperties = {
+    val wp: WMSProperties = new WMSProperties
+    val keys: util.HashSet[String] = WMSProperties.getDefaultKeys
+    keys.foreach(key => {
+      val a =Play.current.configuration.getString(key)
+      a match {
+        case str : Some[String] => wp.putProperty(key, str.get)
+        case _ =>
+      }
+    })
+    wp
   }
 }
