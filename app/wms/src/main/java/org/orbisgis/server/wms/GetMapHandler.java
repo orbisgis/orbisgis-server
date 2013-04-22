@@ -81,14 +81,14 @@ public final class GetMapHandler {
         /**
          * Receives all the getMap request parameters from getMapParameterParser
          * and turns them into acceptable objects for the renderer to process,
-         * then writes the rendrer image into the output stream via
+         * then writes the rendered image into the output stream via
          * MapImageWriter
          *
          * @param layerList contains the names of requested layers
          * @param styleList contains the names of the desired se files (must be
          * equal or shorter than layerList)
          * @param crs desired CRS (string)
-         * @param bbox geographic extent, given in the correct CRS
+         * @param bBox geographic extent, given in the correct CRS
          * @param width pixel with of the image
          * @param height pixel height of the image
          * @param pixelSize used to calculate the dpi resolution desired for the
@@ -97,19 +97,19 @@ public final class GetMapHandler {
          * capabilities
          * @param transparent boolean that determines whether the background is
          * visible or not (only works on png outputs)
-         * @param bgColor
+         * @param bgColor The background colour.
          * @param stringSLD used if the layers and styles are defined in a SLD
          * file given by its URI rather than layers and se styles files present
          * on the server
-         * @param exceptionsFormat
-         * @param output
-         * @param wmsResponse
+         * @param exceptionsFormat The format used to return Exceptions to the client
+         * @param output The stream where to write in
+         * @param wmsResponse The HTTP response that will be given by the server
          * @param serverStyles
          * @throws WMSException
          * @throws UnsupportedEncodingException  
          */
         public void getMap(String[] layerList, String[] styleList, String crs,
-                double[] bbox, int width, int height, double pixelSize, String imageFormat,
+                double[] bBox, int width, int height, double pixelSize, String imageFormat,
                 boolean transparent, String bgColor, String stringSLD, String exceptionsFormat, OutputStream output,
                 WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException, UnsupportedEncodingException {
 
@@ -128,7 +128,7 @@ public final class GetMapHandler {
                         // Reverse order make the first layer been rendered in the last
                         try {
                                 for (i = 0; i < layerList.length; i++) {
-                                        //Create the Ilayer with given layer name
+                                        //Create the ILayer with given layer name
                                         String layer = layerList[i];
                                         ILayer iLayer;
 
@@ -145,7 +145,7 @@ public final class GetMapHandler {
                                                 throw new LayerException();
                                         }
 
-                                        //Then adding the Ilayer to the layers to render list
+                                        //Then adding the ILayer to the layers to render list
                                         layers.addLayer(iLayer);
                                 }
                         } catch (LayerException e) {
@@ -233,8 +233,8 @@ public final class GetMapHandler {
                         //Setting the envelope according to given bounding box
                         Envelope env;
                         //bbox: {minx, miny, maxx, maxy}
-                        if (bbox.length == 4) {
-                                env = new Envelope(bbox[0], bbox[2], bbox[1], bbox[3]);
+                        if (bBox.length == 4) {
+                                env = new Envelope(bBox[0], bBox[2], bBox[1], bBox[3]);
                         } else {
                                 env = layers.getEnvelope();
                         }
@@ -291,10 +291,10 @@ public final class GetMapHandler {
          * Parses the url into the getMap request parameters and gives them to
          * the getMap method
          *
-         * @param queryParameters
-         * @param output
-         * @param wmsResponse
-         * @param serverStyles
+         * @param queryParameters The original parameters set in the HTTP query.
+         * @param output The stream we'll write in
+         * @param wmsResponse The HTTP response qe have to feed
+         * @param serverStyles The known SE Styles.
          * @throws WMSException
          */
         public void getMapParameterParser(Map<String, String[]> queryParameters, OutputStream output,

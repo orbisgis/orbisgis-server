@@ -111,38 +111,32 @@ public final class WMS {
          * Handles the URL request and reads the request type to start
          * processing of either a getMap or getCapabilities request
          *
-         * @param queryParameters
-         * @param output
+         * @param queryParameters The parameters that have been put in the GET query.
+         * @param output The output stream we will write in.
          * @param wmsResponse
          * @throws WMSException
          * @throws UnsupportedEncodingException
          */
         public void processRequests(Map<String, String[]> queryParameters, OutputStream output, WMSResponse wmsResponse) throws WMSException, UnsupportedEncodingException {
-
-
                 //Spliting request parameters to determine the requestType to execute
-
                 String service = "undefined";
                 if (queryParameters.containsKey("SERVICE")) {
                         service = queryParameters.get("SERVICE")[0];
                 }
                 if (!service.equalsIgnoreCase("wms")) {
-                        exceptionDescription(wmsResponse, output, "The service specified is either unsupported or wrongly requested. Please specify WMS service as it is the only one supported by this server");
+                        exceptionDescription(wmsResponse, output, "The service specified is either unsupported or " +
+                                "wrongly requested. Please specify WMS service as it is the only one supported by this server");
                         return;
                 }
-
                 String version = "undefined";
                 if (queryParameters.containsKey("VERSION")) {
                         version = queryParameters.get("VERSION")[0];
                 }
-
                 String requestType = "undefined";
                 if (queryParameters.containsKey("REQUEST")) {
                         requestType = queryParameters.get("REQUEST")[0];
                 }
-
-
-                // In case of a GetMap request, the WMS version is checked as recomended by the standard. If 
+                // In case of a GetMap request, the WMS version is checked as recommended by the standard. If
                 // a wrong version is selected, an error is sent and the user is asked for a supported version
                 if (requestType.equalsIgnoreCase("getmap")) {
                         if (!(version.equalsIgnoreCase("1.3.0") || version.equalsIgnoreCase("1.3"))) {
@@ -150,11 +144,8 @@ public final class WMS {
                                 return;
                         }
                         getMap.getMapParameterParser(queryParameters, output, wmsResponse, serverStyles);
-
                 } else if (requestType.equalsIgnoreCase("getcapabilities")) {
-
                         getCapHandler.getCap(output, wmsResponse);
-
                 } else {
                         exceptionDescription(wmsResponse, output, "The requested request type is not supported or wrongly specified. Please specify either getMap or getCapabilities request as it they are the only two supported by this server. ");
                 }
@@ -205,8 +196,11 @@ public final class WMS {
                 }
                 wmsResponse.setContentType("text/xml;charset=UTF-8");
                 wmsResponse.setResponseCode(code);
-                pr.append("<?xml version='1.0' encoding=\"UTF-8\"?><ServiceExceptionReport xmlns=\"http://www.opengis.net/ogc\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"1.3.0\" xsi:schemaLocation=\"http://www.opengis.net/ogc http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd\"><ServiceException>"
-                        + errorMessage + "</ServiceException></ServiceExceptionReport>");
+                pr.append("<?xml version='1.0' encoding=\"UTF-8\"?><ServiceExceptionReport xmlns=\"http://www.opengis.net/ogc\" " +
+                        "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"1.3.0\" " +
+                        "xsi:schemaLocation=\"http://www.opengis.net/ogc " +
+                        "http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd\"><ServiceException>");
+                pr.append(errorMessage).append("</ServiceException></ServiceExceptionReport>");
                 pr.flush();
         }
 }
