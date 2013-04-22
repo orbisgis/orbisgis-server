@@ -101,7 +101,7 @@ public final class WMS {
         }
 
         /**
-         * Free ressources
+         * Free resources
          */
         public void destroy() {
                 getContext().dispose();
