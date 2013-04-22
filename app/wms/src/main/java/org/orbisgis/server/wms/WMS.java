@@ -83,7 +83,7 @@ public final class WMS {
                 WMSProperties props;
                 if(properties == null){
                     props = new WMSProperties();
-                    properties.putProperty(WMSProperties.TITLE,"OrbisGIS WMS Server.");
+                    props.putProperty(WMSProperties.TITLE,"OrbisGIS WMS Server.");
                 } else {
                     props = properties;
                 }
