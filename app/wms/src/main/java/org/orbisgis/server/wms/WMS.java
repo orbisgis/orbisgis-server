@@ -71,12 +71,22 @@ public final class WMS {
         /**
          * Initialize the context (containing datasources, datamanager...)
          *
-         * @param coreWorkspace
-         * @param sStyles
+         * @param coreWorkspace The OrbisGIS workspace
+         * @param sStyles The known SE styles
          * @param styleForSource
+         * @param properties The configuration properties for the server.
          */
-        public void init(CoreWorkspace coreWorkspace, Map<String, Style> sStyles, Map<String, String[]> styleForSource) {
-
+        public void init(CoreWorkspace coreWorkspace,
+                         Map<String, Style> sStyles,
+                         Map<String, String[]> styleForSource,
+                         WMSProperties properties) {
+                WMSProperties props;
+                if(properties == null){
+                    props = new WMSProperties();
+                    props.putProperty(WMSProperties.TITLE,"OrbisGIS WMS Server.");
+                } else {
+                    props = properties;
+                }
                 layerStyles = styleForSource;
 
                 context = new MainContext(false, coreWorkspace, false);
@@ -87,7 +97,7 @@ public final class WMS {
                 layerMap = new HashMap<String, Layer>();
                 getMap = new GetMapHandler(layerMap);
                 this.serverStyles = sStyles;
-                getCapHandler = new GetCapabilitiesHandler(layerMap, layerStyles);
+                getCapHandler = new GetCapabilitiesHandler(layerMap, layerStyles, props);
         }
 
         /**

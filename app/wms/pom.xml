@@ -33,6 +33,11 @@
                 </repository>
         </distributionManagement>
         <dependencies>
+            <dependency>
+              <groupId>com.sun.xml.bind</groupId>
+              <artifactId>jaxb-impl</artifactId>
+              <version>2.2.2</version>
+            </dependency>
                 <dependency>
                         <groupId>org.orbisgis</groupId>
                         <artifactId>orbisgis-core-monomap</artifactId>
