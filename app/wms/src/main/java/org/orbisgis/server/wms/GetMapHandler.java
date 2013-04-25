@@ -72,7 +72,9 @@ import org.orbisgis.progress.NullProgressMonitor;
  * This object contains all the methods that are used to handle the getMap
  * request and give the correct parameters to the renderer
  *
- * @author maxence, Tony MARTIN
+ * @author Maxence Laurent
+ * @author Tony MARTIN
+ * @author Alexis Guéganno
  */
 public final class GetMapHandler {
 
@@ -81,14 +83,14 @@ public final class GetMapHandler {
         /**
          * Receives all the getMap request parameters from getMapParameterParser
          * and turns them into acceptable objects for the renderer to process,
-         * then writes the rendrer image into the output stream via
+         * then writes the rendered image into the output stream via
          * MapImageWriter
          *
          * @param layerList contains the names of requested layers
          * @param styleList contains the names of the desired se files (must be
          * equal or shorter than layerList)
          * @param crs desired CRS (string)
-         * @param bbox geographic extent, given in the correct CRS
+         * @param bBox geographic extent, given in the correct CRS
          * @param width pixel with of the image
          * @param height pixel height of the image
          * @param pixelSize used to calculate the dpi resolution desired for the
@@ -97,187 +99,70 @@ public final class GetMapHandler {
          * capabilities
          * @param transparent boolean that determines whether the background is
          * visible or not (only works on png outputs)
-         * @param bgColor
+         * @param bgColor The background colour.
          * @param stringSLD used if the layers and styles are defined in a SLD
          * file given by its URI rather than layers and se styles files present
          * on the server
-         * @param exceptionsFormat
-         * @param output
-         * @param wmsResponse
-         * @param serverStyles
+         * @param exceptionsFormat The format used to return Exceptions to the client
+         * @param output The stream where to write in
+         * @param wmsResponse The HTTP response that will be given by the server
+         * @param serverStyles Styles registered in this server
          * @throws WMSException
          * @throws UnsupportedEncodingException  
          */
         public void getMap(String[] layerList, String[] styleList, String crs,
-                double[] bbox, int width, int height, double pixelSize, String imageFormat,
+                double[] bBox, int width, int height, double pixelSize, String imageFormat,
                 boolean transparent, String bgColor, String stringSLD, String exceptionsFormat, OutputStream output,
                 WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException, UnsupportedEncodingException {
 
-
-                double dpi = 25.4 / pixelSize;
-
-                DataManager dataManager = Services.getService(DataManager.class);
-
                 LayerCollection layers = new LayerCollection("Map");
+                try {
+                    //First case : Layers and Styles are given with shp and se file names
+                    if (layerList != null && layerList.length > 0) {
+                            layers = getLayerList(layerList, crs, styleList, serverStyles);
 
-                SLD sld = null;
-
-                //First case : Layers and Styles are given with shp and se file names
-                if (layerList != null && layerList.length > 0) {
-                        int i;
-                        // Reverse order make the first layer been rendered in the last
-                        try {
-                                for (i = 0; i < layerList.length; i++) {
-                                        //Create the Ilayer with given layer name
-                                        String layer = layerList[i];
-                                        ILayer iLayer;
-
-                                        //Checking if the layer CRS matches the requested one
-                                        if (layerMap.containsKey(layer)) {
-                                                String layerCRS = layerMap.get(layer).getCRS().get(0);
-                                                if (layerCRS.equals(crs)) {
-                                                        iLayer = dataManager.createLayer(layer);
-                                                } else {
-                                                        String newLayer = project(layer, crs);
-                                                        iLayer = dataManager.createLayer(newLayer);
-                                                }
-                                        } else {
-                                                throw new LayerException();
-                                        }
-
-                                        //Then adding the Ilayer to the layers to render list
-                                        layers.addLayer(iLayer);
-                                }
-                        } catch (LayerException e) {
+                    } else if (stringSLD != null) {
+                        // Changing the sld String object to a Style type object
+                            try {
+                                layers = getLayersFromSLD(stringSLD);
+                            } catch (URISyntaxException ex) {
+                                    WMS.exceptionDescription(wmsResponse, output,
+                                            "The SLD URI is invalid. Please enter a valid SLD file URI path.");
+                                    return;
+                            }  catch (SeExceptions.InvalidStyle ex) {
                                 WMS.exceptionDescription(wmsResponse, output,
-                                        "At least one of the chosen layer is invalid. "
-                                        + "Make sure of the available layers by requesting "
-                                        + "the server capabilities.");
+                                        "The se style is invalid. Please give a SE valid style in the SLD file..");
                                 return;
-                        }
-
-                } else // Changing the sld String object to a Style type object
-                if (stringSLD != null) {
-                        try {
-                                sld = new SLD(stringSLD);
-                                for (int i = 0; i < sld.size(); i++) {
-                                        try {
-                                                layers.addLayer(sld.getLayer(i));
-                                        } catch (LayerException ex) {
-                                                WMS.exceptionDescription(wmsResponse, output,
-                                                        "At least one of the chosen layer is "
-                                                        + "invalid. Make sure of the available "
-                                                        + "layers by requesting the server capabilities.");
-                                                return;
-                                        } catch (SeExceptions.InvalidStyle ex) {
-                                                WMS.exceptionDescription(wmsResponse, output,
-                                                        "The se style is invalid. Please give a SE valid SLD file.");
-                                                return;
-                                        }
-                                }
-                        } catch (URISyntaxException ex) {
-                                WMS.exceptionDescription(wmsResponse, output,
-                                        "The SLD URI is invalid. Please enter a valid SLD file URI path.");
-                                return;
-                        }
+                            }
+                    }
+                } catch (LayerException ex) {
+                    WMS.exceptionDescription(wmsResponse, output,
+                            "At least one of the chosen layer is "
+                                    + "invalid. Make sure of the available "
+                                    + "layers by requesting the server capabilities.");
+                    return;
                 }
 
-                BufferedImage img;
 
                 try {
-                        layers.open();
-
-                        //After opening the layers, we can add the styles to each layer
-                        if (layerList != null) {
-                                int j;
-                                //In case of using the server's styles
-                                for (j = 0; j < layerList.length; j++) {
-                                        if (j < styleList.length) {
-                                                String styleString = styleList[j];
-                                                if (serverStyles.containsKey(styleString)) {
-                                                        Style style = serverStyles.get(styleString);
-                                                        layers.getChildren()[j].setStyle(0, style);
-                                                } else {
-                                                        WMS.exceptionDescription(wmsResponse, output,
-                                                                "One of the requested SE styles doesn't "
-                                                                + "exist on this server. Please look for an "
-                                                                + "existing style in the server extended capabilities.");
-                                                        return;
-                                                }
-
-                                        } else //we add a server default style associated with the layer 
-                                        {
-                                                String styleString = layers.getLayer(j).getName();
-                                                if (serverStyles.containsKey(styleString)) {
-                                                        Style style = serverStyles.get(styleString);
-                                                        layers.getChildren()[j].setStyle(0, style);
-                                                }
-                                        }
-                                }
-                        } else if (stringSLD != null) {
-
-                                //In case of an external sld
-                                try {
-                                        for (int i = 0; i < sld.size(); i++) {
-                                                Style theStyle = sld.getLayer(i).getStyle(0);
-                                                layers.getChildren()[i].setStyle(0, theStyle);
-                                        }
-                                } catch (SeExceptions.InvalidStyle ex) {
-                                        WMS.exceptionDescription(wmsResponse, output,
-                                                "The se style is invalid. Please give a SE valid style in the SLD file..");
-                                        return;
-                                }
-                        }
-
-
-                        //Setting the envelope according to given bounding box
-                        Envelope env;
-                        //bbox: {minx, miny, maxx, maxy}
-                        if (bbox.length == 4) {
-                                env = new Envelope(bbox[0], bbox[2], bbox[1], bbox[3]);
-                        } else {
-                                env = layers.getEnvelope();
-                        }
-
-                        Renderer renderer = new ImageRenderer();
-                        MapTransform mt = new MapTransform();
-
-                        // WMS Ask to distort map CRS when envelope and dimension box (i.e. the map to genereate) differ
-                        mt.setAdjustExtent(false);
-
-                        int imgType = BufferedImage.TYPE_4BYTE_ABGR;
-
-                        if (ImageFormats.JPEG.toString().equals(imageFormat)) {
-                                imgType = BufferedImage.TYPE_3BYTE_BGR;
-                        }
-
-                        img = new BufferedImage(width, height, imgType);
-
-                        mt.setDpi(dpi);
-                        mt.setImage(img);
-                        mt.setExtent(env);
-
+                    //Finally we can draw things...
+                        MapTransform mt = getMapTransform(bBox, layers, imageFormat, width, height, pixelSize);
+                        BufferedImage img = mt.getImage();
                         Graphics2D g2 = img.createGraphics();
-
                         Color color;
                         if (!transparent) {
                                 color = Color.decode(bgColor);
                                 g2.setBackground(color);
                                 g2.clearRect(0, 0, width, height);
                         }
-
-
                         NullProgressMonitor pm = new NullProgressMonitor();
+                        Renderer renderer = new ImageRenderer();
                         renderer.draw(mt, g2, width, height, layers, pm);
-                                                        
                         g2.dispose();
                         MapImageWriter.write(wmsResponse, output, imageFormat, img, pixelSize);
-
                 } catch (IOException ex) {
                         ex.printStackTrace(new PrintStream(output, false, "UTF-8"));
                         wmsResponse.setContentType("text/plain");
-                } catch (LayerException lEx) {
-                        throw new WMSException(lEx);
                 } finally {
                         try {
                                 layers.close();
@@ -287,14 +172,139 @@ public final class GetMapHandler {
                 }
         }
 
+    /**
+     * Builds the collection of needed layers, with their associated styles, from the given URI.
+     * @param stringSLD The URI of a remote SLD as a String
+     * @return The collection of layers.
+     * @throws URISyntaxException
+     * @throws WMSException
+     * @throws SeExceptions.InvalidStyle
+     * @throws LayerException
+     */
+    private LayerCollection getLayersFromSLD(String stringSLD) throws URISyntaxException, WMSException,
+                SeExceptions.InvalidStyle, LayerException {
+        LayerCollection layers = new LayerCollection("Map");
+        SLD sld = new SLD(stringSLD);
+        for (int i = 0; i < sld.size(); i++) {
+            layers.addLayer(sld.getLayer(i));
+        }
+        layers.open();
+        //In case of an external sld
+        for (int i = 0; i < sld.size(); i++) {
+            Style theStyle = sld.getLayer(i).getStyle(0);
+            layers.getChildren()[i].setStyle(0, theStyle);
+        }
+        return layers;
+    }
+
+    /**
+     * Build the MapTransform instance we will use.
+     * @param bBox The requested bounding box.
+     * @param layers The input layers
+     * @param imageFormat The format of the image
+     * @param width  The width of the requested image
+     * @param height The height of the requested image
+     * @param pixelSize The pixel size
+     * @return The MapTransform where we will draw our map.
+     */
+    private MapTransform getMapTransform(double[] bBox, LayerCollection layers, String imageFormat,
+                                         int width, int height, double pixelSize){
+        double dpi = 25.4 / pixelSize;
+        //Setting the envelope according to given bounding box
+        Envelope env;
+        //bbox: {minx, miny, maxx, maxy}
+        if (bBox.length == 4) {
+            env = new Envelope(bBox[0], bBox[2], bBox[1], bBox[3]);
+        } else {
+            env = layers.getEnvelope();
+        }
+        MapTransform mt = new MapTransform();
+        // WMS Ask to distort map CRS when envelope and dimension box (i.e. the map to generate) differ
+        mt.setAdjustExtent(false);
+        int imgType = BufferedImage.TYPE_4BYTE_ABGR;
+
+        if (ImageFormats.JPEG.toString().equals(imageFormat)) {
+            imgType = BufferedImage.TYPE_3BYTE_BGR;
+        }
+        BufferedImage img = new BufferedImage(width, height, imgType);
+        mt.setDpi(dpi);
+        mt.setImage(img);
+        mt.setExtent(env);
+        return mt;
+
+    }
+
+    /**
+     * Builds the needed layers and put them in a common LayerCollection for later rendering.
+     * @param layerList The names of the layers
+     * @param crs The requested CRS
+     * @param styleList The list of styles to apply
+     * @param serverStyles The mapping between styles and their names
+     * @return A LayerCollection gathering all the requested layers
+     * @throws LayerException
+     * @throws WMSException
+     */
+    private LayerCollection getLayerList(String[] layerList, String crs, String[] styleList, Map<String, Style> serverStyles)
+            throws LayerException, WMSException {
+        DataManager dataManager = Services.getService(DataManager.class);
+        LayerCollection layers = new LayerCollection("Map");
+        int i;
+        // Reverse order make the first layer been rendered in the last
+        for (i = 0; i < layerList.length; i++) {
+            //Create the ILayer with given layer name
+            String layer = layerList[i];
+            ILayer iLayer;
+
+            //Checking if the layer CRS matches the requested one
+            if (layerMap.containsKey(layer)) {
+                String layerCRS = layerMap.get(layer).getCRS().get(0);
+                if (layerCRS.equals(crs)) {
+                    iLayer = dataManager.createLayer(layer);
+                } else {
+                    String newLayer = project(layer, crs);
+                    iLayer = dataManager.createLayer(newLayer);
+                }
+            } else {
+                throw new LayerException();
+            }
+
+            //Then adding the ILayer to the layers to render list
+            layers.addLayer(iLayer);
+        }
+        layers.open();
+        //In case of using the server's styles
+        for (int j = 0; j < layerList.length; j++) {
+            if (j < styleList.length) {
+                String styleString = styleList[j];
+                if (serverStyles.containsKey(styleString)) {
+                    Style style = serverStyles.get(styleString);
+                    layers.getChildren()[j].setStyle(0, style);
+                } else {
+                    throw new WMSException("One of the requested SE styles doesn't "
+                            + "exist on this server. Please look for an "
+                            + "existing style in the server extended capabilities.");
+                }
+
+            } else //we add a server default style associated with the layer
+            {
+                String styleString = layers.getLayer(j).getName();
+                if (serverStyles.containsKey(styleString)) {
+                    Style style = serverStyles.get(styleString);
+                    layers.getChildren()[j].setStyle(0, style);
+                }
+            }
+        }
+        return layers;
+    }
+
         /**
          * Parses the url into the getMap request parameters and gives them to
          * the getMap method
          *
-         * @param queryParameters
-         * @param output
-         * @param wmsResponse
-         * @param serverStyles
+         * @param queryParameters The original parameters set in the HTTP query.
+         * @param output The stream we'll write in
+         * @param wmsResponse The HTTP response qe have to feed
+         * @param serverStyles The known SE Styles.
          * @throws WMSException
          */
         public void getMapParameterParser(Map<String, String[]> queryParameters, OutputStream output,

@@ -54,7 +54,9 @@ import org.orbisgis.core.renderer.se.Style;
 /**
  * Called in the case where the styles and layers are defined by a SLD file URI
  *
- * @author maxence, Tony MARTIN
+ * @author Maxence Laurent
+ * @author Tony MARTIN
+ * @author Alexis Guéganno
  */
 public class SLD {
 
@@ -64,7 +66,7 @@ public class SLD {
          * Constructor of the SLD object. Contains the URI file path to the
          * desired SLD file.
          *
-         * @param sld
+         * @param sld An URI pointing to the SLD file we want to retrieve and use.
          * @throws URISyntaxException
          * @throws WMSException
          */
@@ -85,7 +87,7 @@ public class SLD {
 
         /**
          * Gets a copy of the inner list of {@code SLDLayer} instances.
-         * @return
+         * @return A copy of the inner list of {@code SLDLayer} instances.
          */
         public List<SLDLayer> getSLDLayers() {
                 return layers == null ? new ArrayList<SLDLayer>() : new ArrayList<SLDLayer>(layers);
@@ -94,7 +96,7 @@ public class SLD {
         /**
          * Returns the number of layers in the SLD file.
          *
-         * @return
+         * @return The number of layers in the SLD file.
          */
         public int size() {
                 return layers.size();
@@ -104,13 +106,12 @@ public class SLD {
          * Returns the selected layer from the SLD object that contains
          * references to the layer and the associated style
          *
-         * @param i
-         * @return
+         * @param i The index of the layer in the list of layers returned by {@code getSLDLayers()}.
+         * @return A new OrbisGIS ILayer configured with the good name and style.
          * @throws WMSException
          * @throws org.orbisgis.core.renderer.se.SeExceptions.InvalidStyle
          */
         public ILayer getLayer(int i) throws WMSException, InvalidStyle {
-
                 DataManager dataManager = Services.getService(DataManager.class);
                 ILayer layer;
                 try {
@@ -120,12 +121,10 @@ public class SLD {
                 }
                 StyleType st = layers.get(i).getStyle();
                 Style theStyle;
-
                 theStyle = new Style(st, layer);
                 List<Style> styles = new ArrayList<Style>();
                 styles.add(theStyle);
                 layer.setStyles(styles);
-
                 return layer;
         }
 
@@ -141,7 +140,8 @@ public class SLD {
                  * SLD Layer constructor, created with the name of the queryable
                  * layer
                  *
-                 * @param name
+                 * @param name The name of the layer
+                 * @param sldStyle The associated style.
                  */
                 public SLDLayer(String name, StyleType sldStyle) {
                         if(name == null || sldStyle == null){
@@ -154,7 +154,7 @@ public class SLD {
                 /**
                  * Returns the name of the layer
                  *
-                 * @return
+                 * @return The name of the layer
                  */
                 public String getName() {
                         return name;
@@ -163,7 +163,7 @@ public class SLD {
                 /**
                  * Returns the style of the layer
                  *
-                 * @return
+                 * @return The JaXB representation of the layer's style.
                  */
                 public StyleType getStyle() {
                         return style;
@@ -195,10 +195,10 @@ public class SLD {
         /**
          * This recursive method will try to build a SLDLayer instance using the
          * given AbstractStyleType instance. We currently process StyleType
-         * instances and StylereferenceType
-         * @param se
-         * @param name
-         * @return
+         * instances and StyleReferenceType
+         * @param se The original JaXB SLD Style
+         * @param name The name of the layer
+         * @return A new SLDLayer instance
          * @throws WMSException
          */
         private SLDLayer processStyle(AbstractStyleType se, String name) throws WMSException{
@@ -218,9 +218,9 @@ public class SLD {
                         } catch (JAXBException jaxbException) {
                                 throw new WMSException(jaxbException);
                         } catch (MalformedURLException malformedURLException) {
-                                throw new WMSException(malformedURLException);
+                                throw new WMSException("We had a problem with your URL",malformedURLException);
                         } catch (URISyntaxException ex) {
-                                throw new WMSException(ex);
+                                throw new WMSException("We had a problem with your URI",ex);
                         }
                 }
                 return null;

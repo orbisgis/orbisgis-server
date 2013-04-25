@@ -29,7 +29,7 @@ package org.orbisgis.server.wms;
 
 /**
  * Interface to be implemented by the Servlet WMSResponse in order to be able to
- * write in the Servlet response frome the lib part of the program.
+ * write in the Servlet response from the lib part of the program.
  *
  * @author Tony MARTIN
  */
