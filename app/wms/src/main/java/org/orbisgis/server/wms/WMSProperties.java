@@ -48,6 +48,7 @@ public class WMSProperties {
     public static final String MAP_POST = "wms.capabilities.map.post";
     public static final String FEATURE_GET = "wms.capabilities.featureInfo.get";
     public static final String FEATURE_POST = "wms.capabilities.featureInfo.post";
+    public static final String DEBUG_LEVEL = "wms.debug";
 
     private HashMap<String,Object> values = new HashMap<String, Object>();
 
@@ -68,6 +69,7 @@ public class WMSProperties {
         ret.add(MAP_GET);
         ret.add(FEATURE_POST);
         ret.add(FEATURE_GET);
+        ret.add(DEBUG_LEVEL);
         return ret;
     }
 

@@ -38,6 +38,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.Map;
 import net.opengis.wms.Layer;
+import org.apache.log4j.Logger;
 import org.gdms.data.DataSource;
 import org.gdms.data.DataSourceFactory;
 import org.gdms.data.schema.DefaultMetadata;
@@ -79,6 +80,7 @@ import org.orbisgis.progress.NullProgressMonitor;
 public final class GetMapHandler {
 
         private Map<String, Layer> layerMap;
+        private static final Logger LOGGER = Logger.getLogger(GetMapHandler.class);
 
         /**
          * Receives all the getMap request parameters from getMapParameterParser
@@ -159,6 +161,7 @@ public final class GetMapHandler {
                         Renderer renderer = new ImageRenderer();
                         renderer.draw(mt, g2, width, height, layers, pm);
                         g2.dispose();
+                        LOGGER.debug("Image ready to be sent to the client.");
                         MapImageWriter.write(wmsResponse, output, imageFormat, img, pixelSize);
                 } catch (IOException ex) {
                         ex.printStackTrace(new PrintStream(output, false, "UTF-8"));
@@ -228,6 +231,7 @@ public final class GetMapHandler {
         }
         BufferedImage img = new BufferedImage(width, height, imgType);
         mt.setDpi(dpi);
+        LOGGER.debug("DPI set to: "+dpi);
         mt.setImage(img);
         mt.setExtent(env);
         return mt;
