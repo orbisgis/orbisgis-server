@@ -31,6 +31,8 @@ import com.sun.media.jai.codec.JPEGEncodeParam;
 import com.sun.media.jai.codec.PNGEncodeParam;
 import com.sun.media.jai.codec.TIFFEncodeParam;
 import com.sun.media.jai.codec.TIFFField;
+import org.apache.log4j.Logger;
+
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -39,9 +41,13 @@ import javax.media.jai.JAI;
 /**
  * This class is used to write the image into the output stream
  *
- * @author maxence, Tony MARTIN
+ * @author Maxence Laurent
+ * @author Tony MARTIN
+ * @author Alexis Guéganno
  */
 public final class MapImageWriter {
+
+        private static final Logger LOGGER = Logger.getLogger(MapImageWriter.class);
 
         /**
          * Supported image formats
@@ -70,11 +76,14 @@ public final class MapImageWriter {
                 if (format.equalsIgnoreCase(ImageFormats.JPEG.toString())) {
                         writeJPEG(wmsResponse, output, img);
                         wmsResponse.setResponseCode(200);
+                        LOGGER.debug("JPEG written to the output stream.");
                 } else if (format.equalsIgnoreCase(ImageFormats.PNG.toString())) {
                         writePNG(wmsResponse, output, img, pixelSize);
-                        wmsResponse.setResponseCode(200);                
+                        wmsResponse.setResponseCode(200);
+                        LOGGER.debug("PNG written to the output stream.");
                 } else if (format.equalsIgnoreCase(ImageFormats.TIFF.toString())) {
                         writeTIFF(wmsResponse, output, img, pixelSize);
+                        LOGGER.debug("TIFF written to the output stream.");
                         wmsResponse.setResponseCode(200);
                 }
                 else {

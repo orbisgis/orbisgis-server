@@ -54,10 +54,10 @@ public final class WMS {
         private static Logger LOGGER = Logger.getLogger(WMS.class);
 
         static {
-                initLogger();
+                initLogger(Level.INFO.toString());
         }
 
-        private static void initLogger() {
+        private static void initLogger(String level) {
                 Logger.getRootLogger().removeAllAppenders();
                 PatternLayout p = new PatternLayout("%d %-5p %c{1}: %m%n");
                 try {
@@ -66,7 +66,8 @@ public final class WMS {
                 } catch (IOException ex) {
                         throw new RuntimeException(ex);
                 }
-                Logger.getRootLogger().setLevel(Level.INFO);
+                Level lev = Level.toLevel(level, Level.INFO);
+                Logger.getRootLogger().setLevel(lev);
         }
 
         /**
@@ -93,7 +94,7 @@ public final class WMS {
                 context = new MainContext(false, coreWorkspace, false);
 
                 // workaround the MainContext hardcoded logger :(
-                initLogger();
+                initLogger((String)properties.getProperty(WMSProperties.DEBUG_LEVEL));
 
                 layerMap = new HashMap<String, Layer>();
                 getMap = new GetMapHandler(layerMap);
