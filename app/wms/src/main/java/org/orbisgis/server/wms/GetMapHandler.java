@@ -160,7 +160,9 @@ public final class GetMapHandler {
                         NullProgressMonitor pm = new NullProgressMonitor();
                         LOGGER.debug("Starting to draw the image");
                         Renderer renderer = new ImageRenderer();
+                        LOGGER.trace("Renderer ready");
                         renderer.draw(mt, g2, width, height, layers, pm);
+                        LOGGER.trace("Disposing of the graphics.");
                         g2.dispose();
                         LOGGER.debug("Image ready to be sent to the client.");
                         MapImageWriter.write(wmsResponse, output, imageFormat, img, pixelSize);
