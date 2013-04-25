@@ -166,7 +166,7 @@ public final class GetMapHandler {
                         g2.dispose();
                         LOGGER.debug("Image ready to be sent to the client.");
                         MapImageWriter.write(wmsResponse, output, imageFormat, img, pixelSize);
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                         LOGGER.debug("An error occurred while generating the image:\n",ex);
                         ex.printStackTrace(new PrintStream(output, false, "UTF-8"));
                         wmsResponse.setContentType("text/plain");
