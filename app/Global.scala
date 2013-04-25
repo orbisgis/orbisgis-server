@@ -50,6 +50,7 @@ object Global extends GlobalSettings {
 
     WMS.loadStyles
     WMS.wmsCt.init(c, WMS.styles, WMS.sourceStyles, wMSProperties())
+    Logger.info("WMS Context initialized");
 
     WPS.init()
   }
