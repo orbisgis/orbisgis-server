@@ -51,6 +51,7 @@ public final class WMS {
         private GetCapabilitiesHandler getCapHandler;
         private GetMapHandler getMap;
         private Map<String, String[]> layerStyles;
+        private static Logger LOGGER = Logger.getLogger(WMS.class);
 
         static {
                 initLogger();
@@ -107,6 +108,22 @@ public final class WMS {
                 getContext().dispose();
         }
 
+        private String parametersForLogging(Map<String,String[]> params){
+            StringBuilder sb = new StringBuilder();
+            for(Map.Entry<String,String[]> entry : params.entrySet()){
+                sb.append(entry.getKey()).append("=");
+                boolean second = false;
+                for(String s : entry.getValue()){
+                    if(second){
+                        sb.append(",");
+                    }
+                    sb.append(s);
+                }
+                sb.append("&");
+            }
+            return sb.toString();
+        }
+
         /**
          * Handles the URL request and reads the request type to start
          * processing of either a getMap or getCapabilities request
@@ -117,7 +134,9 @@ public final class WMS {
          * @throws WMSException
          * @throws UnsupportedEncodingException
          */
-        public void processRequests(Map<String, String[]> queryParameters, OutputStream output, WMSResponse wmsResponse) throws WMSException, UnsupportedEncodingException {
+        public void processRequests(Map<String, String[]> queryParameters, 
+                    OutputStream output, WMSResponse wmsResponse) throws WMSException, UnsupportedEncodingException {
+                LOGGER.info("Received request with following parameters: "+parametersForLogging(queryParameters));
                 //Spliting request parameters to determine the requestType to execute
                 String service = "undefined";
                 if (queryParameters.containsKey("SERVICE")) {
@@ -140,14 +159,18 @@ public final class WMS {
                 // a wrong version is selected, an error is sent and the user is asked for a supported version
                 if (requestType.equalsIgnoreCase("getmap")) {
                         if (!(version.equalsIgnoreCase("1.3.0") || version.equalsIgnoreCase("1.3"))) {
-                                exceptionDescription(wmsResponse, output, "The version number is incorrect or unspecified. Please specify 1.3 version number as it is the only supported by this server. ");
+                                exceptionDescription(wmsResponse, output, 
+                                        "The version number is incorrect or unspecified. Please specify 1.3 "
+                                        + "version number as it is the only supported by this server. ");
                                 return;
                         }
                         getMap.getMapParameterParser(queryParameters, output, wmsResponse, serverStyles);
                 } else if (requestType.equalsIgnoreCase("getcapabilities")) {
                         getCapHandler.getCap(output, wmsResponse);
                 } else {
-                        exceptionDescription(wmsResponse, output, "The requested request type is not supported or wrongly specified. Please specify either getMap or getCapabilities request as it they are the only two supported by this server. ");
+                        exceptionDescription(wmsResponse, output, "The requested request type is not supported or wrongly "
+                                + "specified. Please specify either getMap or getCapabilities request as     "
+                                + "they are the only two supported by this server. ");
                 }
         }
 
