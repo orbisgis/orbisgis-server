@@ -158,18 +158,21 @@ public final class GetMapHandler {
                                 g2.clearRect(0, 0, width, height);
                         }
                         NullProgressMonitor pm = new NullProgressMonitor();
+                        LOGGER.debug("Starting to draw the image");
                         Renderer renderer = new ImageRenderer();
                         renderer.draw(mt, g2, width, height, layers, pm);
                         g2.dispose();
                         LOGGER.debug("Image ready to be sent to the client.");
                         MapImageWriter.write(wmsResponse, output, imageFormat, img, pixelSize);
                 } catch (IOException ex) {
+                        LOGGER.debug("An error occurred while generating the image:\n",ex);
                         ex.printStackTrace(new PrintStream(output, false, "UTF-8"));
                         wmsResponse.setContentType("text/plain");
                 } finally {
                         try {
                                 layers.close();
                         } catch (LayerException ex1) {
+                                LOGGER.debug("An error occurred while closing resources:\n",ex1);
                                 throw new WMSException(ex1);
                         }
                 }
