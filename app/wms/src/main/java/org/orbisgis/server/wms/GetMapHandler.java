@@ -28,15 +28,6 @@
 package org.orbisgis.server.wms;
 
 import com.vividsolutions.jts.geom.Envelope;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
-import java.util.Map;
 import net.opengis.wms.Layer;
 import org.apache.log4j.Logger;
 import org.gdms.data.DataSource;
@@ -56,7 +47,6 @@ import org.gdms.source.SourceManager;
 import org.gdms.sql.function.spatial.geometry.crs.ST_Transform;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
 import org.orbisgis.core.layerModel.ILayer;
@@ -68,6 +58,14 @@ import org.orbisgis.core.renderer.Renderer;
 import org.orbisgis.core.renderer.se.SeExceptions;
 import org.orbisgis.core.renderer.se.Style;
 import org.orbisgis.progress.NullProgressMonitor;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.util.Map;
 
 /**
  * This object contains all the methods that are used to handle the getMap
@@ -117,35 +115,10 @@ public final class GetMapHandler {
                 boolean transparent, String bgColor, String stringSLD, String exceptionsFormat, OutputStream output,
                 WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException, UnsupportedEncodingException {
 
-                LayerCollection layers = new LayerCollection("Map");
-                try {
-                    //First case : Layers and Styles are given with shp and se file names
-                    if (layerList != null && layerList.length > 0) {
-                            layers = getLayerList(layerList, crs, styleList, serverStyles);
-
-                    } else if (stringSLD != null) {
-                        // Changing the sld String object to a Style type object
-                            try {
-                                layers = getLayersFromSLD(stringSLD);
-                            } catch (URISyntaxException ex) {
-                                    WMS.exceptionDescription(wmsResponse, output,
-                                            "The SLD URI is invalid. Please enter a valid SLD file URI path.");
-                                    return;
-                            }  catch (SeExceptions.InvalidStyle ex) {
-                                WMS.exceptionDescription(wmsResponse, output,
-                                        "The se style is invalid. Please give a SE valid style in the SLD file..");
-                                return;
-                            }
-                    }
-                } catch (LayerException ex) {
-                    WMS.exceptionDescription(wmsResponse, output,
-                            "At least one of the chosen layer is "
-                                    + "invalid. Make sure of the available "
-                                    + "layers by requesting the server capabilities.");
+                LayerCollection layers = prepareLayers(layerList,styleList,crs,stringSLD,exceptionsFormat,output,wmsResponse,serverStyles);
+                if(layers.getChildren().length == 0){
                     return;
                 }
-
-
                 try {
                     //Finally we can draw things...
                         MapTransform mt = getMapTransform(bBox, layers, imageFormat, width, height, pixelSize);
@@ -179,6 +152,54 @@ public final class GetMapHandler {
                         }
                 }
         }
+
+    /**
+     * Prepare the layers that have been asked in the input WMS GetMap request.
+     * @param layerList The list of layers. Takes precedence over stringSLD
+     * @param styleList The styles associated to the list
+     * @param crs The expected CRS
+     * @param stringSLD A potential external SLD file.
+     * @param exceptionsFormat The expected format for exceptions
+     * @param output The output stream
+     * @param wmsResponse The wms response that will be used by Play in its HTTP trades
+     * @param serverStyles The map of known styles in the server
+     * @return A LayerCollection that gathers the layers asked in the request
+     * @throws WMSException If something wrong happen
+     */
+    private LayerCollection prepareLayers(String[] layerList, String[] styleList, String crs, String stringSLD,
+                                          String exceptionsFormat, OutputStream output, WMSResponse wmsResponse,
+                                          Map<String, Style> serverStyles)throws WMSException{
+
+        LayerCollection layers = new LayerCollection("Map");
+        try {
+            //First case : Layers and Styles are given with shp and se file names
+            if (layerList != null && layerList.length > 0) {
+                layers = getLayerList(layerList, crs, styleList, serverStyles);
+
+            } else if (stringSLD != null) {
+                // Changing the sld String object to a Style type object
+                try {
+                    layers = getLayersFromSLD(stringSLD);
+                } catch (URISyntaxException ex) {
+                    WMS.exceptionDescription(wmsResponse, output,
+                            "The SLD URI is invalid. Please enter a valid SLD file URI path.");
+                    return new LayerCollection("Map");
+                }  catch (SeExceptions.InvalidStyle ex) {
+                    WMS.exceptionDescription(wmsResponse, output,
+                            "The se style is invalid. Please give a SE valid style in the SLD file..");
+                    return new LayerCollection("Map");
+                }
+            }
+        } catch (LayerException ex) {
+            WMS.exceptionDescription(wmsResponse, output,
+                    "At least one of the chosen layer is "
+                            + "invalid. Make sure of the available "
+                            + "layers by requesting the server capabilities.");
+            return new LayerCollection("Map");
+        }
+        return layers;
+
+    }
 
     /**
      * Builds the collection of needed layers, with their associated styles, from the given URI.
@@ -294,8 +315,8 @@ public final class GetMapHandler {
                             + "existing style in the server extended capabilities.");
                 }
 
-            } else //we add a server default style associated with the layer
-            {
+            } else {
+                //we add a server default style associated with the layer
                 String styleString = layers.getLayer(j).getName();
                 if (serverStyles.containsKey(styleString)) {
                     Style style = serverStyles.get(styleString);
@@ -470,12 +491,11 @@ public final class GetMapHandler {
          * @param md The original metadata
          * @param targetCrs The string representation of the target crs
          * @return The new Metadata
-         * @throws DriverException If we encounter a problem while handling metada
-         * @throws NoSuchAuthorityCodeException If targetCrs is not a known EPSG code
-         * @throws FactoryException If we failed at building the new CRS.
+         * @throws DriverException If we encounter a problem while handling metadata
+         * @throws FactoryException If we failed at building the new CRS, if targetCrs is not a known EPSG code
          */
         private Metadata getProjectedMetadata(Metadata md, String targetCrs)
-                        throws DriverException, NoSuchAuthorityCodeException, FactoryException {
+                        throws DriverException, FactoryException {
                 int spatialFieldIndex = MetadataUtilities.getSpatialFieldIndex(md);
                 Type geomType = md.getFieldType(spatialFieldIndex);
                 Constraint[] constraints = geomType.getConstraints().clone();
