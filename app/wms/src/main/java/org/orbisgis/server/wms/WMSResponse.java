@@ -38,12 +38,12 @@ public interface WMSResponse {
         /**
          * Set the response time (mostly text or image).
          *
-         * @param contentType
+         * @param contentType  MIME content type
          */
         void setContentType(String contentType);
 
         /**
-         * Returns the URI Request adress. Used to answer a GetCapabilities
+         * Returns the URI Request address. Used to answer a GetCapabilities
          * Request.
          *
          * @return

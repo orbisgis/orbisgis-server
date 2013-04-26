@@ -92,9 +92,9 @@ public class WMSProperties {
     }
 
     /**
-     * Gets the object associted to the given property.
-     * @param name
-     * @return
+     * Gets the object associated to the given property.
+     * @param name The name of the property.
+     * @return The associated value or null if there is not one.
      */
     public Object getProperty(String name){
         return values.get(name);

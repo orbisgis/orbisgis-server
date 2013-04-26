@@ -28,14 +28,6 @@
  */
 package org.orbisgis.server.wms;
 
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import net.opengis.se._2_0.core.AbstractStyleType;
 import net.opengis.se._2_0.core.OnlineResourceType;
 import net.opengis.se._2_0.core.StyleReferenceType;
@@ -50,6 +42,15 @@ import org.orbisgis.core.layerModel.LayerException;
 import org.orbisgis.core.renderer.se.SeExceptions;
 import org.orbisgis.core.renderer.se.SeExceptions.InvalidStyle;
 import org.orbisgis.core.renderer.se.Style;
+
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Called in the case where the styles and layers are defined by a SLD file URI

@@ -53,18 +53,18 @@ public class WMSException extends Exception {
 
         /**
          * 
-         * @param thrwbl
+         * @param throwable The cause of this exception
          */
-        public WMSException(Throwable thrwbl) {
-                super(thrwbl);
+        public WMSException(Throwable throwable) {
+                super(throwable);
         }
 
         /**
          * 
-         * @param string
-         * @param thrwbl
+         * @param string An additional message
+         * @param throwable The cause of this exception
          */
-        public WMSException(String string, Throwable thrwbl) {
-                super(string, thrwbl);
+        public WMSException(String string, Throwable throwable) {
+                super(string, throwable);
         }
 }
