@@ -29,18 +29,6 @@ package org.orbisgis.server.wms;
 
 import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
 import com.vividsolutions.jts.geom.Envelope;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
 import net.opengis.wms.*;
@@ -64,6 +52,14 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
+
 /**
  * Creates the answer to a getCapabilities request and writes it into the output
  * stream
@@ -78,6 +74,10 @@ public final class GetCapabilitiesHandler {
     private Map<String, String[]> layerStyles;
     private final JAXBContext jaxbContext;
     private List<String> authCRS;
+    private static final int WEST = -180;
+    private static final int EAST = 180;
+    private static final int SOUTH = -90;
+    private static final int NORTH = 90;
 
         /**
          * Handles the getCapabilities request and gives the XML formated server
@@ -97,16 +97,16 @@ public final class GetCapabilitiesHandler {
                 //Setting Layers capabilities
                 Capability c = new Capability();
                 //Bounding box of the highest layer is dummy
-                Envelope dummy = new Envelope(-180,180,90,-90);
+                Envelope dummy = new Envelope(WEST,EAST, SOUTH,NORTH);
                 EXGeographicBoundingBox bb = getGeographicBoundingBox(dummy, "EPSG:4326");
                 Layer availableLayers = new Layer();
                 availableLayers.setEXGeographicBoundingBox(bb);
                 BoundingBox bBox = new BoundingBox();
                 bBox.setCRS("EPSG:4326");
-                bBox.setMaxx(180);
-                bBox.setMinx(-180);
-                bBox.setMaxy(90);
-                bBox.setMiny(90);
+                bBox.setMaxx(EAST);
+                bBox.setMinx(WEST);
+                bBox.setMaxy(NORTH);
+                bBox.setMiny(SOUTH);
                 availableLayers.getBoundingBox().add(bBox);
                 for (Layer e : layerMap.values()) {
                         availableLayers.getLayer().add(e);
@@ -269,10 +269,10 @@ public final class GetCapabilitiesHandler {
 
     private EXGeographicBoundingBox getDummyGeographic(){
         EXGeographicBoundingBox ret = new EXGeographicBoundingBox();
-        ret.setEastBoundLongitude(180);
-        ret.setWestBoundLongitude(-180);
-        ret.setNorthBoundLatitude(90);
-        ret.setSouthBoundLatitude(-90);
+        ret.setEastBoundLongitude(EAST);
+        ret.setWestBoundLongitude(WEST);
+        ret.setNorthBoundLatitude(NORTH);
+        ret.setSouthBoundLatitude(SOUTH);
         return ret;
 
     }

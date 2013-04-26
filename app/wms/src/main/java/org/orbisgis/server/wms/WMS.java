@@ -27,31 +27,31 @@
  */
 package org.orbisgis.server.wms;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.Map;
 import net.opengis.wms.Layer;
 import org.apache.log4j.*;
 import org.orbisgis.core.context.main.MainContext;
 import org.orbisgis.core.renderer.se.Style;
 import org.orbisgis.core.workspace.CoreWorkspace;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- *
+ * Entry point for the WMS Service : we get requests here, we decide which handler we'll use to process them.
  * @author Tony MARTIN
+ * @author Alexis Guéganno
  */
 public final class WMS {
 
         private MainContext context;
         private Map<String, Style> serverStyles;
-        private Map<String, Layer> layerMap;
         private GetCapabilitiesHandler getCapHandler;
         private GetMapHandler getMap;
-        private Map<String, String[]> layerStyles;
-        private static Logger LOGGER = Logger.getLogger(WMS.class);
+        private static final Logger LOGGER = Logger.getLogger(WMS.class);
 
         static {
                 initLogger(Level.INFO.toString());
@@ -71,11 +71,11 @@ public final class WMS {
         }
 
         /**
-         * Initialize the context (containing datasources, datamanager...)
+         * Initialize the context (containing data sources, data manager...)
          *
          * @param coreWorkspace The OrbisGIS workspace
          * @param sStyles The known SE styles
-         * @param styleForSource
+         * @param styleForSource The registered styles
          * @param properties The configuration properties for the server.
          */
         public void init(CoreWorkspace coreWorkspace,
@@ -89,14 +89,21 @@ public final class WMS {
                 } else {
                     props = properties;
                 }
-                layerStyles = styleForSource;
+                Map<String, String[]> layerStyles = new HashMap<String,String[]>(styleForSource);
 
                 context = new MainContext(false, coreWorkspace, false);
 
                 // workaround the MainContext hardcoded logger :(
-                initLogger((String)properties.getProperty(WMSProperties.DEBUG_LEVEL));
+                Object deb = props.getProperty(WMSProperties.DEBUG_LEVEL);
+                String val;
+                if(deb instanceof String){
+                    val = (String) deb;
+                } else {
+                    val = "";
+                }
+                initLogger(val);
 
-                layerMap = new HashMap<String, Layer>();
+                Map<String, Layer> layerMap = new HashMap<String, Layer>();
                 getMap = new GetMapHandler(layerMap);
                 this.serverStyles = sStyles;
                 getCapHandler = new GetCapabilitiesHandler(layerMap, layerStyles, props);
@@ -119,6 +126,7 @@ public final class WMS {
                         sb.append(",");
                     }
                     sb.append(s);
+                    second=true;
                 }
                 sb.append("&");
             }
@@ -131,14 +139,14 @@ public final class WMS {
          *
          * @param queryParameters The parameters that have been put in the GET query.
          * @param output The output stream we will write in.
-         * @param wmsResponse
+         * @param wmsResponse The object used by play in HTTP when our processing is finished.
          * @throws WMSException
          * @throws UnsupportedEncodingException
          */
         public void processRequests(Map<String, String[]> queryParameters, 
                     OutputStream output, WMSResponse wmsResponse) throws WMSException, UnsupportedEncodingException {
                 LOGGER.info("Received request with following parameters: "+parametersForLogging(queryParameters));
-                //Spliting request parameters to determine the requestType to execute
+                //Splitting request parameters to determine the requestType to execute
                 String service = "undefined";
                 if (queryParameters.containsKey("SERVICE")) {
                         service = queryParameters.get("SERVICE")[0];
@@ -195,9 +203,9 @@ public final class WMS {
          * Generates the error message in case of an exception created by a bad
          * client request
          *
-         * @param wmsResponse
-         * @param output
-         * @param errorMessage
+         * @param wmsResponse The object we want to feed for the Play Framework
+         * @param output The stream where we write our XML exception
+         * @param errorMessage The input error message
          */
         public static void exceptionDescription(WMSResponse wmsResponse, OutputStream output, String errorMessage) {
                 exceptionDescription(wmsResponse, output, errorMessage, 400);
@@ -206,10 +214,10 @@ public final class WMS {
         /**
          * Generic error generation depending on the error code given
          *
-         * @param wmsResponse
-         * @param output
-         * @param errorMessage
-         * @param code
+         * @param wmsResponse The object we want to feed for the Play Framework
+         * @param output The stream where we write our XML exception
+         * @param errorMessage The input error message
+         * @param code The input error code.
          */
         public static void exceptionDescription(WMSResponse wmsResponse, OutputStream output, String errorMessage, int code) {
                 PrintStream pr;

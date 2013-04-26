@@ -33,10 +33,10 @@ import com.sun.media.jai.codec.TIFFEncodeParam;
 import com.sun.media.jai.codec.TIFFField;
 import org.apache.log4j.Logger;
 
+import javax.media.jai.JAI;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
-import javax.media.jai.JAI;
 
 /**
  * This class is used to write the image into the output stream
@@ -48,11 +48,8 @@ import javax.media.jai.JAI;
 public final class MapImageWriter {
 
         private static final Logger LOGGER = Logger.getLogger(MapImageWriter.class);
-
-        /**
-         * Supported image formats
-         */
-        static final String[] FORMATS = {"image/jpeg", "image/png", "image/tiff"};
+        private static final int X_RES_TAG = 282;
+        private static final int Y_RES_TAG = 283;
 
         private MapImageWriter() {
         }
@@ -62,10 +59,10 @@ public final class MapImageWriter {
          * format requested. Then, the correct writer will encode the img given
          * by the render into the servlet output stream
          *
-         * @param wmsResponse
-         * @param output
+         * @param wmsResponse The object used later to build the HTTP response.
+         * @param output The output stream
          * @param format desired image format
-         * @param img
+         * @param img The output image.
          * @param pixelSize be provided by the server
          * @throws IOException If a problem has been encountered while handling
          * the output stream.
@@ -87,65 +84,64 @@ public final class MapImageWriter {
                         wmsResponse.setResponseCode(200);
                 }
                 else {
-                        WMS.exceptionDescription(wmsResponse, output, "The format requested is invalid. Please check the server capabilities to ask for a supported format.");
+                        WMS.exceptionDescription(wmsResponse, output, "The format requested is invalid. " +
+                                "Please check the server capabilities to ask for a supported format.");
                 }
         }
 
         /**
          * This method permits to write the result image from the wms request in a jpeg format
-         * @param wmsResponse
-         * @param output
-         * @param img
+         * @param wmsResponse The object used later to build the HTTP response.
+         * @param output The output stream
+         * @param img The output image
          * @throws IOException 
          */
         private static void writeJPEG(WMSResponse wmsResponse, OutputStream output,
                 BufferedImage img) throws IOException {
                 wmsResponse.setContentType(ImageFormats.JPEG.toString());
 
-                JPEGEncodeParam jenc = new JPEGEncodeParam();
-                JAI.create("Encode", img, output, "JPEG", jenc);
+                JPEGEncodeParam jEnc = new JPEGEncodeParam();
+                JAI.create("Encode", img, output, "JPEG", jEnc);
 
                 output.close();
         }
 
         /**
          * This method permits to write the result image from the wms request in a png format
-         * @param wmsResponse
-         * @param output
-         * @param img
-         * @param pixelSize
-         * @throws IOException 
+         * @param wmsResponse The object used later to build the HTTP response.
+         * @param output The output stream
+         * @param img The output image
+         * @param pixelSize The size of the pixels.
+         * @throws IOException
          */
         private static void writePNG(WMSResponse wmsResponse, OutputStream output,
                 BufferedImage img, double pixelSize) throws IOException {
                 wmsResponse.setContentType(ImageFormats.PNG.toString());
 
                 int dpm = (int) (1000 / pixelSize + 1);
-                PNGEncodeParam penc = PNGEncodeParam.getDefaultEncodeParam(img);
-                penc.setPhysicalDimension(dpm, dpm, 1);
-                JAI.create("Encode", img, output, "PNG", penc);
+                PNGEncodeParam pEnc = PNGEncodeParam.getDefaultEncodeParam(img);
+                pEnc.setPhysicalDimension(dpm, dpm, 1);
+                JAI.create("Encode", img, output, "PNG", pEnc);
 
                 output.close();
         }
         
         /**
          * This method permits to write the result image from the wms request in a tiff format
-         * @param wmsResponse
-         * @param output
-         * @param img
+         * @param wmsResponse The object used later to build the HTTP response.
+         * @param output The output stream
+         * @param img The output image
          * @throws IOException 
          */
         private static void writeTIFF(WMSResponse wmsResponse, OutputStream output,
                 BufferedImage img, double pixelSize) throws IOException {
                 wmsResponse.setContentType(ImageFormats.TIFF.toString());
-                int XRES_TAG = 282;
-                int YRES_TAG = 283;
                 int dpm = (int) (1000 / pixelSize + 1);
                 long[] resolution = { dpm, 1 };
                 
-                TIFFField xRes = new TIFFField(XRES_TAG,
+                TIFFField xRes = new TIFFField(X_RES_TAG,
                 TIFFField.TIFF_RATIONAL, 1, new long[][] { resolution });
-                TIFFField yRes = new TIFFField(YRES_TAG,
+                TIFFField yRes = new TIFFField(Y_RES_TAG,
                 TIFFField.TIFF_RATIONAL, 1, new long[][] { resolution });
                 TIFFEncodeParam tep = new TIFFEncodeParam();
                 tep.setExtraFields(new TIFFField[] { xRes, yRes });                 
