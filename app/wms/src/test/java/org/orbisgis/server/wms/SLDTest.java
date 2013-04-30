@@ -28,13 +28,15 @@
  */
 package org.orbisgis.server.wms;
 
-import java.io.File;
-import java.util.Collections;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.orbisgis.core.renderer.se.Style;
 import org.orbisgis.core.workspace.CoreWorkspace;
+
+import java.io.File;
+import java.util.Collections;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests on the SLD class.
