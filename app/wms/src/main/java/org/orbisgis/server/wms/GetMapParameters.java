@@ -28,8 +28,7 @@
  */
 package org.orbisgis.server.wms;
 
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Gathers the GetMap parameters by parsing them in a Map of HTTP parameters.
@@ -51,10 +50,24 @@ public class GetMapParameters {
     public static final String EXCEPTIONS = "EXCEPTIONS";
     public static final String TIME = "TIME";
     public static final String ELEVATION = "ELEVATION";
+    public static final Set<String> MANDATORY_PARAMETERS;
+
+    static {
+        Set<String> temp = new HashSet<String>();
+        temp.add(LAYERS);
+        temp.add(STYLES);
+        temp.add(BBOX);
+        temp.add(WIDTH);
+        temp.add(HEIGHT);
+        temp.add(FORMAT);
+        temp.add(CRS);
+        MANDATORY_PARAMETERS = Collections.unmodifiableSet(temp);
+    }
+
 
     private String[] layerList;
     private String[] styleList;
-    private double[] bbox;
+    private double[] bBox;
     private String crs;
     private int width;
     private int height;
@@ -66,42 +79,25 @@ public class GetMapParameters {
     private String bgColor;
     private boolean transparent;
 
+    /**
+     * Parses all the key-value pairs given in argument to decide how to draw the requested map.
+     * @param queryParameters The HTTP key-value arguments in a Map
+     * @throws WMSException If some mandatory argument is missing or if an argument is invalid.
+     */
     public GetMapParameters(Map<String, String[]> queryParameters) throws WMSException {
-
-        if (queryParameters.containsKey(CRS)) {
-            crs = queryParameters.get(CRS)[0];
-        } else {
-            throw new WMSException("No CRS has been declared");
-        }
-
-        if (queryParameters.containsKey(BBOX)) {
-            String[] sbbox = queryParameters.get(BBOX)[0].split(",");
-            bbox = new double[sbbox.length];
-
-            for (int i = 0; i < bbox.length; i++) {
-                bbox[i] = Double.valueOf(sbbox[i]);
+        for(String s : MANDATORY_PARAMETERS){
+            //The following test should work even for STYLES as we should have an empty string as the value for the
+            //key STYLES if there is nothing after the "=" in the HTTP request.
+            if(!queryParameters.containsKey(s) || queryParameters.get(s) == null || queryParameters.get(s).length == 0){
+                throw new WMSException("The following parameter is mandatory: "+s);
             }
-        } else {
-            throw new WMSException("The given BBOX is invalid");
         }
-
-        if (queryParameters.containsKey(WIDTH)) {
-            width = Integer.valueOf(queryParameters.get(WIDTH)[0]);
-        } else {
-            throw new WMSException("The WIDTH must be correctly set");
-        }
-
-        if (queryParameters.containsKey(HEIGHT)) {
-            height = Integer.valueOf(queryParameters.get(HEIGHT)[0]);
-        } else {
-            throw new WMSException("The HEIGHT must be correctly set");
-        }
-
-        if (queryParameters.containsKey(LAYERS)) {
-            layerList = queryParameters.get(LAYERS)[0].split(",");
-        }
-
-        if (queryParameters.containsKey(STYLES) && !queryParameters.get(STYLES)[0].isEmpty()) {
+        crs = queryParameters.get(CRS)[0];
+        bBox = parseBBox(queryParameters.get(BBOX)[0]);
+        width = parseInteger(queryParameters.get(WIDTH)[0]);
+        height = parseInteger(queryParameters.get(HEIGHT)[0]);
+        layerList = parseLayers(queryParameters.get(LAYERS)[0]);
+        if (!queryParameters.get(STYLES)[0].isEmpty()) {
             styleList = queryParameters.get(STYLES)[0].split(",");
         }
 
@@ -109,9 +105,7 @@ public class GetMapParameters {
             pixelSize = Double.valueOf(queryParameters.get("PIXELSIZE")[0]);
         }
 
-        if (queryParameters.containsKey(FORMAT)) {
-            imageFormat = queryParameters.get(FORMAT)[0];
-        }
+        imageFormat = queryParameters.get(FORMAT)[0];
 
         if (queryParameters.containsKey(TRANSPARENT)) {
             transparent = Boolean.valueOf(queryParameters.get(TRANSPARENT)[0]);
@@ -128,6 +122,44 @@ public class GetMapParameters {
         if (queryParameters.containsKey(EXCEPTIONS)) {
             exceptionsFormat = queryParameters.get(EXCEPTIONS)[0];
         }
+    }
+
+    private String[] parseLayers(String s) throws WMSException{
+        String[] ret = s.split(",");
+        ArrayList<String> tmp = new ArrayList<String>();
+        for(String in : ret){
+            if(!in.isEmpty()){
+                tmp.add(in);
+            }
+        }
+        if(tmp.isEmpty()){
+            throw new WMSException("There shall be at least one layer in the map");
+        }
+        return tmp.toArray(new String[tmp.size()]);
+    }
+
+    protected final int parseInteger(String s) throws WMSException{
+        try{
+            return Integer.valueOf(s);
+        } catch (NumberFormatException nfe){
+            throw new WMSException("The given int value is not valid: "+s, nfe);
+        }
+    }
+
+    private double[] parseBBox(String s) throws WMSException{
+        String[] boxArray = s.split(",");
+        if(boxArray.length != 4){
+            throw new WMSException("There shall be exactly four ordinates in a BBOX definition");
+        }
+        double[] ret = new double[boxArray.length];
+        for (int i = 0; i < ret.length; i++) {
+            try{
+                ret[i] = Double.valueOf(boxArray[i]);
+            } catch(NumberFormatException nfe){
+                throw new WMSException("The ordinate #"+i+" is not valid: "+boxArray[i], nfe);
+            }
+        }
+        return ret;
     }
 
     /**
@@ -150,8 +182,8 @@ public class GetMapParameters {
      * Gets the bounding box of the map to be displayed or queried
      * @return The bounding box of the map to be displayed or queried
      */
-    public double[] getBbox() {
-        return Arrays.copyOf(bbox,bbox.length);
+    public double[] getbBox() {
+        return Arrays.copyOf(bBox, bBox.length);
     }
 
     /**

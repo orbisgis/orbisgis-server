@@ -73,11 +73,11 @@ public class ParametersTest {
     public void testMapParsing() throws Exception{
         Map<String, String[]> map= getMapMap();
         GetMapParameters params = new GetMapParameters(map);
-        assertTrue(params.getBbox()[0] - 0 < EPS);
-        assertTrue(params.getBbox()[1] - 1 < EPS);
-        assertTrue(params.getBbox()[2] - 4 < EPS);
-        assertTrue(params.getBbox()[3] - 5 < EPS);
-        assertTrue(params.getBbox().length == 4);
+        assertTrue(params.getbBox()[0] - 0 < EPS);
+        assertTrue(params.getbBox()[1] - 1 < EPS);
+        assertTrue(params.getbBox()[2] - 4 < EPS);
+        assertTrue(params.getbBox()[3] - 5 < EPS);
+        assertTrue(params.getbBox().length == 4);
         assertTrue(params.getLayerList()[0].equals("road"));
         assertTrue(params.getLayerList()[1].equals("fields"));
         assertTrue(params.getLayerList().length == 2);
@@ -120,12 +120,92 @@ public class ParametersTest {
 
     @Test
     public void testMapWithoutHeight() throws Exception{
-        missingMapParameter("Height");
+        missingMapParameter("HEIGHT");
+    }
+
+    @Test
+    public void testMapWithoutFormat() throws Exception{
+        missingMapParameter("FORMAT");
+    }
+
+    @Test
+    public void testMapWithoutLayers() throws Exception{
+        missingMapParameter("LAYERS");
+    }
+
+    @Test
+    public void testMapWithoutStyles() throws Exception{
+        missingMapParameter("STYLES");
+    }
+
+    @Test
+    public void testInvalidBbox() throws Exception{
+        Map<String, String[]> map= getMapMap();
+        map.put("BBOX", new String[]{"1,2,3"});
+        mapBuildFail(map);
+        map= getMapMap();
+        map.put("BBOX", new String[]{"1,3"});
+        mapBuildFail(map);
+        map= getMapMap();
+        map.put("BBOX", new String[]{"1"});
+        mapBuildFail(map);
+        map= getMapMap();
+        map.put("BBOX", new String[]{""});
+        mapBuildFail(map);
+        map= getMapMap();
+        map.put("BBOX", new String[]{});
+        mapBuildFail(map);
+        map= getMapMap();
+        map.put("BBOX", null);
+        mapBuildFail(map);
+        map= getMapMap();
+        map.put("BBOX", new String[]{"1,2,3,4,5"});
+        mapBuildFail(map);
+        map= getMapMap();
+        map.put("BBOX", new String[]{"1,2,3,yo"});
+        mapBuildFail(map);
+        map= getMapMap();
+        map.put("BBOX", new String[]{"1,2,yo,4"});
+        mapBuildFail(map);
+        map= getMapMap();
+        map.put("BBOX", new String[]{"1,yo,3,4"});
+        mapBuildFail(map);
+        map= getMapMap();
+        map.put("BBOX", new String[]{"yo,2,3,4"});
+        mapBuildFail(map);
+    }
+
+    @Test
+    public void testInvalidWidth() throws Exception {
+        Map<String, String[]> map= getMapMap();
+        map.put("WIDTH", new String[]{"potato"});
+        mapBuildFail(map);
+    }
+
+    @Test
+    public void testInvalidHeight() throws Exception {
+        Map<String, String[]> map= getMapMap();
+        map.put("HEIGHT", new String[]{"potato"});
+        mapBuildFail(map);
+    }
+
+    @Test
+    public void testInvalidLayerList() throws Exception {
+        Map<String, String[]> map= getMapMap();
+        map.put("LAYERS", new String[]{",,,,"});
+        mapBuildFail(map);
+        map= getMapMap();
+        map.put("LAYERS", new String[]{""});
+        mapBuildFail(map);
     }
 
     private void missingMapParameter(String param){
         Map<String, String[]> map= getMapMap();
         map.remove(param);
+        mapBuildFail(map);
+    }
+
+    private void mapBuildFail(Map<String,String[]> map){
         try{
             GetMapParameters params = new GetMapParameters(map);
             fail();
