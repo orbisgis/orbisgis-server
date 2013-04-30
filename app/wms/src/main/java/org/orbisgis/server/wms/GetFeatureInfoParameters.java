@@ -28,8 +28,7 @@
  */
 package org.orbisgis.server.wms;
 
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Gathers the GetFeatureInfo parameters by parsing them in a Map of HTTP parameters.
@@ -46,6 +45,16 @@ public class GetFeatureInfoParameters extends GetMapParameters {
     private int i;
     private int j;
     private int featureCount;
+    public static final Set<String> FEATURE_INFO_MANDATORY_PARAMS;
+
+    static{
+        Set<String> tmp = new HashSet<String>();
+        tmp.add(QUERY_LAYERS);
+        tmp.add(INFO_FORMAT);
+        tmp.add(J);
+        tmp.add(I);
+        FEATURE_INFO_MANDATORY_PARAMS = Collections.unmodifiableSet(tmp);
+    }
 
     /**
      * Parses the given map of HTTP parameters to build this set of GetFeatureInfo
@@ -54,38 +63,22 @@ public class GetFeatureInfoParameters extends GetMapParameters {
      */
     public GetFeatureInfoParameters(Map<String, String[]> queryParameters) throws WMSException {
         super(queryParameters);
-        if (queryParameters.containsKey(QUERY_LAYERS)) {
-            queryLayerList = queryParameters.get("LAYERS")[0].split(",");
-            if(queryLayerList.length == 0){
-                throw new WMSException("There shall be at least one layer to be queried. QUERY_LAYERS can't be empty.");
+        //The map parameters are valid. Let's check the ones dedicated to the GetFeatureInfo request.
+        for(String s : FEATURE_INFO_MANDATORY_PARAMS){
+            if(!queryParameters.containsKey(s)){
+                throw new WMSException("The following parameter is mandatory: "+s);
             }
         }
-        if (queryParameters.containsKey(INFO_FORMAT)) {
-            infoFormat = queryParameters.get(INFO_FORMAT)[0];
-        } else {
-            throw new WMSException("INFO_FORMAT is mandatory");
+        queryLayerList = parseLayers(queryParameters.get(QUERY_LAYERS)[0]);
+        infoFormat = queryParameters.get(INFO_FORMAT)[0];
+        if(infoFormat.isEmpty()){
+            throw new WMSException("INFO_FORMAT can't be empty.");
         }
         if (queryParameters.containsKey(FEATURE_COUNT)) {
             featureCount = Integer.valueOf(queryParameters.get(FEATURE_COUNT)[0]);
         }
-        if (queryParameters.containsKey(I)) {
-            try {
-                i = Integer.valueOf(queryParameters.get(I)[0]);
-            } catch(NumberFormatException nfe){
-                throw new WMSException("Can't read the I value as an int: "+queryParameters.get(I)[0]);
-            }
-        } else {
-            throw new WMSException("I parameter is mandatory");
-        }
-        if (queryParameters.containsKey(J)) {
-            try {
-                j = Integer.valueOf(queryParameters.get(J)[0]);
-            } catch(NumberFormatException nfe){
-                throw new WMSException("Can't read the J value as an int: "+queryParameters.get(J)[0]);
-            }
-        } else {
-            throw new WMSException("J parameter is mandatory");
-        }
+        i = parseInteger(queryParameters.get(I)[0]);
+        j = parseInteger(queryParameters.get(J)[0]);
     }
 
     /**

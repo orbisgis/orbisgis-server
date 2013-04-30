@@ -126,7 +126,13 @@ public class GetMapParameters {
         }
     }
 
-    private String[] parseLayers(String s) throws WMSException{
+    /**
+     * Parses the layers contained in s as a comma separated list of values
+     * @param s The input string
+     * @return The layers' names in an array
+     * @throws WMSException
+     */
+    protected String[] parseLayers(String s) throws WMSException{
         String[] ret = s.split(",");
         ArrayList<String> tmp = new ArrayList<String>();
         for(String in : ret){
@@ -140,6 +146,12 @@ public class GetMapParameters {
         return tmp.toArray(new String[tmp.size()]);
     }
 
+    /**
+     * Parses s as an integer, transforming the potential NumberFormatException in a WMSException
+     * @param s The input String
+     * @return The parsed integer
+     * @throws WMSException
+     */
     protected final int parseInteger(String s) throws WMSException{
         try{
             return Integer.valueOf(s);
@@ -148,6 +160,14 @@ public class GetMapParameters {
         }
     }
 
+
+    /**
+     * Parses s as an array of comma separated doubles, transforming the potential NumberFormatException in a WMSException
+     * We want a BBOx, so there shall be exactly four double values.
+     * @param s The input String
+     * @return The parsed array of double values
+     * @throws WMSException
+     */
     private double[] parseBBox(String s) throws WMSException{
         String[] boxArray = s.split(",");
         if(boxArray.length != 4){

@@ -205,9 +205,76 @@ public class ParametersTest {
         mapBuildFail(map);
     }
 
+    @Test
+    public void testWithoutI(){
+        missingInfoParameter(GetFeatureInfoParameters.I);
+    }
+
+    @Test
+    public void testWithoutJ(){
+        missingInfoParameter(GetFeatureInfoParameters.J);
+    }
+
+    @Test
+    public void testWithoutQueryLayers(){
+        missingInfoParameter(GetFeatureInfoParameters.QUERY_LAYERS);
+    }
+
+    @Test
+    public void testWithoutInfoFormat(){
+        missingInfoParameter(GetFeatureInfoParameters.INFO_FORMAT);
+    }
+
+    @Test
+    public void testInvalidI(){
+        Map<String, String[]> map= getFeatureInfoMap();
+        map.put(GetFeatureInfoParameters.I,new String[]{"patatoïde"});
+        infoBuildFail(map);
+    }
+
+    @Test
+    public void testInvalidJ(){
+        Map<String, String[]> map= getFeatureInfoMap();
+        map.put(GetFeatureInfoParameters.J,new String[]{"patatoïde"});
+        infoBuildFail(map);
+    }
+
+    @Test
+    public void testInvalidQueryLayers(){
+        Map<String, String[]> map= getFeatureInfoMap();
+        map.put(GetFeatureInfoParameters.QUERY_LAYERS,new String[]{",,,"});
+        infoBuildFail(map);
+        map= getFeatureInfoMap();
+        map.put(GetFeatureInfoParameters.QUERY_LAYERS,new String[]{""});
+        infoBuildFail(map);
+    }
+
+    @Test
+    public void testInvalidInfoFormat(){
+        Map<String, String[]> map= getFeatureInfoMap();
+        map.put(GetFeatureInfoParameters.INFO_FORMAT,new String[]{""});
+        infoBuildFail(map);
+    }
+
+
+
     private void mapBuildFail(Map<String,String[]> map){
         try{
             GetMapParameters params = new GetMapParameters(map);
+            fail();
+        } catch(WMSException e){
+            assertTrue(true);
+        }
+    }
+
+    private void missingInfoParameter(String param){
+        Map<String, String[]>  map = getFeatureInfoMap();
+        map.remove(param);
+    }
+
+    private void infoBuildFail(Map<String, String[]> map){
+        try{
+            GetFeatureInfoParameters params = new GetFeatureInfoParameters(map);
             fail();
         } catch(WMSException e){
             assertTrue(true);
