@@ -27,39 +27,31 @@
  */
 package org.orbisgis.server.wms;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.UnsupportedEncodingException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.vividsolutions.jts.geom.Geometry;
-import net.opengis.wms.Layer;
 import org.gdms.data.DataSource;
-import org.gdms.data.DataSourceCreationException;
 import org.gdms.data.DataSourceFactory;
-import org.gdms.data.NoSuchTableException;
 import org.gdms.data.schema.MetadataUtilities;
 import org.gdms.data.values.Value;
 import org.gdms.data.values.ValueFactory;
-import org.gdms.geometryUtils.GeometryTypeUtil;
 import org.gdms.source.SourceManager;
 import org.gdms.sql.function.spatial.geometry.crs.ST_Transform;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
 import org.orbisgis.core.renderer.se.Style;
 import org.orbisgis.core.workspace.CoreWorkspace;
 import org.orbisgis.utils.FileUtils;
 
-import static org.junit.Assert.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Collections;
+import java.util.HashMap;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for WMS.
@@ -125,7 +117,7 @@ public class WMSTest {
             h.put("LAYERS", new String[]{"cantons"});
             h.put("STYLES", new String[]{""});
             h.put("CRS", new String[]{toCRS});
-            h.put("BBOX", new String[]{"-5.372757617915", "9.326100042301633", "41.3630420705024", "51.089386147807105"});
+            h.put("BBOX", new String[]{"-5.372757617915,9.326100042301633,41.3630420705024,51.089386147807105"});
             h.put("WIDTH", new String[]{"874"});
             h.put("HEIGHT", new String[]{"593"});
             h.put("FORMAT", new String[]{"image/png"});
@@ -173,7 +165,7 @@ public class WMSTest {
                 h.put("LAYERS", new String[]{"cantons"});
                 h.put("STYLES", new String[]{""});
                 h.put("CRS", new String[]{"EPSG:27582"});
-                h.put("BBOX", new String[]{"2677441.0", "1197822.0", "1620431.0", "47680.0"});
+                h.put("BBOX", new String[]{"2677441.0,1197822.0,1620431.0,47680.0"});
                 h.put("WIDTH", new String[]{"874"});
                 h.put("HEIGHT", new String[]{"593"});
                 h.put("FORMAT", new String[]{"image/png"});
@@ -246,7 +238,7 @@ public class WMSTest {
                 h.put("LAYERS", new String[]{"cantons"});
                 h.put("STYLES", new String[]{""});
                 h.put("CRS", new String[]{"EPSG:27582"});
-                h.put("BBOX", new String[]{"2677441.0", "1197822.0", "1620431.0", "47680.0"});
+                h.put("BBOX", new String[]{"2677441.0,1197822.0,1620431.0,47680.0"});
                 h.put("WIDTH", new String[]{"874"});
                 h.put("HEIGHT", new String[]{"593"});
                 h.put("FORMAT", new String[]{"image/png"});
