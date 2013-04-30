@@ -69,59 +69,42 @@ public final class GetMapHandler extends AbstractGetHandler {
          * then writes the rendered image into the output stream via
          * MapImageWriter
          *
-         * @param layerList contains the names of requested layers
-         * @param styleList contains the names of the desired se files (must be
-         * equal or shorter than layerList)
-         * @param crs desired CRS (string)
-         * @param bBox geographic extent, given in the correct CRS
-         * @param width pixel with of the image
-         * @param height pixel height of the image
-         * @param pixelSize used to calculate the dpi resolution desired for the
-         * image
-         * @param imageFormat chosen between the image format server
-         * capabilities
-         * @param transparent boolean that determines whether the background is
-         * visible or not (only works on png outputs)
-         * @param bgColor The background colour.
-         * @param stringSLD used if the layers and styles are defined in a SLD
-         * file given by its URI rather than layers and se styles files present
-         * on the server
-         * @param exceptionsFormat The format used to return Exceptions to the client
+         * @param params The parameters of the request in a GetMapParameters instance.
          * @param output The stream where to write in
          * @param wmsResponse The HTTP response that will be given by the server
          * @param serverStyles Styles registered in this server
          * @throws WMSException
          * @throws UnsupportedEncodingException  
          */
-        public void getMap(String[] layerList, String[] styleList, String crs,
-                double[] bBox, int width, int height, double pixelSize, String imageFormat,
-                boolean transparent, String bgColor, String stringSLD, String exceptionsFormat, OutputStream output,
+        public void getMap(GetMapParameters params, OutputStream output,
                 WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException, UnsupportedEncodingException {
 
-                LayerCollection layers = prepareLayers(layerList,styleList,crs,stringSLD,exceptionsFormat,output,wmsResponse,serverStyles);
+                LayerCollection layers = prepareLayers(params.getLayerList(),params.getStyleList(),params.getCrs(),
+                params.getSld(),params.getExceptionsFormat(),output,wmsResponse,serverStyles);
                 if(layers.getChildren().length == 0){
                     return;
                 }
                 try {
                     //Finally we can draw things...
-                        MapTransform mt = getMapTransform(bBox, layers, imageFormat, width, height, pixelSize);
+                        MapTransform mt = getMapTransform(params.getbBox(), layers, params.getImageFormat(), params.getWidth(),
+                                params.getHeight(), params.getPixelSize());
                         BufferedImage img = mt.getImage();
                         Graphics2D g2 = img.createGraphics();
                         Color color;
-                        if (!transparent) {
-                                color = Color.decode(bgColor);
+                        if (!params.isTransparent()) {
+                                color = Color.decode(params.getBgColor());
                                 g2.setBackground(color);
-                                g2.clearRect(0, 0, width, height);
+                                g2.clearRect(0, 0, params.getWidth(), params.getHeight());
                         }
                         NullProgressMonitor pm = new NullProgressMonitor();
                         LOGGER.debug("Starting to draw the image");
                         Renderer renderer = new ImageRenderer();
                         LOGGER.trace("Renderer ready");
-                        renderer.draw(mt, g2, width, height, layers, pm);
+                        renderer.draw(mt, g2, params.getWidth(), params.getHeight(), layers, pm);
                         LOGGER.trace("Disposing of the graphics.");
                         g2.dispose();
                         LOGGER.debug("Image ready to be sent to the client.");
-                        MapImageWriter.write(wmsResponse, output, imageFormat, img, pixelSize);
+                        MapImageWriter.write(wmsResponse, output, params.getImageFormat(), img, params.getPixelSize());
                 } catch (Exception ex) {
                         LOGGER.debug("An error occurred while generating the image:\n",ex);
                         ex.printStackTrace(new PrintStream(output, false, "UTF-8"));
@@ -134,103 +117,6 @@ public final class GetMapHandler extends AbstractGetHandler {
                                 throw new WMSException(ex1);
                         }
                 }
-        }
-
-        /**
-         * Parses the url into the getMap request parameters and gives them to
-         * the getMap method
-         *
-         * @param queryParameters The original parameters set in the HTTP query.
-         * @param output The stream we'll write in
-         * @param wmsResponse The HTTP response qe have to feed
-         * @param serverStyles The known SE Styles.
-         * @throws WMSException
-         */
-        public void getMapParameterParser(Map<String, String[]> queryParameters, OutputStream output,
-                        WMSResponse wmsResponse, Map<String, Style> serverStyles)
-                        throws WMSException, UnsupportedEncodingException {
-
-                String[] layerList = new String[0];
-                String[] styleList = new String[0];
-                double[] bbox;
-                String crs;
-                int width;
-                int height;
-                //Use a 72 dpi resolution by default
-                double pixelSize = 0.35;
-                String imageFormat = "undefined";
-                boolean transparent = false;
-                String bgColor = "#FFFFFF";
-                String sld = null;
-                String exceptionsFormat = null;
-
-                if (queryParameters.containsKey("CRS")) {
-                        crs = queryParameters.get("CRS")[0];
-                } else {
-                        WMS.exceptionDescription(wmsResponse, output, "No CRS has been declared");
-                        return;
-                }
-
-                if (queryParameters.containsKey("BBOX")) {
-                        String[] sbbox = queryParameters.get("BBOX")[0].split(",");
-                        bbox = new double[sbbox.length];
-
-                        for (int i = 0; i < bbox.length; i++) {
-                                bbox[i] = Double.valueOf(sbbox[i]);
-                        }
-                } else {
-                        WMS.exceptionDescription(wmsResponse, output, "You must specify a bounding box");
-                        return;
-                }
-
-                if (queryParameters.containsKey("WIDTH")) {
-                        width = Integer.valueOf(queryParameters.get("WIDTH")[0]);
-                } else {
-                        WMS.exceptionDescription(wmsResponse, output, "You must specify an image width.");
-                        return;
-                }
-
-                if (queryParameters.containsKey("HEIGHT")) {
-                        height = Integer.valueOf(queryParameters.get("HEIGHT")[0]);
-                } else {
-                        WMS.exceptionDescription(wmsResponse, output, "You must specify an image height.");
-                        return;
-                }
-
-                if (queryParameters.containsKey("LAYERS")) {
-                        layerList = queryParameters.get("LAYERS")[0].split(",");
-                }
-
-                if (queryParameters.containsKey("STYLES") && !queryParameters.get("STYLES")[0].isEmpty()) {
-                        styleList = queryParameters.get("STYLES")[0].split(",");
-                }
-
-                if (queryParameters.containsKey("PIXELSIZE")) {
-                        pixelSize = Double.valueOf(queryParameters.get("PIXELSIZE")[0]);
-                }
-
-                if (queryParameters.containsKey("FORMAT")) {
-                        imageFormat = queryParameters.get("FORMAT")[0];
-                }
-
-                if (queryParameters.containsKey("TRANSPARENT")) {
-                        transparent = Boolean.valueOf(queryParameters.get("TRANSPARENT")[0]);
-                }
-
-                if (queryParameters.containsKey("BGCOLOR")) {
-                        bgColor = queryParameters.get("BGCOLOR")[0];
-                }
-
-                if (queryParameters.containsKey("SLD")) {
-                        sld = queryParameters.get("SLD")[0];
-                }
-
-                if (queryParameters.containsKey("EXCEPTIONS")) {
-                        exceptionsFormat = queryParameters.get("EXCEPTIONS")[0];
-                }
-
-                getMap(layerList, styleList, crs, bbox, width, height, pixelSize,
-                        imageFormat, transparent, bgColor, sld, exceptionsFormat, output, wmsResponse, serverStyles);
         }
 
 

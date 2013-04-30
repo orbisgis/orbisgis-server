@@ -76,7 +76,7 @@ public class GetMapParameters {
     private double pixelSize = 0.35;
     private String exceptionsFormat = null;
     private String sld;
-    private String bgColor;
+    private String bgColor = "#FFFFFF";
     private boolean transparent;
 
     /**
@@ -99,6 +99,8 @@ public class GetMapParameters {
         layerList = parseLayers(queryParameters.get(LAYERS)[0]);
         if (!queryParameters.get(STYLES)[0].isEmpty()) {
             styleList = queryParameters.get(STYLES)[0].split(",");
+        } else {
+            styleList = new String[0];
         }
 
         if (queryParameters.containsKey("PIXELSIZE")) {

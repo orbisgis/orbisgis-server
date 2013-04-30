@@ -173,7 +173,13 @@ public final class WMS {
                                         + "version number as it is the only supported by this server. ");
                                 return;
                         }
-                        getMap.getMapParameterParser(queryParameters, output, wmsResponse, serverStyles);
+                        try{
+                            GetMapParameters mapParams = new GetMapParameters(queryParameters);
+                            getMap.getMap(mapParams, output, wmsResponse, serverStyles);
+                        } catch(WMSException e){
+                            exceptionDescription(wmsResponse, output, e.getMessage());
+                            return;
+                        }
                 } else if (requestType.equalsIgnoreCase("getcapabilities")) {
                         getCapHandler.getCap(output, wmsResponse);
                 } else {
