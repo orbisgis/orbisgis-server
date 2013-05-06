@@ -43,6 +43,8 @@ import scala.collection.mutable.{Map => MutableMap}
 import org.orbisgis.server.wms.{WMS => JavaWMS}
 import org.orbisgis.core.renderer.se.Style
 import org.apache.commons.io.{FileUtils => FU}
+//import needed for migration to play! 2.1.1
+import play.api.libs.concurrent.Execution.Implicits._
 
 object WMS extends Controller {
   

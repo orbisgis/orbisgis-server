@@ -5,14 +5,20 @@ An OrbisGIS-based server for OGC web services (WMS, WPS...).
 
 ## Build instructions
 
-1. Install play 2.0.2,
-2. run `play` at the root of the orbisgis-server repository to start the play console (which is an sbt console),
-3. check it finds the dependencies and compiles correctly with:
+1. Install play 2.1.1,
+2. Install Maven (latest version),
+3. Compile the maven project "wms" in wms repository of orbisgis-server with :
+
+ ```
+mvn clean install
+```
+4. Run `play` in the "play" repository of orbisgis-server to start the play console (which is an sbt console),
+5. Check it finds the dependencies and compiles correctly with:
 
  ```
 compile
 ```
-4. start it using:
+5. start it using:
  ```
 start
 ```

@@ -1,0 +1,10 @@
+2013-05-02 16:44:17,892 INFO  DataSourceFactory: Gdms 2.0 Starting.
+2013-05-02 16:44:17,893 INFO  DataSourceFactory: Built from revision 4ec466028fb9a947942ce13dfffc5897ddeead76
+2013-05-02 16:44:17,893 INFO  DataSourceFactory: source info dir: workspace/sources
+2013-05-02 16:44:17,893 INFO  DataSourceFactory: temp dir: workspace/temp
+2013-05-02 16:44:17,893 INFO  DataSourceFactory: plugin dir: /home/mario/.OrbisGIS/4.0/plugins
+2013-05-03 10:48:34,476 INFO  DataSourceFactory: Gdms 2.0 Starting.
+2013-05-03 10:48:34,479 INFO  DataSourceFactory: Built from revision 4ec466028fb9a947942ce13dfffc5897ddeead76
+2013-05-03 10:48:34,479 INFO  DataSourceFactory: source info dir: workspace/sources
+2013-05-03 10:48:34,479 INFO  DataSourceFactory: temp dir: workspace/temp
+2013-05-03 10:48:34,479 INFO  DataSourceFactory: plugin dir: /home/mario/.OrbisGIS/4.0/plugins
