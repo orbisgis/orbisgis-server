@@ -1,4 +1,4 @@
-/logs/
+/play/logs/
 project/project
 target/
 tmp
@@ -8,10 +8,10 @@ tmp
 .project
 .DS_Store
 /dist
-/workspace/
-/styles/
-/scripts/
+/play/workspace/
+/play/styles/
+/play/scripts/
 .idea/
 .idea_modules/
 *.iml
-/map-catalogs/
+/play/map-catalogs/
