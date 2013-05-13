@@ -51,6 +51,7 @@ public final class WMS {
         private Map<String, Style> serverStyles;
         private GetCapabilitiesHandler getCapHandler;
         private GetMapHandler getMap;
+        private GetFeatureInfoHandler getfeatureInfo;
         private static final Logger LOGGER = Logger.getLogger(WMS.class);
 
         static {
@@ -105,6 +106,7 @@ public final class WMS {
 
                 Map<String, Layer> layerMap = new HashMap<String, Layer>();
                 getMap = new GetMapHandler(layerMap);
+                getfeatureInfo = new GetFeatureInfoHandler(layerMap);
                 this.serverStyles = sStyles;
                 getCapHandler = new GetCapabilitiesHandler(layerMap, layerStyles, props);
         }
@@ -173,9 +175,18 @@ public final class WMS {
                                         + "version number as it is the only supported by this server. ");
                                 return;
                         }
-                        getMap.getMapParameterParser(queryParameters, output, wmsResponse, serverStyles);
+                        try{
+                            GetMapParameters mapParams = new GetMapParameters(queryParameters);
+                            getMap.getMap(mapParams, output, wmsResponse, serverStyles);
+                        } catch(WMSException e){
+                            exceptionDescription(wmsResponse, output, e.getMessage());
+                            return;
+                        }
                 } else if (requestType.equalsIgnoreCase("getcapabilities")) {
                         getCapHandler.getCap(output, wmsResponse);
+                }else if (requestType.equalsIgnoreCase("getfeatureinfo")){
+                    GetFeatureInfoParameters params = new GetFeatureInfoParameters(queryParameters);
+                    getfeatureInfo.getFeatureInfo(params, output, wmsResponse, serverStyles);
                 } else {
                         exceptionDescription(wmsResponse, output, "The requested request type is not supported or wrongly "
                                 + "specified. Please specify either getMap or getCapabilities request as     "
