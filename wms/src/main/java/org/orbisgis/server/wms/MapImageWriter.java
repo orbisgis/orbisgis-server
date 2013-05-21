@@ -33,6 +33,7 @@ import com.sun.media.jai.codec.TIFFEncodeParam;
 import com.sun.media.jai.codec.TIFFField;
 import org.apache.log4j.Logger;
 
+import javax.imageio.ImageIO;
 import javax.media.jai.JAI;
 import java.awt.image.BufferedImage;
 import java.io.IOException;

@@ -231,7 +231,6 @@ public class WMSTest {
 
                 DataSourceFactory dsf = Services.getService(DataManager.class).getDataSourceFactory();
                 dsf.getDataSource("cantons").open();
-
                 h.put("REQUEST", new String[]{"GetMap"});
                 h.put("VERSION", new String[]{"1.3.0"});
                 h.put("SERVICE", new String[]{"WMS"});

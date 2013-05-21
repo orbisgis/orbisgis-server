@@ -4,7 +4,7 @@ import play.Project._
 
 object ApplicationBuild extends Build {
 
-    val appName         = "orbisgis-server"
+    val appName         = "orbisgis-server-play"
     val appVersion      = "1.0-SNAPSHOT"
 
     val appDependencies = Seq(
