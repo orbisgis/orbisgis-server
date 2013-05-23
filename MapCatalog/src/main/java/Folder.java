@@ -28,6 +28,10 @@
 
 import java.sql.*;
 
+/**
+ * The class of the folder model representation
+ * @author Mario Jothy
+ */
 public class Folder {
     private Long id_root = new Long(0);
     private Long id_parent = null;
@@ -47,7 +51,8 @@ public class Folder {
 
     /**
      * Saves the instantiated folder in database
-     * @param con
+     * @param con The connection to the database
+     * @return The id_folder of the folder saved in database (primary key)
      */
     public Long saveFolder(Connection con){
         String value1 = MapCatalog.refactorToSQL(id_root);

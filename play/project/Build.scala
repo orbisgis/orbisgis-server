@@ -13,7 +13,8 @@ object ApplicationBuild extends Build {
       "com.kitfox.svg" % "svg-salamander" % "1.0" from "http://repo.orbisgis.org/com/kitfox/svg/svg-salamander/1.0/svg-salamander-1.0.jar",
       "javax.media" % "jai_core" % "1.1.3" from "http://repo.orbisgis.org/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar",
       "junit" % "junit" % "4.10" % "test",
-      "org.orbisgis.server" % "orbiswms-lib" % "1.0-SNAPSHOT"
+      "org.orbisgis.server" % "orbiswms-lib" % "1.0-SNAPSHOT",
+      "org.orbisgis.server" % "MapCatalog" % "1.0-SNAPSHOT"
     )
 
     val main = play.Project(appName, appVersion, appDependencies).settings(

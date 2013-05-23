@@ -27,7 +27,10 @@
  */
 import java.sql.*;
 
-
+/**
+ * The class of the workspace model representation
+ * @author Mario Jothy
+ */
 public class Workspace {
     private Long id_creator = null;
     private String name = "default";
@@ -48,6 +51,7 @@ public class Workspace {
     /**
      * Saves the instantiated workspace into database
      * @param con The connection to the database
+     * @return The id_workspace of the workspace saved in database (primary key)
      */
     public Long saveWorkspace(Connection con) {
         String value1 = MapCatalog.refactorToSQL(id_creator);;

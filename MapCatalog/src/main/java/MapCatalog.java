@@ -27,13 +27,11 @@
  */
 
 import java.sql.*;
-import java.util.ArrayList;
 
 /**
  * Manages workspaces and map contexts
  * @author Mario Jothy
  */
-
 public class MapCatalog {
 
     private static final String DRIVER_NAME = "org.h2.Driver";
@@ -65,9 +63,10 @@ public class MapCatalog {
     }
 
     /**
-     * Executes a query into database (type DELETE or INSERT)
-     * @param con   The connection to database
-     * @param query The query
+     * Executes a DELETE or INSERT query in database
+     * @param con   The connection to the database
+     * @param query The query that you wish to execute
+     * @return  In case of an Insert, returns the primarykey id of the inserted element, else returns null
      */
     public static Long executeSQLupdate(Connection con, String query) {
         Long lastId = null;
@@ -76,9 +75,11 @@ public class MapCatalog {
             stmt = con.createStatement();
             stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
             //case INSERT, we store the ID of the inserted object
-            if(stmt.getGeneratedKeys().next()) {
-                lastId = stmt.getGeneratedKeys().getLong(1);
+            ResultSet rs = stmt.getGeneratedKeys();
+            if(rs.next()) {
+                lastId = rs.getLong(1);
             }
+            rs.close();
             con.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -86,6 +87,12 @@ public class MapCatalog {
         return lastId;
     }
 
+    /**
+     * Executes a SELECT values FROM table WHERE conditions query into database
+     * @param con   The connection to the database
+     * @param query The query you wish to execute
+     * @return  The Selected data in a string array
+     */
     public static String[] executeSQLselect(Connection con, String query) {
         Statement stmt;
         int indexbegin = query.lastIndexOf("SELECT")+6;
@@ -103,6 +110,7 @@ public class MapCatalog {
                 }
             }
             rs.close();
+            con.close();
         } catch(SQLException e) {
             e.printStackTrace();
         }
@@ -130,6 +138,7 @@ public class MapCatalog {
      * @param id_creator The id of the creator (user)
      * @param name       The Name of the workspace
      * @param isPublic   The visibility of the workspace (0 or 1)
+     * @return The id_workspace of the workspace created (primary key)
      */
     public static Long createWorkspace(Long id_creator, String name, int isPublic) {
         Long last = null;
@@ -147,6 +156,7 @@ public class MapCatalog {
      * @param id_root   The id of the root workspace
      * @param id_parent The id of the parent folder, null if there is none
      * @param name      The name of the folder
+     * @return The id_folder of the folder created (primary key)
      */
     public static Long createFolder(Long id_root, Long id_parent, String name) {
         Long last = null;
@@ -186,22 +196,5 @@ public class MapCatalog {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-    }
-
-
-
-
-
-
-
-
-    public static void main(String[] args) throws SQLException{
-        Long last = MapCatalog.createFolder(new Long(1), null, "aaa");
-        String query = "SELECT id_root , id_parent , name FROM folder";
-        String[] value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
-        System.out.println(value[0].equals("1")&&
-                value[1] == null&&
-                value[2].equals("aaa"));
-        System.out.println(last);
     }
 }
