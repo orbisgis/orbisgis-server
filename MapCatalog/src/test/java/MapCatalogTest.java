@@ -27,6 +27,7 @@
  */
 import org.junit.*;
 import java.sql.*;
+import java.util.ArrayList;
 
 /**
  * Test class for MapCatalog
@@ -40,18 +41,18 @@ public class MapCatalogTest {
         //Creation of the workspace
         Long id_workspace = MapCatalog.createWorkspace(null, "bbb", 0);
         String query = "SELECT id_creator , name , isPublic FROM workspace WHERE id_workspace=" + id_workspace;
-        String[] value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
+        ArrayList<String[]> value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
-                        value[0]==null          &&
-                        value[1].equals("bbb")  &&
-                        value[2].equals("0")
+                        value.get(0)[0] == null &&
+                        value.get(0)[1].equals("bbb") &&
+                        value.get(0)[2].equals("0")
         );
         //Deletion of the workspace
         MapCatalog.deleteWorkspace(id_workspace);
         query = "SELECT * FROM workspace WHERE id_workspace="+id_workspace;
         value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
-                        value[0]==null
+                        value.isEmpty()
         );
     }
 
@@ -60,18 +61,18 @@ public class MapCatalogTest {
         //Creation of the folder
         Long id_folder = MapCatalog.createFolder(new Long(1), null, "aaa");
         String query = "SELECT id_root , id_parent , name FROM folder WHERE id_folder=" + id_folder;
-        String[] value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
+        ArrayList<String[]> value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
-                        value[0].equals("1")    &&
-                        value[1] == null        &&
-                        value[2].equals("aaa")
+                        value.get(0)[0].equals("1")    &&
+                        value.get(0)[1] == null        &&
+                        value.get(0)[2].equals("aaa")
         );
         //Deletion of the folder
         MapCatalog.deleteFolder(id_folder);
         query = "SELECT * FROM folder WHERE id_folder="+id_folder;
         value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
-                        value[0]==null
+                        value.isEmpty()
         );
     }
 }

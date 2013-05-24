@@ -27,6 +27,9 @@
  */
 
 import java.sql.*;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 /**
  * Manages workspaces and map contexts
@@ -48,7 +51,7 @@ public class MapCatalog {
         }
     }
 
-    private static final String URL = "jdbc:h2:~/test";
+    private static final String URL = "jdbc:h2:tcp://localhost/~/test";
     private static final String USER = "sa";
     private static final String PASSWORD = "";
 
@@ -93,21 +96,22 @@ public class MapCatalog {
      * @param query The query you wish to execute
      * @return  The Selected data in a string array
      */
-    public static String[] executeSQLselect(Connection con, String query) {
+    public static ArrayList executeSQLselect(Connection con, String query) {
         Statement stmt;
         int indexbegin = query.lastIndexOf("SELECT")+6;
         int indexend = query.indexOf("FROM")-1;
         String[] collumns;
         collumns = query.substring(indexbegin, indexend).split(",");
-        String[] value = new String[collumns.length];
+        ArrayList<String[]> value = new ArrayList();
         try{
             stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(query);
             while(rs.next()){
+                String[] temp = new String[collumns.length];
                 for (int i=0; i<collumns.length; i++){
-                    String temp = rs.getString(collumns[i].trim());
-                    value[i] = temp;
+                    temp[i] = rs.getString(collumns[i].trim());
                 }
+                value.add(temp);
             }
             rs.close();
             con.close();
@@ -170,6 +174,62 @@ public class MapCatalog {
     }
 
     /**
+     * Creates a User and saves it into  database with right connection
+     * @param name
+     * @param email
+     * @param password
+     * @param location
+     * @return The id_user of the user created (primary key)
+     */
+    public static Long createUser(String name, String email, String password, String location) {
+        Long last = null;
+        User use = new User(name, email, password, location);
+        try{
+            last = use.saveUser(getConnection());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return last;
+    }
+
+    /**
+     * Creates a OWSContext and saves it into  database with right connection
+     * @param id_root
+     * @param id_parent
+     * @param id_uploader
+     * @param content
+     * @return The id_owscontext of the context created (primary key)
+     */
+    public static Long createOWS(Long id_root, Long id_parent, Long id_uploader, String content) {
+        Long last = null;
+        OWSContext ows = new OWSContext(id_root, id_parent, id_uploader, content);
+        try{
+            last = ows.saveOWSContext(getConnection());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return last;
+    }
+
+    /**
+     * Creates a comment and saves it into  database with right connection
+     * @param id_writer
+     * @param id_map
+     * @param content
+     * @return The id_comment of the comment created (primary key)
+     */
+    public static Long createComment(Long id_writer, Long id_map, String content) {
+        Long last = null;
+        Comment com = new Comment(id_writer, id_map, content);
+        try{
+            last = com.saveComment(getConnection());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return last;
+    }
+
+    /**
      * Delete a workspace from database
      * @param id_workspace the id of the workspace in database
      */
@@ -196,5 +256,59 @@ public class MapCatalog {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Delete a user from database
+     * @param id_user
+     */
+    public static void deleteUser(Long id_user) {
+        String query = "DELETE FROM user " +
+                "WHERE id_user = " + id_user +";";
+        try{
+            executeSQLupdate(getConnection(), query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Delete a owscontext from database
+     * @param id_owscontext
+     */
+    public static void deleteOWSContext(Long id_owscontext) {
+        String query = "DELETE FROM owscontext " +
+                "WHERE id_owscontext = " + id_owscontext +";";
+        try{
+            executeSQLupdate(getConnection(), query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Delete a comment from database
+     * @param id_comment
+     */
+    public static void deleteComment(Long id_comment) {
+        String query = "DELETE FROM comment " +
+                "WHERE id_comment = " + id_comment +";";
+        try{
+            executeSQLupdate(getConnection(), query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static File getWorkspaceList() {
+        String query = "SELECT name FROM workspace";
+        ArrayList<String[]> values;
+        try{
+            values = executeSQLselect(getConnection(), query);
+            for(int i=0; i<values.size(); i++) System.out.println(values.get(i)[0]);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

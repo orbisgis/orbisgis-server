@@ -28,7 +28,7 @@ create table comment (
   id_comment			bigint auto_increment not null,
   id_writer			    bigint,
   id_map			    bigint,
-  content			    text(4000),
+  content			    clob,
   constraint pk_comment primary key (id_comment)
 );
 
@@ -37,7 +37,7 @@ create table owscontext (
   id_root			    bigint not null,
   id_parent		    	bigint,
   id_uploader			bigint,
-  PATH			    	varchar(255),
+  content               clob,
   constraint pk_owscontext primary key (id_owscontext)
 );
 
