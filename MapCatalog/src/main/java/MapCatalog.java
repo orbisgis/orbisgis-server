@@ -26,6 +26,17 @@
  * directly: info_at_ orbisgis.org
  */
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.sql.*;
 import java.io.*;
 import java.util.ArrayList;
@@ -300,15 +311,112 @@ public class MapCatalog {
         }
     }
 
-    public static File getWorkspaceList() {
+    /**
+     * Sends a query to database that returns the workspace list, then write it in a xml file a the root of project.
+     */
+    public static void getWorkspaceList() {
         String query = "SELECT name FROM workspace";
         ArrayList<String[]> values;
         try{
+            //get the list of workspace names from the database
             values = executeSQLselect(getConnection(), query);
-            for(int i=0; i<values.size(); i++) System.out.println(values.get(i)[0]);
-        } catch (SQLException e) {
-            e.printStackTrace();
+
+            Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();;
+            Element e ;
+            Element e2 ;
+            Element rootEle = dom.createElement("workspaces");
+
+            //Create a node for each workspace, and add the name
+            for (int i=0; i<values.size(); i++) {
+                e = dom.createElement("workspace");
+                e2 = dom.createElement("name");
+                e2.appendChild(dom.createTextNode(values.get(i)[0]));
+                e.appendChild(e2);
+                rootEle.appendChild(e);
+            }
+            dom.appendChild(rootEle);
+
+            //transform the dom in XML
+            try {
+                Transformer tr = TransformerFactory.newInstance().newTransformer();
+                tr.setOutputProperty(OutputKeys.INDENT, "yes");
+                tr.setOutputProperty(OutputKeys.METHOD, "xml");
+                tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+                tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+                tr.transform(new DOMSource(dom),
+                        new StreamResult(new FileOutputStream("workspaces")));
+
+            } catch (TransformerException te) {
+                System.out.println(te.getMessage());
+            } catch (IOException ioe) {
+                System.out.println(ioe.getMessage());
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-        return null;
+    }
+
+    /**
+     * Queries the database for the list of context, then writes it into a XML file
+     * @param id_workspace The workspace which
+     */
+    public static void getContextList(Long id_workspace){
+        String query = "SELECT id_owscontext,id_root,id_parent,id_uploader,content,title,date FROM owscontext WHERE id_root="+id_workspace;
+        ArrayList<String[]> values;
+        try{
+            //get the ows from database
+            values = executeSQLselect(getConnection(), query);
+
+            Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();;
+            Element e;
+            Element e2 ;
+            Element rootEle = dom.createElement("contexts");
+
+            //create a node for each ows
+            for (int i=0; i<values.size(); i++) {
+                e = dom.createElement("context");
+                e.setAttribute("id", String.valueOf(i));
+                e.setAttribute("date", values.get(i)[6]);
+                e2 = dom.createElement("title");
+                e2.setAttribute("xml:lang", getTitleLang(values.get(i))[0]);
+                e2.appendChild(dom.createTextNode(getTitleLang(values.get(i))[1]));
+                e.appendChild(e2);
+                rootEle.appendChild(e);
+            }
+            dom.appendChild(rootEle);
+
+            //transforms into XML
+            try {
+                Transformer tr = TransformerFactory.newInstance().newTransformer();
+                tr.setOutputProperty(OutputKeys.INDENT, "yes");
+                tr.setOutputProperty(OutputKeys.METHOD, "xml");
+                tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+                tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+                tr.transform(new DOMSource(dom),
+                        new StreamResult(new FileOutputStream("contexts")));
+
+            } catch (Exception exe) {
+                exe.printStackTrace();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * This method's only purpose is to simplify the parsing of the content of an OWSCONTEXT to get the lang and the title
+     * @param values The Array of string containing exactly 7 rows
+     * @return The lang and the title in an array if found, else returns {"default","default"}
+     */
+    private static String[] getTitleLang(String[] values){
+       if (!values[4].contains("ns1:Title xml:lang=")) {
+           return (new String[] {"default", "default"});
+       }
+       return values[4].substring(values[4].indexOf("ns1:Title xml:lang=")+20, values[4].indexOf("</ns1:Title>")).split(">");
+    }
+
+    public static void main(String[] args) {
+        getContextList(new Long(1));
+        getWorkspaceList();
     }
 }
