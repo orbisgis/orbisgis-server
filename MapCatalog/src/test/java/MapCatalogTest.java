@@ -59,11 +59,11 @@ public class MapCatalogTest {
     @Test
     public void folderCreation () throws SQLException{
         //Creation of the folder
-        Long id_folder = MapCatalog.createFolder(new Long(1), null, "aaa");
+        Long id_folder = MapCatalog.createFolder(new Long(2), null, "aaa");
         String query = "SELECT id_root , id_parent , name FROM folder WHERE id_folder=" + id_folder;
         ArrayList<String[]> value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
-                        value.get(0)[0].equals("1")    &&
+                        value.get(0)[0].equals("2")    &&
                         value.get(0)[1] == null        &&
                         value.get(0)[2].equals("aaa")
         );
@@ -100,13 +100,14 @@ public class MapCatalogTest {
     @Test
     public void commentCreation() throws SQLException{
         //Creation of the comment
-        Long id_comment = MapCatalog.createComment(null, null, "a content");
-        String query = "SELECT id_writer , id_map , content FROM comment WHERE id_comment=" + id_comment;
+        Long id_comment = MapCatalog.createComment(null, null, "a content", "default");
+        String query = "SELECT id_writer , id_map , content , title FROM comment WHERE id_comment=" + id_comment;
         ArrayList<String[]> value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
                         value.get(0)[0]==null               &&
                         value.get(0)[1]==null               &&
-                        value.get(0)[2].equals("a content")
+                        value.get(0)[2].equals("a content") &&
+                        value.get(0)[3].equals("default")
         );
         //Deletion of the comment
         MapCatalog.deleteComment(id_comment);
@@ -120,11 +121,11 @@ public class MapCatalogTest {
     @Test
     public void owsCreation() throws SQLException{
         //Creation of the ows
-        Long id_owscontext = MapCatalog.createOWS(new Long(1), null, null, "a content");
+        Long id_owscontext = MapCatalog.createOWS(new Long(2), null, null, "a content");
         String query = "SELECT id_root , id_parent , id_uploader , content FROM owscontext WHERE id_owscontext=" + id_owscontext;
         ArrayList<String[]> value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
-                        value.get(0)[0].equals("1")     &&
+                        value.get(0)[0].equals("2")     &&
                         value.get(0)[1]==null           &&
                         value.get(0)[2]==null           &&
                         value.get(0)[3].equals("a content")

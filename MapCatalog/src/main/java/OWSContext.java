@@ -34,12 +34,14 @@ public class OWSContext {
     private Long id_parent = null;
     private Long id_uploader = null;
     private String content = "";
+    private String title = "default";
 
-    public OWSContext(Long id_root, Long id_parent, Long id_uploader, String content) {
+    public OWSContext(Long id_root, Long id_parent, Long id_uploader, String content, String title) {
         this.id_root = id_root;
         this.id_parent = id_parent;
         this.id_uploader = id_uploader;
         this.content = content;
+        this.title = title;
     }
 
     public Long saveOWSContext(Connection con){
@@ -47,11 +49,10 @@ public class OWSContext {
         String value2 = MapCatalog.refactorToSQL(id_parent);
         String value3 = MapCatalog.refactorToSQL(id_uploader);
         String value4 = MapCatalog.refactorToSQL(content);
+        String value5 = MapCatalog.refactorToSQL(title);
 
-        String query = "INSERT INTO owscontext (id_root,id_parent,id_uploader,content) " +
-                        "VALUES (" + value1 +","+ value2 +","+ value3 +","+ value4 +");";
+        String query = "INSERT INTO owscontext (id_root,id_parent,id_uploader,content, title) " +
+                        "VALUES (" + value1 +","+ value2 +","+ value3 +","+ value4 + ","+ value5 +");";
         return(MapCatalog.executeSQLupdate(con, query));
     }
-
-
 }

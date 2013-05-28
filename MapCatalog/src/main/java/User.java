@@ -31,7 +31,7 @@ public class User {
     private String name = "";
     private String email = "";
     private String password = "";
-    private String avatar; //reminder
+    private String avatar; //todo reminder
     private String location = "";
 
     public User(String name, String email, String password, String location) {

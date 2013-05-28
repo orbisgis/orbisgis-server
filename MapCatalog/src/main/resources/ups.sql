@@ -29,6 +29,7 @@ create table comment (
   id_writer			    bigint,
   id_map			    bigint,
   content			    clob,
+  title                 varchar(255),
   date                  timestamp default CURRENT_TIMESTAMP,
   constraint pk_comment primary key (id_comment)
 );

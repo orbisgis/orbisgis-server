@@ -111,16 +111,15 @@ public class MapCatalog {
         Statement stmt;
         int indexbegin = query.lastIndexOf("SELECT")+6;
         int indexend = query.indexOf("FROM")-1;
-        String[] collumns;
-        collumns = query.substring(indexbegin, indexend).split(",");
+        String[] columns = query.substring(indexbegin, indexend).split(",");
         ArrayList<String[]> value = new ArrayList();
         try{
             stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(query);
             while(rs.next()){
-                String[] temp = new String[collumns.length];
-                for (int i=0; i<collumns.length; i++){
-                    temp[i] = rs.getString(collumns[i].trim());
+                String[] temp = new String[columns.length];
+                for (int i=0; i<columns.length; i++){
+                    temp[i] = rs.getString(columns[i].trim());
                 }
                 value.add(temp);
             }
@@ -213,7 +212,8 @@ public class MapCatalog {
      */
     public static Long createOWS(Long id_root, Long id_parent, Long id_uploader, String content) {
         Long last = null;
-        OWSContext ows = new OWSContext(id_root, id_parent, id_uploader, content);
+        String title = getTitleLang(content)[0];
+        OWSContext ows = new OWSContext(id_root, id_parent, id_uploader, content, title);
         try{
             last = ows.saveOWSContext(getConnection());
         } catch (SQLException e) {
@@ -227,11 +227,12 @@ public class MapCatalog {
      * @param id_writer
      * @param id_map
      * @param content
+     * @param title
      * @return The id_comment of the comment created (primary key)
      */
-    public static Long createComment(Long id_writer, Long id_map, String content) {
+    public static Long createComment(Long id_writer, Long id_map, String content, String title) {
         Long last = null;
-        Comment com = new Comment(id_writer, id_map, content);
+        Comment com = new Comment(id_writer, id_map, content, title);
         try{
             last = com.saveComment(getConnection());
         } catch (SQLException e) {
@@ -239,6 +240,27 @@ public class MapCatalog {
         }
         return last;
     }
+
+    /**
+     * Creates a relation between user and workspace in database.
+     * @param id_user
+     * @param id_workspace
+     * @param read
+     * @param write
+     * @param manageUser
+     * @return  The key corresponding to the relation
+     */
+    public static Long createUserWorkspace(Long id_user, Long id_workspace, Integer read, Integer write, Integer manageUser){
+        Long last = null;
+        UserWorkspace usewo = new UserWorkspace(id_user, id_workspace, read, write, manageUser);
+        try{
+            last = usewo.saveUserWorkspace(getConnection());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return last;
+    }
+
 
     /**
      * Delete a workspace from database
@@ -378,8 +400,8 @@ public class MapCatalog {
                 e.setAttribute("id", String.valueOf(i));
                 e.setAttribute("date", values.get(i)[6]);
                 e2 = dom.createElement("title");
-                e2.setAttribute("xml:lang", getTitleLang(values.get(i))[0]);
-                e2.appendChild(dom.createTextNode(getTitleLang(values.get(i))[1]));
+                e2.setAttribute("xml:lang", getTitleLang(values.get(i)[4])[0]);
+                e2.appendChild(dom.createTextNode(getTitleLang(values.get(i)[4])[1]));
                 e.appendChild(e2);
                 rootEle.appendChild(e);
             }
@@ -405,14 +427,16 @@ public class MapCatalog {
 
     /**
      * This method's only purpose is to simplify the parsing of the content of an OWSCONTEXT to get the lang and the title
-     * @param values The Array of string containing exactly 7 rows
+     * @param values The string "content" of the ows context
      * @return The lang and the title in an array if found, else returns {"default","default"}
      */
-    private static String[] getTitleLang(String[] values){
-       if (!values[4].contains("ns1:Title xml:lang=")) {
+    private static String[] getTitleLang(String values){
+        int indexbegin = values.indexOf("ns1:Title xml:lang=")+20;
+        int indexend = values.indexOf("</ns1:Title>");
+       if (!values.contains("ns1:Title xml:lang=")) {
            return (new String[] {"default", "default"});
        }
-       return values[4].substring(values[4].indexOf("ns1:Title xml:lang=")+20, values[4].indexOf("</ns1:Title>")).split(">");
+       return values.substring(indexbegin, indexend).split(">");
     }
 
     public static void main(String[] args) {
