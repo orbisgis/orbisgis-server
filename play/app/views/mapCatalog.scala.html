@@ -1,0 +1,30 @@
+@import helper.twitterBootstrap._
+@main("OrbisGIS services") {
+<div class="container">
+    <div class="page-header">
+        <h1>Map Catalog</h1>
+    </div>
+</div>
+<div class="container-fluid" >
+    <div class="row-fluid">
+        <div class="span4" id="navigate" style="background-color:#999999;padding-left: 5px">
+            <h2>Navigate</h2>
+            <label class="radio">
+                <input type="radio" name="brutalfilter" id="brutalfilter" value="My workspaces" checked>
+                My workspaces
+            </label>
+            <label class="radio">
+                <input type="radio" name="brutalfilter" id="brutalfilter2" value="Public workspaces">
+                Public workspaces
+            </label>
+            <form class="form-search">
+                <input type="text" class="input-medium search-query" placeholder="Search a workspace">
+                <button type="submit" class="btn">Search</button>
+            </form>
+        </div>
+        <div class="span8" id="display" style="background-color:#CCCCCC;">
+            <h2>Display</h2>
+        </div>
+    </div>
+</div>
+}

@@ -109,17 +109,15 @@ public class MapCatalog {
      */
     public static ArrayList executeSQLselect(Connection con, String query) {
         Statement stmt;
-        int indexbegin = query.lastIndexOf("SELECT")+6;
-        int indexend = query.indexOf("FROM")-1;
-        String[] columns = query.substring(indexbegin, indexend).split(",");
         ArrayList<String[]> value = new ArrayList();
         try{
             stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(query);
             while(rs.next()){
-                String[] temp = new String[columns.length];
-                for (int i=0; i<columns.length; i++){
-                    temp[i] = rs.getString(columns[i].trim());
+                int lenght = rs.getMetaData().getColumnCount();
+                String[] temp = new String[lenght];
+                for (int i=0; i<lenght; i++){
+                    temp[i] = rs.getString(i+1);
                 }
                 value.add(temp);
             }
@@ -440,7 +438,19 @@ public class MapCatalog {
     }
 
     public static void main(String[] args) {
-        getContextList(new Long(1));
-        getWorkspaceList();
+        String query = "SELECT name FROM workspace WHERE ISPUBLIC = 0;";
+        try{
+            ArrayList<String[]> values = MapCatalog.executeSQLselect(getConnection(), query);
+            for(int i=0; i<values.size(); i++){
+                for(int j=0; j<values.get(i).length; j++){
+                    System.out.print(values.get(i)[j]+"**");
+                }
+                System.out.println("");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
     }
 }

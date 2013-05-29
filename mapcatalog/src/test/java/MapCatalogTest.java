@@ -40,12 +40,13 @@ public class MapCatalogTest {
 
         //Creation of the workspace
         Long id_workspace = MapCatalog.createWorkspace(null, "bbb", 0);
-        String query = "SELECT id_creator , name , isPublic FROM workspace WHERE id_workspace=" + id_workspace;
+        String query = "SELECT * FROM workspace WHERE id_workspace=" + id_workspace;
         ArrayList<String[]> value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
-                        value.get(0)[0] == null &&
-                        value.get(0)[1].equals("bbb") &&
-                        value.get(0)[2].equals("0")
+                        value.get(0)[0].equals(id_workspace.toString()) &&
+                        value.get(0)[1] == null &&
+                        value.get(0)[2].equals("bbb") &&
+                        value.get(0)[3].equals("0")
         );
         //Deletion of the workspace
         MapCatalog.deleteWorkspace(id_workspace);
@@ -60,12 +61,13 @@ public class MapCatalogTest {
     public void folderCreation () throws SQLException{
         //Creation of the folder
         Long id_folder = MapCatalog.createFolder(new Long(2), null, "aaa");
-        String query = "SELECT id_root , id_parent , name FROM folder WHERE id_folder=" + id_folder;
+        String query = "SELECT * FROM folder WHERE id_folder=" + id_folder;
         ArrayList<String[]> value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
-                        value.get(0)[0].equals("2")    &&
-                        value.get(0)[1] == null        &&
-                        value.get(0)[2].equals("aaa")
+                        value.get(0)[0].equals(id_folder.toString())    &&
+                        value.get(0)[1].equals("2")    &&
+                        value.get(0)[2] == null        &&
+                        value.get(0)[3].equals("aaa")
         );
         //Deletion of the folder
         MapCatalog.deleteFolder(id_folder);
@@ -80,13 +82,14 @@ public class MapCatalogTest {
     public void userCreation() throws SQLException{
         //Creation of the user
         Long id_user = MapCatalog.createUser("moi", "moi@moi.moi", "aaa", "paris");
-        String query = "SELECT name , email , password , location FROM user WHERE id_user=" + id_user;
+        String query = "SELECT * FROM user WHERE id_user=" + id_user;
         ArrayList<String[]> value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
-                        value.get(0)[0].equals("moi")           &&
-                        value.get(0)[1].equals("moi@moi.moi")   &&
-                        value.get(0)[2].equals("aaa")           &&
-                        value.get(0)[3].equals("paris")
+                        value.get(0)[0].equals(id_user.toString())           &&
+                        value.get(0)[1].equals("moi")           &&
+                        value.get(0)[2].equals("moi@moi.moi")   &&
+                        value.get(0)[3].equals("aaa")           &&
+                        value.get(0)[5].equals("paris")
         );
         //Deletion of the user
         MapCatalog.deleteUser(id_user);
@@ -101,13 +104,14 @@ public class MapCatalogTest {
     public void commentCreation() throws SQLException{
         //Creation of the comment
         Long id_comment = MapCatalog.createComment(null, null, "a content", "default");
-        String query = "SELECT id_writer , id_map , content , title FROM comment WHERE id_comment=" + id_comment;
+        String query = "SELECT * FROM comment WHERE id_comment=" + id_comment;
         ArrayList<String[]> value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
-                        value.get(0)[0]==null               &&
+                        value.get(0)[0].equals(id_comment.toString())               &&
                         value.get(0)[1]==null               &&
-                        value.get(0)[2].equals("a content") &&
-                        value.get(0)[3].equals("default")
+                        value.get(0)[2]==null               &&
+                        value.get(0)[3].equals("a content") &&
+                        value.get(0)[4].equals("default")
         );
         //Deletion of the comment
         MapCatalog.deleteComment(id_comment);
@@ -122,13 +126,14 @@ public class MapCatalogTest {
     public void owsCreation() throws SQLException{
         //Creation of the ows
         Long id_owscontext = MapCatalog.createOWS(new Long(2), null, null, "a content");
-        String query = "SELECT id_root , id_parent , id_uploader , content FROM owscontext WHERE id_owscontext=" + id_owscontext;
+        String query = "SELECT * FROM owscontext WHERE id_owscontext=" + id_owscontext;
         ArrayList<String[]> value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
-                        value.get(0)[0].equals("2")     &&
-                        value.get(0)[1]==null           &&
+                        value.get(0)[0].equals(id_owscontext.toString())     &&
+                        value.get(0)[1].equals("2")     &&
                         value.get(0)[2]==null           &&
-                        value.get(0)[3].equals("a content")
+                        value.get(0)[3]==null           &&
+                        value.get(0)[4].equals("a content")
         );
         //Deletion of the owscontext
         MapCatalog.deleteOWSContext(id_owscontext);

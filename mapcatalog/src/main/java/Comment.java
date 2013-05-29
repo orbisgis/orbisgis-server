@@ -46,7 +46,7 @@ public class Comment {
         String value3 = MapCatalog.refactorToSQL(content);
         String value4 = MapCatalog.refactorToSQL(title);
 
-        String query = "INSERT INTO comment (id_writer,id_map,content) " +
+        String query = "INSERT INTO comment (id_writer,id_map,content,title) " +
                 "VALUES (" + value1 + "," + value2 + "," + value3 + "," + value4 +");";
         return(MapCatalog.executeSQLupdate(con, query));
     }

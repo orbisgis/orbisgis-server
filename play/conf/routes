@@ -61,3 +61,9 @@ POST /map/workspaces/:name/contexts/:id                 controllers.CatalogAPI.r
 DELETE /map/workspaces/:name/contexts/:id               controllers.CatalogAPI.removeContext(key: String ?= "",name,id)
 
 #DELETE /map/workspaces/:name/path/*path                controllers.CatalogAPI.removePath(key: String ?= "",path)
+
+# MapCatalog website
+
+GET /home                                               controllers.Application.home
+
+GET /mapcatalog                                         controllers.MapCatalogC.index
