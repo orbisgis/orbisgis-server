@@ -1,4 +1,4 @@
-/**
+package org.orbisgis.server.mapcatalog; /**
  * OrbisGIS is a GIS application dedicated to scientific spatial simulation.
  * This cross-platform GIS is developed at French IRSTV institute and is able to
  * manipulate and create vector and raster spatial information.
@@ -33,34 +33,58 @@ import java.sql.*;
  * @author Mario Jothy
  */
 public class Folder {
-    private Long id_root = new Long(0);
-    private Long id_parent = null;
+    private String id_root = "0";
+    private String id_parent = null;
     private String name =  "default";
 
     /**
-     * The constructor of the Folder
+     * The constructor of the org.orbisgis.server.mapcatalog.Folder
      * @param id_root
      * @param id_parent Null if there is no parent folder (note: A workspace is NOT a folder)
      * @param name
      */
-    public Folder(Long id_root, Long id_parent, String name) {
+    public Folder(String id_root, String id_parent, String name) {
         this.id_root = id_root;
         this.id_parent = id_parent;
         this.name = name;
     }
 
     /**
-     * Saves the instantiated folder in database
-     * @param con The connection to the database
-     * @return The id_folder of the folder saved in database (primary key)
+     * Method that saves a instantiated folder into database. Handles SQL injections.
+     * @return The ID of the folder just created (primary key)
      */
-    public Long saveFolder(Connection con){
-        String value1 = MapCatalog.refactorToSQL(id_root);
-        String value2 = MapCatalog.refactorToSQL(id_parent);
-        String value3 = MapCatalog.refactorToSQL(name);
+    public  Long save() {
+        Long last = null;
+        try{
+            String query = "INSERT INTO folder (id_root,id_parent,name) VALUES (? , ? , ?);";
+            PreparedStatement pstmt = MapCatalog.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+            pstmt.setString(1, id_root);
+            pstmt.setString(2, id_parent);
+            pstmt.setString(3, name);
+            pstmt.executeUpdate();
+            ResultSet rs = pstmt.getGeneratedKeys();
+            if(rs.next()){
+                last = rs.getLong(1);
+            }
+            rs.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return last;
+    }
 
-        String query = "INSERT INTO folder (id_root,id_parent,name) " +
-                        "VALUES (" + value1 +","+ value2 +","+ value3 +");";
-        return(MapCatalog.executeSQLupdate(con, query));
+    /**
+     * Deletes a folder from database
+     * @param id_folder The primary key of the folder
+     */
+    public static void delete(Long id_folder) {
+        String query = "DELETE FROM folder WHERE id_folder = ? ;";
+        try{
+            PreparedStatement stmt = MapCatalog.getConnection().prepareStatement(query);
+            stmt.setLong(1, id_folder);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -1,3 +1,4 @@
+package org.orbisgis.server.mapcatalog;
 /**
  * OrbisGIS is a GIS application dedicated to scientific spatial simulation.
  * This cross-platform GIS is developed at French IRSTV institute and is able to
@@ -29,7 +30,6 @@
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -40,7 +40,6 @@ import javax.xml.transform.stream.StreamResult;
 import java.sql.*;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 /**
  * Manages workspaces and map contexts
@@ -77,7 +76,7 @@ public class MapCatalog {
     }
 
     /**
-     * Executes a DELETE or INSERT query in database
+     * Executes a DELETE or INSERT query in database, be carefull, as it does not handle SQL injections (use it without input from user)
      * @param con   The connection to the database
      * @param query The query that you wish to execute
      * @return  In case of an Insert, returns the primarykey id of the inserted element, else returns null
@@ -102,7 +101,7 @@ public class MapCatalog {
     }
 
     /**
-     * Executes a SELECT values FROM table WHERE conditions query into database
+     * Executes a SELECT values FROM table WHERE conditions query into database, be carefull, as it does not handle SQL injections
      * @param con   The connection to the database
      * @param query The query you wish to execute
      * @return  The Selected data in a string array
@@ -129,6 +128,34 @@ public class MapCatalog {
         return value;
     }
 
+    public static ArrayList<String[]> selectWhere(String model, String whereclause){
+        ArrayList<String[]> values = new ArrayList<String[]>();
+        String[] attributesvalue = whereclause.split("[=,]");
+        String qmark = attributesvalue[0]+" = ? ";
+        for(int i=1;2*i<attributesvalue.length;i++){
+            qmark += ","+attributesvalue[2*i]+" = ?";
+        }
+        String query = "SELECT * FROM "+model+" WHERE "+qmark+";";
+        try{
+            PreparedStatement pstmt = MapCatalog.getConnection().prepareStatement(query);
+            for(int i=1;i<attributesvalue.length;i+=2){
+                pstmt.setString(i, attributesvalue[i].trim());
+            }
+            ResultSet rs = pstmt.executeQuery();
+            while(rs.next()){
+                int length = rs.getMetaData().getColumnCount();
+                String[] ar = new String[length];
+                for(int i=0;i<length;i++){
+                    ar[i] = rs.getString(i+1);
+                }
+                values.add(ar);
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return values;
+    }
+
     /**
      * This method takes an object and turn it into a valid SQL column value
      * @param value The objects to refactor
@@ -142,193 +169,6 @@ public class MapCatalog {
             refactored = "null";
         }
         return refactored;
-    }
-
-
-    /**
-     * Creates a workspace and saves it into database with the right connection
-     * @param id_creator The id of the creator (user)
-     * @param name       The Name of the workspace
-     * @param isPublic   The visibility of the workspace (0 or 1)
-     * @return The id_workspace of the workspace created (primary key)
-     */
-    public static Long createWorkspace(Long id_creator, String name, int isPublic) {
-        Long last = null;
-        Workspace wor = new Workspace(id_creator, name, isPublic);
-        try{
-            last = wor.saveWorkspace(getConnection());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return last;
-    }
-
-    /**
-     * Creates a Folder and saves it into  database with right connection
-     * @param id_root   The id of the root workspace
-     * @param id_parent The id of the parent folder, null if there is none
-     * @param name      The name of the folder
-     * @return The id_folder of the folder created (primary key)
-     */
-    public static Long createFolder(Long id_root, Long id_parent, String name) {
-        Long last = null;
-        Folder fol = new Folder(id_root, id_parent, name);
-        try{
-            last = fol.saveFolder(getConnection());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return last;
-    }
-
-    /**
-     * Creates a User and saves it into  database with right connection
-     * @param name
-     * @param email
-     * @param password
-     * @param location
-     * @return The id_user of the user created (primary key)
-     */
-    public static Long createUser(String name, String email, String password, String location) {
-        Long last = null;
-        User use = new User(name, email, password, location);
-        try{
-            last = use.saveUser(getConnection());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return last;
-    }
-
-    /**
-     * Creates a OWSContext and saves it into  database with right connection
-     * @param id_root
-     * @param id_parent
-     * @param id_uploader
-     * @param content
-     * @return The id_owscontext of the context created (primary key)
-     */
-    public static Long createOWS(Long id_root, Long id_parent, Long id_uploader, String content) {
-        Long last = null;
-        String title = getTitleLang(content)[0];
-        OWSContext ows = new OWSContext(id_root, id_parent, id_uploader, content, title);
-        try{
-            last = ows.saveOWSContext(getConnection());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return last;
-    }
-
-    /**
-     * Creates a comment and saves it into  database with right connection
-     * @param id_writer
-     * @param id_map
-     * @param content
-     * @param title
-     * @return The id_comment of the comment created (primary key)
-     */
-    public static Long createComment(Long id_writer, Long id_map, String content, String title) {
-        Long last = null;
-        Comment com = new Comment(id_writer, id_map, content, title);
-        try{
-            last = com.saveComment(getConnection());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return last;
-    }
-
-    /**
-     * Creates a relation between user and workspace in database.
-     * @param id_user
-     * @param id_workspace
-     * @param read
-     * @param write
-     * @param manageUser
-     * @return  The key corresponding to the relation
-     */
-    public static Long createUserWorkspace(Long id_user, Long id_workspace, Integer read, Integer write, Integer manageUser){
-        Long last = null;
-        UserWorkspace usewo = new UserWorkspace(id_user, id_workspace, read, write, manageUser);
-        try{
-            last = usewo.saveUserWorkspace(getConnection());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return last;
-    }
-
-
-    /**
-     * Delete a workspace from database
-     * @param id_workspace the id of the workspace in database
-     */
-    public static void deleteWorkspace(Long id_workspace) {
-        String query = "DELETE FROM workspace " +
-                        "WHERE id_workspace = " + id_workspace +";";
-        try{
-            executeSQLupdate(getConnection(), query);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    /**
-     * Delete a folder from database
-     * @param id_folder
-     */
-    public static void deleteFolder(Long id_folder) {
-        String query = "DELETE FROM folder " +
-                "WHERE id_folder = " + id_folder +";";
-        try{
-            executeSQLupdate(getConnection(), query);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Delete a user from database
-     * @param id_user
-     */
-    public static void deleteUser(Long id_user) {
-        String query = "DELETE FROM user " +
-                "WHERE id_user = " + id_user +";";
-        try{
-            executeSQLupdate(getConnection(), query);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Delete a owscontext from database
-     * @param id_owscontext
-     */
-    public static void deleteOWSContext(Long id_owscontext) {
-        String query = "DELETE FROM owscontext " +
-                "WHERE id_owscontext = " + id_owscontext +";";
-        try{
-            executeSQLupdate(getConnection(), query);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Delete a comment from database
-     * @param id_comment
-     */
-    public static void deleteComment(Long id_comment) {
-        String query = "DELETE FROM comment " +
-                "WHERE id_comment = " + id_comment +";";
-        try{
-            executeSQLupdate(getConnection(), query);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -438,19 +278,11 @@ public class MapCatalog {
     }
 
     public static void main(String[] args) {
-        String query = "SELECT name FROM workspace WHERE ISPUBLIC = 0;";
-        try{
-            ArrayList<String[]> values = MapCatalog.executeSQLselect(getConnection(), query);
-            for(int i=0; i<values.size(); i++){
-                for(int j=0; j<values.get(i).length; j++){
-                    System.out.print(values.get(i)[j]+"**");
-                }
-                System.out.println("");
+        ArrayList<String[]> value = selectWhere("workspace", "isPublic = 0");
+        for(int i=0; i<value.size(); i++){
+            for(int j=0; j<value.get(i).length; j++){
+                System.out.println(value.get(i)[j]);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-
-
     }
 }

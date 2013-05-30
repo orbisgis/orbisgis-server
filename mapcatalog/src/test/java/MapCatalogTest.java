@@ -26,20 +26,23 @@
  * directly: info_at_ orbisgis.org
  */
 import org.junit.*;
+import org.orbisgis.server.mapcatalog.*;
 import java.sql.*;
 import java.util.ArrayList;
 
 /**
- * Test class for MapCatalog
+ * Test class for org.orbisgis.server.mapcatalog.MapCatalog
  * @author Mario Jothy
  */
 public class MapCatalogTest {
+
 
     @Test
     public void workspaceCreation () throws SQLException{
 
         //Creation of the workspace
-        Long id_workspace = MapCatalog.createWorkspace(null, "bbb", 0);
+        Workspace wor = new Workspace(null, "bbb", "0");
+        Long id_workspace = wor.save();
         String query = "SELECT * FROM workspace WHERE id_workspace=" + id_workspace;
         ArrayList<String[]> value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
@@ -49,7 +52,7 @@ public class MapCatalogTest {
                         value.get(0)[3].equals("0")
         );
         //Deletion of the workspace
-        MapCatalog.deleteWorkspace(id_workspace);
+        Workspace.delete(id_workspace);
         query = "SELECT name FROM workspace WHERE id_workspace="+id_workspace;
         value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
@@ -60,7 +63,8 @@ public class MapCatalogTest {
     @Test
     public void folderCreation () throws SQLException{
         //Creation of the folder
-        Long id_folder = MapCatalog.createFolder(new Long(2), null, "aaa");
+        Folder fol = new Folder("2", null, "aaa");
+        Long id_folder = fol.save();
         String query = "SELECT * FROM folder WHERE id_folder=" + id_folder;
         ArrayList<String[]> value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
@@ -70,7 +74,7 @@ public class MapCatalogTest {
                         value.get(0)[3].equals("aaa")
         );
         //Deletion of the folder
-        MapCatalog.deleteFolder(id_folder);
+        Folder.delete(id_folder);
         query = "SELECT name FROM folder WHERE id_folder="+id_folder;
         value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
@@ -81,7 +85,8 @@ public class MapCatalogTest {
     @Test
     public void userCreation() throws SQLException{
         //Creation of the user
-        Long id_user = MapCatalog.createUser("moi", "moi@moi.moi", "aaa", "paris");
+        User use = new User("moi", "moi@moi.moi", "aaa", "paris");
+        Long id_user = use.save();
         String query = "SELECT * FROM user WHERE id_user=" + id_user;
         ArrayList<String[]> value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
@@ -92,7 +97,7 @@ public class MapCatalogTest {
                         value.get(0)[5].equals("paris")
         );
         //Deletion of the user
-        MapCatalog.deleteUser(id_user);
+        User.delete(id_user);
         query = "SELECT name FROM user WHERE id_user="+id_user;
         value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
@@ -103,7 +108,8 @@ public class MapCatalogTest {
     @Test
     public void commentCreation() throws SQLException{
         //Creation of the comment
-        Long id_comment = MapCatalog.createComment(null, null, "a content", "default");
+        Comment com = new Comment(null, null, "a content", "default");
+        Long id_comment = com.save();
         String query = "SELECT * FROM comment WHERE id_comment=" + id_comment;
         ArrayList<String[]> value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
@@ -114,7 +120,7 @@ public class MapCatalogTest {
                         value.get(0)[4].equals("default")
         );
         //Deletion of the comment
-        MapCatalog.deleteComment(id_comment);
+        Comment.delete(id_comment);
         query = "SELECT content FROM comment WHERE id_comment="+id_comment;
         value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
@@ -122,10 +128,12 @@ public class MapCatalogTest {
         );
     }
 
+
     @Test
     public void owsCreation() throws SQLException{
         //Creation of the ows
-        Long id_owscontext = MapCatalog.createOWS(new Long(2), null, null, "a content");
+        OWSContext ows = new OWSContext("2", null, null, "a content", "title");
+        Long id_owscontext = ows.save();
         String query = "SELECT * FROM owscontext WHERE id_owscontext=" + id_owscontext;
         ArrayList<String[]> value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(
@@ -133,10 +141,11 @@ public class MapCatalogTest {
                         value.get(0)[1].equals("2")     &&
                         value.get(0)[2]==null           &&
                         value.get(0)[3]==null           &&
-                        value.get(0)[4].equals("a content")
+                        value.get(0)[4].equals("a content") &&
+                        value.get(0)[5].equals("title")
         );
         //Deletion of the owscontext
-        MapCatalog.deleteOWSContext(id_owscontext);
+        OWSContext.delete(id_owscontext);
         query = "SELECT content FROM owscontext WHERE id_owscontext="+id_owscontext;
         value = MapCatalog.executeSQLselect(MapCatalog.getConnection(), query);
         Assert.assertTrue(

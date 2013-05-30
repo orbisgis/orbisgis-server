@@ -1,4 +1,4 @@
-/**
+package org.orbisgis.server.mapcatalog; /**
  * OrbisGIS is a GIS application dedicated to scientific spatial simulation.
  * This cross-platform GIS is developed at French IRSTV institute and is able to
  * manipulate and create vector and raster spatial information.
@@ -41,14 +41,43 @@ public class User {
         this.location = location;
     }
 
-    public Long saveUser(Connection con) {
-        String value1 = MapCatalog.refactorToSQL(name);
-        String value2 = MapCatalog.refactorToSQL(email);
-        String value3 = MapCatalog.refactorToSQL(password);
-        String value4 = MapCatalog.refactorToSQL(location);
+    /**
+     * Method that saves a instantiated User into database. Handles SQL injections.
+     * @return The ID of the User just created (primary key)
+     */
+    public  Long save() {
+        Long last = null;
+        try{
+            String query = "INSERT INTO user (name,email,password,location) VALUES (? , ? , ? , ?);";
+            PreparedStatement pstmt = MapCatalog.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+            pstmt.setString(1, name);
+            pstmt.setString(2, email);
+            pstmt.setString(3, password);
+            pstmt.setString(4, location);
+            pstmt.executeUpdate();
+            ResultSet rs = pstmt.getGeneratedKeys();
+            if(rs.next()){
+                last = rs.getLong(1);
+            }
+            rs.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return last;
+    }
 
-        String query = "INSERT INTO user (name,email,password,location) " +
-                "VALUES (" + value1 + "," + value2 + "," + value3 + "," + value4 + ");";
-        return(MapCatalog.executeSQLupdate(con, query));
+    /**
+     * Deletes a user from database
+     * @param id_user The primary key of the user
+     */
+    public static void delete(Long id_user) {
+        String query = "DELETE FROM user WHERE id_user = ? ;";
+        try{
+            PreparedStatement stmt = MapCatalog.getConnection().prepareStatement(query);
+            stmt.setLong(1, id_user);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
