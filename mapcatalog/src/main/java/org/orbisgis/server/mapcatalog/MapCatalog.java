@@ -40,6 +40,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.sql.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Manages workspaces and map contexts
@@ -128,8 +129,14 @@ public class MapCatalog {
         return value;
     }
 
-    public static ArrayList<String[]> selectWhere(String model, String whereclause){
-        ArrayList<String[]> values = new ArrayList<String[]>();
+    /**
+     * This methods enquires a SELECT query to database with a WHERE clause, SQL injection-safe
+     * @param model         The name of the table, do not let the user modify this
+     * @param whereclause   The where clause
+     * @return  A List of
+     */
+    public static ArrayList<ArrayList<String>> selectWhere(String model, String whereclause){
+        ArrayList<ArrayList<String>> values = new ArrayList<ArrayList<String>>();
         String[] attributesvalue = whereclause.split("[=,]");
         String qmark = attributesvalue[0]+" = ? ";
         for(int i=1;2*i<attributesvalue.length;i++){
@@ -144,9 +151,9 @@ public class MapCatalog {
             ResultSet rs = pstmt.executeQuery();
             while(rs.next()){
                 int length = rs.getMetaData().getColumnCount();
-                String[] ar = new String[length];
+                ArrayList ar = new ArrayList();
                 for(int i=0;i<length;i++){
-                    ar[i] = rs.getString(i+1);
+                    ar.add(rs.getString(i+1));
                 }
                 values.add(ar);
             }
@@ -278,10 +285,10 @@ public class MapCatalog {
     }
 
     public static void main(String[] args) {
-        ArrayList<String[]> value = selectWhere("workspace", "isPublic = 0");
+        ArrayList<ArrayList<String>> value = selectWhere("workspace", "isPublic = 0");
         for(int i=0; i<value.size(); i++){
-            for(int j=0; j<value.get(i).length; j++){
-                System.out.println(value.get(i)[j]);
+            for(int j=0; j<value.get(i).size(); j++){
+                System.out.println(value.get(i).get(j));
             }
         }
     }

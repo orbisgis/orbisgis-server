@@ -1,8 +1,24 @@
+@(workspaces :java.util.ArrayList[java.util.ArrayList[String]])
 @import helper.twitterBootstrap._
 @main("OrbisGIS services") {
+<head>
+    <script type="text/javascript" src="@routes.Assets.at("/javascripts/simpletreemenu.js")">
+
+        /***********************************************
+        * Simple Tree Menu- © Dynamic Drive DHTML code library (www.dynamicdrive.com)
+        * This notice MUST stay intact for legal use
+        * Visit Dynamic Drive at http://www.dynamicdrive.com/ for full source code
+        ***********************************************/
+
+    </script>
+    <link rel="stylesheet" type="text/css" href="@routes.Assets.at("/stylesheets/simpletree.css")" />
+</head>
+
 <div class="container">
     <div class="page-header">
-        <h1>Map Catalog</h1>
+        <h1>
+            <img src="@routes.Assets.at("/images/OrbisMapCatalog.png")" alt="Map Catalog"></img>
+        </h1>
     </div>
 </div>
 <div class="container-fluid" >
@@ -10,17 +26,47 @@
         <div class="span4" id="navigate" style="background-color:#999999;padding-left: 5px">
             <h2>Navigate</h2>
             <label class="radio">
-                <input type="radio" name="brutalfilter" id="brutalfilter" value="My workspaces" checked>
+                <input type="radio" name="brutalfilter" id="brutalfilter" value="My workspaces">
                 My workspaces
             </label>
             <label class="radio">
-                <input type="radio" name="brutalfilter" id="brutalfilter2" value="Public workspaces">
+                <input type="radio" name="brutalfilter" id="brutalfilter2" value="Public workspaces" checked>
                 Public workspaces
             </label>
             <form class="form-search">
                 <input type="text" class="input-medium search-query" placeholder="Search a workspace">
                 <button type="submit" class="btn">Search</button>
             </form>
+
+
+            <h4>Public workspaces</h4>
+            <a href="javascript:ddtreemenu.flatten('treemenu1', 'expand')">Expand All</a> | <a href="javascript:ddtreemenu.flatten('treemenu1', 'contact')">Contact All</a>
+            <ul id="treemenu1" class="treeview">
+                @for(i <-0 until workspaces.size()){
+                <li><a href="@controllers.MapCatalogC.viewworkspace(workspaces.get(i).get(0))">@workspaces.get(i).get(2) (created by @workspaces.get(i).get(1))</a></li>
+                }
+            </ul>
+
+            <script type="text/javascript">
+                //ddtreemenu.createTree(treeid, enablepersist, opt_persist_in_days (default is 1))
+                ddtreemenu.createTree("treemenu1", true)
+            </script>
+
+
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Creator</th>
+                </tr>
+                </thead>
+                @for(i <-0 until workspaces.size()){
+                <tr>
+                    <td>@workspaces.get(i).get(2)</td>
+                    <td>@workspaces.get(i).get(1)</td>
+                </tr>
+                }
+            </table>
         </div>
         <div class="span8" id="display" style="background-color:#CCCCCC;">
             <h2>Display</h2>

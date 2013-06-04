@@ -2,11 +2,11 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET  /wms/manage					controllers.Application.index
+GET  /wms/manage					    controllers.Application.index
 
 GET  /wms/assets/*file					controllers.Assets.at(path="/public", file)
 
-GET  /wms/wms						controllers.WMS.wms
+GET  /wms/wms						    controllers.WMS.wms
 
 POST /wms/sources/add					controllers.Application.addFile
 
@@ -62,8 +62,10 @@ DELETE /map/workspaces/:name/contexts/:id               controllers.CatalogAPI.r
 
 #DELETE /map/workspaces/:name/path/*path                controllers.CatalogAPI.removePath(key: String ?= "",path)
 
-# MapCatalog website
+# org.orbisgis.server.mapcatalog.MapCatalog website
 
 GET /home                                               controllers.Application.home
 
-GET /mapcatalog                                         controllers.MapCatalogC.index
+GET /mapcatalog/public                                         controllers.MapCatalogC.index
+
+GET /mapcatalog/:id_workspace                              controllers.MapCatalogC.viewworkspace(id_workspace)
