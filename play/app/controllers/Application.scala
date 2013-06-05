@@ -55,7 +55,7 @@ object Application extends Controller {
   }
 
   def home = Action {
-    Ok(views.html.mainMenu())
+    Ok(views.html.home())
   }
 
   val fileForm = Form(
