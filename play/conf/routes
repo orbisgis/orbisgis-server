@@ -44,6 +44,7 @@ POST  /wps/wps						controllers.WPS.wpsPost
 
 GET /wps/tempResource/:name                             controllers.WPS.tempResource(name)
 
+
 # REST Catalog API
 
 GET /map/workspaces                                     controllers.CatalogAPI.listWorkspace(key: String ?= "")
@@ -62,10 +63,23 @@ DELETE /map/workspaces/:name/contexts/:id               controllers.CatalogAPI.r
 
 #DELETE /map/workspaces/:name/path/*path                controllers.CatalogAPI.removePath(key: String ?= "",path)
 
-# org.orbisgis.server.mapcatalog.MapCatalog website
 
-GET /home                                               controllers.Application.home
+# MapCatalog website
 
-GET /mapcatalog/public                                         controllers.MapCatalogC.index
+GET /home                                                   controllers.General.home()
 
-GET /mapcatalog/:id_workspace                              controllers.MapCatalogC.viewworkspace(id_workspace)
+GET /mapcatalog/public                                      controllers.MapCatalogC.index()
+
+GET /mapcatalog/:id_workspace                               controllers.MapCatalogC.viewworkspace(id_workspace)
+
+# authentification
+
+GET /login                                                  controllers.General.login
+
+GET /logout                                                 controllers.General.logout
+
+POST /login                                                 controllers.General.authenticate
+
+#API REST
+
+GET /mapcatalog/:id_context                                 controllers.MapCatalogAPI.getContext(id_context)

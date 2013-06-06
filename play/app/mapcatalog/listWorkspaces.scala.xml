@@ -1,4 +1,4 @@
-@(workspaces : Iterable[mapcatalog.Workspace])<?xml version="1.0" encoding="UTF-8"?>
+@(workspaces : scala.collection.Iterable[mapcatalog.Workspace])<?xml version="1.0" encoding="UTF-8"?>
 <workspaces> @workspaces.map { workspace =>
     <workspace>
         <name>@workspace.name</name>

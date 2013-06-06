@@ -1,4 +1,4 @@
-@(contexts : Iterable[mapcatalog.MapContext])<?xml version="1.0" encoding="UTF-8"?>
+@(contexts : scala.collection.Iterable[mapcatalog.MapContext])<?xml version="1.0" encoding="UTF-8"?>
 @langString(tag : String, value : String, lang : String) = {@if(!(value.isEmpty)) {<@tag @if(!(lang.isEmpty)) { xml:lang="@lang"}>@value</@tag>}}
 <contexts>@contexts.map { context =>
     <context id="@context.id" date="@context.mapDate">

@@ -54,10 +54,6 @@ object Application extends Controller {
     Ok(views.html.index(styles, layers, fileForm, WMS.styleForm))
   }
 
-  def home = Action {
-    Ok(views.html.home())
-  }
-
   val fileForm = Form(
     "file" -> nonEmptyText)
 

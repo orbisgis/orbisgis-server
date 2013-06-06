@@ -140,13 +140,13 @@ public class MapCatalog {
         String[] attributesvalue = whereclause.split("[=,]");
         String qmark = attributesvalue[0]+" = ? ";
         for(int i=1;2*i<attributesvalue.length;i++){
-            qmark += ","+attributesvalue[2*i]+" = ?";
+            qmark += " AND "+attributesvalue[2*i]+" = ?";
         }
         String query = "SELECT * FROM "+model+" WHERE "+qmark+";";
         try{
             PreparedStatement pstmt = MapCatalog.getConnection().prepareStatement(query);
-            for(int i=1;i<attributesvalue.length;i+=2){
-                pstmt.setString(i, attributesvalue[i].trim());
+            for(int i=0;2*i<attributesvalue.length;i++){
+                pstmt.setString(i+1, attributesvalue[2*i+1].trim());
             }
             ResultSet rs = pstmt.executeQuery();
             while(rs.next()){
@@ -285,11 +285,14 @@ public class MapCatalog {
     }
 
     public static void main(String[] args) {
-        ArrayList<ArrayList<String>> value = selectWhere("workspace", "isPublic = 0");
+        String email = "moi@moi.moi";
+        String password = "aaa";
+        ArrayList<ArrayList<String>> value = MapCatalog.selectWhere("user","email="+email+", password="+password);
         for(int i=0; i<value.size(); i++){
             for(int j=0; j<value.get(i).size(); j++){
                 System.out.println(value.get(i).get(j));
             }
         }
+        System.out.println(value.isEmpty());
     }
 }

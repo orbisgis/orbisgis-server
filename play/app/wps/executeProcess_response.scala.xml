@@ -1,4 +1,4 @@
-@(process: wps.WPSProcess , outputs: Iterable[(String, String)], status: wps.Status)<?xml version="1.0" encoding="UTF-8"?>
+@(process: wps.WPSProcess , outputs: scala.collection.Iterable[(String, String)], status: wps.Status)<?xml version="1.0" encoding="UTF-8"?>
 <wps:ExecuteResponse xsi:schemaLocation="http://www.opengis.net/wps/1.0.0/wpsExecute_response.xsd" service="WPS" version="1.0.0" xml:lang="en-US" serviceInstance="@controllers.routes.WPS.wpsGet">
     @process.toShortXml
     @status.toXml

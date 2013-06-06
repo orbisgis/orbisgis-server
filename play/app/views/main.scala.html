@@ -1,4 +1,4 @@
-@(title: String)(content: Html)
+@(page : String, title: String)(content: Html)
 
 <!DOCTYPE html>
 
@@ -18,16 +18,21 @@
                 OrbisGIS Services
             </a>
             <ul class="nav">
-                <li class="active"><a href="@controllers.routes.Application.home()">Home</a></li>
+                <li class="divider-vertical"></li>
+                <li @if(page=="Home"){class="active"}><a href="@controllers.routes.General.home()">Home</a></li>
+                <li class="divider-vertical"></li>
+                <li @if(page=="Data"){class="active"}><a href="@controllers.routes.Application.index()">Data</a></li>
+                <li class="divider-vertical"></li>
+                <li @if(page=="MapCatalog"){class="active"}><a href="@controllers.routes.MapCatalogC.index()">MapCatalog</a></li>
+                <li class="divider-vertical"></li>
+                <li @if(page=="Processing"){class="active"}><a href="@controllers.routes.WPS.manage">Processing</a></li>
+                <li class="divider-vertical"></li>
             </ul>
-            <ul class="nav">
-                <li class="active"><a href="@controllers.routes.Application.index()">WMS</a></li>
-            </ul>
-            <ul class="nav">
-                <li class="active"><a href="@controllers.routes.MapCatalogC.index()">MapCatalog</a></li>
-            </ul>
-            <ul class="nav">
-                <li class="active"><a href="@controllers.routes.Application.home()">WPS</a></li>
+            <ul class="nav" style="margin-left:90%;position:absolute">
+                <li class="divider-vertical"></li>
+                <li><a href="@controllers.routes.General.login">Login</a></li>
+                <li><a href="@controllers.routes.General.logout">Logout</a></li>
+
             </ul>
 
         </div>
