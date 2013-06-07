@@ -72,13 +72,17 @@ GET /mapcatalog/public                                      controllers.MapCatal
 
 GET /mapcatalog/:id_workspace                               controllers.MapCatalogC.viewworkspace(id_workspace)
 
-# authentification
+# Authentification
 
 GET /login                                                  controllers.General.login
 
 GET /logout                                                 controllers.General.logout
 
 POST /login                                                 controllers.General.authenticate
+
+GET /signin                                                 controllers.General.signin
+
+POST /signin                                                 controllers.General.signedin
 
 #API REST
 

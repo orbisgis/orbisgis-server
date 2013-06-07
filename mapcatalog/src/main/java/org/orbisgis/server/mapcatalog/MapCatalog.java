@@ -41,7 +41,6 @@ import java.sql.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-
 /**
  * Manages workspaces and map contexts
  * @author Mario Jothy
@@ -285,14 +284,6 @@ public class MapCatalog {
     }
 
     public static void main(String[] args) {
-        String email = "moi@moi.moi";
-        String password = "aaa";
-        ArrayList<ArrayList<String>> value = MapCatalog.selectWhere("user","email="+email+", password="+password);
-        for(int i=0; i<value.size(); i++){
-            for(int j=0; j<value.get(i).size(); j++){
-                System.out.println(value.get(i).get(j));
-            }
-        }
-        System.out.println(value.isEmpty());
+
     }
 }

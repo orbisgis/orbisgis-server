@@ -15,21 +15,21 @@
             <h2>Orbis Data</h2>
             <p>Description here</p>
             <a href="@controllers.routes.Application.index()"><button class="btn btn-primary" type="button">Try it !</button></a>
-            <button class="btn" type="button">Sign in</button>
+            <a href="@controllers.routes.General.signin"><button class="btn" type="button">Sign in</button></a>
         </div>
         <div class="thumbnail" style="position:absolute;margin-left:32%;width:30%">
             <img src="@routes.Assets.at("/images/OrbisMapCatalog.png")" alt="Orbis Map Catalog">
             <h2>Orbis Map Catalog</h2>
             <p>Description here</p>
             <a href="@controllers.routes.MapCatalogC.index()"><button class="btn btn-primary" type="button">Try it !</button></a>
-            <button class="btn" type="button">Sign in</button>
+            <a href="@controllers.routes.General.signin"><button class="btn" type="button">Sign in</button></a>
         </div>
         <div class="thumbnail"style="position:absolute;margin-left:64%;width:30%">
             <img src="@routes.Assets.at("/images/OrbisProcessing.png")" alt="Orbis Processing">
             <h2>Orbis Processing</h2>
             <p>Description here</p>
             <a href="@controllers.routes.WPS.manage"><button class="btn btn-primary" type="button">Try it!</button></a>
-            <button class="btn" type="button">Sign in</button>
+            <a href="@controllers.routes.General.signin"><button class="btn" type="button">Sign in</button></a>
         </div>
 </ul>
 }

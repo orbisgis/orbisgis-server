@@ -1,4 +1,4 @@
-
+@(form: Form[General.Login], error: String)
 
 @import helper.twitterBootstrap._
 
@@ -9,26 +9,27 @@
             <h1>Login</h1>
         </h1>
     </div>
+    <p style="color:FireBrick">@error</p>
+        @helper.form(routes.General.authenticate) {
+        <div class="control-group">
+            <label class="control-label" for="inputEmail">Email</label>
+            <div class="controls">
+                <input type="email"  id="inputEmail" name="email" placeholder="Email" value="@form("email").value">
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="control-label" for="inputPassword">Password</label>
+            <div class="controls">
+                <input type="password" id="inputPassword" name="password" placeholder="Password">
+            </div>
+        </div>
+        <div class="control-group">
+            <div class="controls">
+                <button type="submit" class="btn">Login</button>
+            </div>
+        </div>
+        }
+    <a href="@controllers.routes.General.signin">You don't have an account yet ? Sign in !</a>
+
 </div>
-
-<form class="form-horizontal" action="@routes.General.authenticate" method="POST">
-    <div class="control-group">
-        <label class="control-label" for="inputEmail">Email</label>
-        <div class="controls">
-            <input type="text" id="inputEmail" placeholder="Email">
-        </div>
-    </div>
-    <div class="control-group">
-        <label class="control-label" for="inputPassword">Password</label>
-        <div class="controls">
-            <input type="password" id="inputPassword" placeholder="Password">
-        </div>
-    </div>
-    <div class="control-group">
-        <div class="controls">
-            <button type="submit" class="btn">Login</button>
-        </div>
-    </div>
-</form>
-
 }

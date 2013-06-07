@@ -31,7 +31,9 @@ package controllers;
 import play.mvc.*;
 import org.orbisgis.server.mapcatalog.*;
 import java.util.ArrayList;
+import csp.ContentSecurityPolicy;
 
+@ContentSecurityPolicy
 public class MapCatalogAPI extends Controller {
 
     public static Result getContext(String id){

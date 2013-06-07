@@ -31,40 +31,72 @@ package controllers;
 import play.data.*;
 import play.mvc.*;
 import views.html.*;
-import org.mindrot.jbcrypt.*;
-
-import org.orbisgis.server.mapcatalog.MapCatalog;
+import org.orbisgis.server.mapcatalog.*;
 import java.util.ArrayList;
+import csp.ContentSecurityPolicy;
 
+@ContentSecurityPolicy
 public class General extends Controller{
 
     public static Result home() {
         return ok(home.render());
     }
 
+    public static class Login {
+
+        public String email;
+        public String password;
+
+    }
+
+    public static class Signin {
+        public String name;
+        public String email;
+        public String password;
+        public String location;
+    }
+
     public static Result login() {
-        System.out.println("aaaaaaaaa");
-        return ok(login.render());
+        return ok(login.render(Form.form(Login.class),""));
     }
 
     public static Result authenticate(){
-        DynamicForm form = Form.form().bindFromRequest();
-        String email = form.get("inputEmail");
-        String password = form.get("Password");
-        System.out.println(email + password);
-        if(email!=null || password!=null){
+        Form<Login> form = Form.form(Login.class).bindFromRequest();
+        Login log = form.get();
+        String email = log.email;
+        String password = log.password;
+        String error ="";
+        if(email != null && password != null){
             ArrayList<ArrayList<String>> user = MapCatalog.selectWhere("user","email="+email+", password="+password);
             if(!user.isEmpty()){
                 session("email", email);
                 return ok(home.render());
-            }
+            }else{error="Error: Email or password invalid";}
         }
-        System.out.println("aaaaaaaaa");
-        return (badRequest(login.render()));
+        return (badRequest(login.render(form,error)));
     }
 
     public static Result logout(){
         session().clear();
-        return ok(home.render());
+        return redirect(routes.General.login());
+    }
+
+    public static Result signin(){
+        return ok(signin.render(Form.form(Signin.class),""));
+    }
+
+    public static Result signedin(){
+        Form<Signin> form = Form.form(Signin.class).bindFromRequest();
+        Signin sign = form.get();
+        ArrayList<ArrayList<String>> user = MapCatalog.selectWhere("user","email="+sign.email);
+        String error="";
+        if(sign.email!=null && sign.password.length()>=6){
+            if(user.isEmpty()){
+                User usr = new User(sign.name, sign.email, sign.password, sign.location);
+                usr.save();
+                return ok(home.render());
+            }else{error="Error: Email already used";}
+        }else{error="Error: Email or password invalid";}
+        return (badRequest(signin.render(form,error)));
     }
 }

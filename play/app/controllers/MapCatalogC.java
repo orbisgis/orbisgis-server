@@ -34,11 +34,13 @@ import views.html.*;
 
 import org.orbisgis.server.mapcatalog.MapCatalog;
 import java.util.ArrayList;
+import csp.ContentSecurityPolicy;
 
+@ContentSecurityPolicy
 public class MapCatalogC extends Controller{
 
     public static Result index() {
-        ArrayList<ArrayList<String>> workspaces = MapCatalog.selectWhere("workspace","isPublic = 0");
+        ArrayList<ArrayList<String>> workspaces = MapCatalog.selectWhere("workspace","isPublic = 1");
         return ok(mapCatalog.render(workspaces));
     }
 

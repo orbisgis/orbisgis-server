@@ -87,7 +87,7 @@ public class Database  {
 
         try
         {
-            FileReader fr = new FileReader(new File("/home/mario/devProjects/orbisgis-server/MapCatalog/src/main/resources/"+file));
+            FileReader fr = new FileReader(new File("/home/mario/devProjects/orbisgis-server/mapcatalog/src/main/resources/"+file));
             BufferedReader br = new BufferedReader(fr);
 
             while((s = br.readLine()) != null)

@@ -1,0 +1,36 @@
+@(form: Form[General.Signin], error: String)
+
+@import helper.twitterBootstrap._
+
+@main("Signin","Sign In") {
+<div class="container">
+    <div class="page-header">
+            <h1>Sign In</h1>
+    </div>
+    <p style="color:FireBrick">@error</p>
+    @helper.form(routes.General.signedin) {
+    <div class="control-group">
+        <label class="control-label" for="inputName">Name</label>
+        <div class="controls">
+            <input type="text" id="inputName" name="name" placeholder="Name" value="@form("name").value">
+        </div>
+        <label class="control-label" for="inputEmail">Email</label>
+        <div class="controls">
+            <input type="email"  id="inputEmail" name="email" placeholder="Email" value="@form("email").value">
+        </div>
+        <label class="control-label" for="inputPassword">Password</label>
+        <div class="controls">
+            <input type="password" id="inputPassword" name="password" placeholder="Password">
+        </div>
+        <label class="control-label" for="inputLocation">Location</label>
+        <div class="controls">
+            <input type="text" id="inputLocation" name="location" placeholder="Location" value="@form("location").value">
+        </div>
+        <div class="controls">
+            <button type="submit" class="btn">Sign In</button>
+        </div>
+    </div>
+    }
+    <p style="color:DeepSkyBlue">Info: Your password must contain more than 6 characters</p>
+</div>
+}
