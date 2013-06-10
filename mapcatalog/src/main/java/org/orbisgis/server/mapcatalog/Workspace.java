@@ -33,6 +33,7 @@ import java.util.ArrayList;
  * @author Mario Jothy
  */
 public class Workspace {
+    private static MapCatalog MC = new MapCatalog();
     private String id_creator = null;
     private String name = "default";
     private String isPublic = "0"; // 0 or 1
@@ -57,7 +58,7 @@ public class Workspace {
         Long last = null;
         try{
             String query = "INSERT INTO workspace (id_creator,name,isPublic) VALUES (? , ? , ? );";
-            PreparedStatement pstmt = MapCatalog.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+            PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
             pstmt.setString(1, id_creator);
             pstmt.setString(2, name);
             pstmt.setString(3, isPublic);
@@ -80,7 +81,7 @@ public class Workspace {
     public static void delete(Long id_workspace) {
         String query = "DELETE FROM workspace WHERE id_workspace = ? ;";
         try{
-            PreparedStatement stmt = MapCatalog.getConnection().prepareStatement(query);
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
             stmt.setLong(1, id_workspace);
             stmt.executeUpdate();
         } catch (SQLException e) {

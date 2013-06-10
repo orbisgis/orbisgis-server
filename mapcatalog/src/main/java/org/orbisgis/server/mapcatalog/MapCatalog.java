@@ -47,9 +47,8 @@ import java.util.List;
  */
 public class MapCatalog {
 
-    private static final String DRIVER_NAME = "org.h2.Driver";
+    private final String DRIVER_NAME = "org.h2.Driver";
 
-    static
     {
         try
         {
@@ -61,43 +60,30 @@ public class MapCatalog {
         }
     }
 
-    private static final String URL = "jdbc:h2:tcp://localhost/~/test";
-    private static final String USER = "sa";
-    private static final String PASSWORD = "";
+    private String URL = "jdbc:h2:tcp://localhost/~/test";
+    private String USER = "sa";
+    private String PASSWORD = "";
+
+    public MapCatalog (String URL, String USER, String PASSWORD){
+        this.URL = URL;
+        this.USER = USER;
+        this.PASSWORD = PASSWORD;
+    }
+
+    public MapCatalog (){
+        this.URL = "jdbc:h2:tcp://localhost/~/test";
+        this.USER = "sa";
+        this.PASSWORD = "";
+    }
 
     /**
      * Getter for the connection to database
      * @return The connection
      * @throws SQLException if the connection is invalid
      */
-    public static Connection getConnection() throws SQLException
+    public Connection getConnection() throws SQLException
     {
         return DriverManager.getConnection(URL, USER, PASSWORD);
-    }
-
-    /**
-     * Executes a DELETE or INSERT query in database, be carefull, as it does not handle SQL injections (use it without input from user)
-     * @param con   The connection to the database
-     * @param query The query that you wish to execute
-     * @return  In case of an Insert, returns the primarykey id of the inserted element, else returns null
-     */
-    public static Long executeSQLupdate(Connection con, String query) {
-        Long lastId = null;
-        Statement stmt;
-        try{
-            stmt = con.createStatement();
-            stmt.executeUpdate(query, Statement.RETURN_GENERATED_KEYS);
-            //case INSERT, we store the ID of the inserted object
-            ResultSet rs = stmt.getGeneratedKeys();
-            if(rs.next()) {
-                lastId = rs.getLong(1);
-            }
-            rs.close();
-            con.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return lastId;
     }
 
     /**
@@ -106,7 +92,7 @@ public class MapCatalog {
      * @param query The query you wish to execute
      * @return  The Selected data in a string array
      */
-    public static ArrayList executeSQLselect(Connection con, String query) {
+    public ArrayList executeSQLselect(Connection con, String query) {
         Statement stmt;
         ArrayList<String[]> value = new ArrayList();
         try{
@@ -132,9 +118,9 @@ public class MapCatalog {
      * This methods enquires a SELECT query to database with a WHERE clause, SQL injection-safe
      * @param model         The name of the table, do not let the user modify this
      * @param whereclause   The where clause
-     * @return  A List of
+     * @return  The content in an array list
      */
-    public static ArrayList<ArrayList<String>> selectWhere(String model, String whereclause){
+    public ArrayList<ArrayList<String>> selectWhere(String model, String whereclause){
         ArrayList<ArrayList<String>> values = new ArrayList<ArrayList<String>>();
         String[] attributesvalue = whereclause.split("[=,]");
         String qmark = attributesvalue[0]+" = ? ";
@@ -143,7 +129,7 @@ public class MapCatalog {
         }
         String query = "SELECT * FROM "+model+" WHERE "+qmark+";";
         try{
-            PreparedStatement pstmt = MapCatalog.getConnection().prepareStatement(query);
+            PreparedStatement pstmt = getConnection().prepareStatement(query);
             for(int i=0;2*i<attributesvalue.length;i++){
                 pstmt.setString(i+1, attributesvalue[2*i+1].trim());
             }
@@ -163,24 +149,9 @@ public class MapCatalog {
     }
 
     /**
-     * This method takes an object and turn it into a valid SQL column value
-     * @param value The objects to refactor
-     * @return The toString value of the argument surrounded by ' ' if not null, else the string null
-     */
-    public static String refactorToSQL(Object value) {
-        String refactored = new String();
-        if(!(value == null)) {
-            refactored = "\'"+value.toString()+"\'";
-        } else {
-            refactored = "null";
-        }
-        return refactored;
-    }
-
-    /**
      * Sends a query to database that returns the workspace list, then write it in a xml file a the root of project.
      */
-    public static void getWorkspaceList() {
+    public void getWorkspaceList() {
         String query = "SELECT name FROM workspace";
         ArrayList<String[]> values;
         try{
@@ -226,7 +197,7 @@ public class MapCatalog {
      * Queries the database for the list of context, then writes it into a XML file
      * @param id_workspace The workspace which
      */
-    public static void getContextList(Long id_workspace){
+    public void getContextList(Long id_workspace){
         String query = "SELECT id_owscontext,id_root,id_parent,id_uploader,content,title,date FROM owscontext WHERE id_root="+id_workspace;
         ArrayList<String[]> values;
         try{
@@ -274,9 +245,9 @@ public class MapCatalog {
      * @param values The string "content" of the ows context
      * @return The lang and the title in an array if found, else returns {"default","default"}
      */
-    private static String[] getTitleLang(String values){
-        int indexbegin = values.indexOf("ns1:Title xml:lang=")+20;
-        int indexend = values.indexOf("</ns1:Title>");
+    private String[] getTitleLang(String values){
+       int indexbegin = values.indexOf("ns1:Title xml:lang=")+20;
+       int indexend = values.indexOf("</ns1:Title>");
        if (!values.contains("ns1:Title xml:lang=")) {
            return (new String[] {"default", "default"});
        }

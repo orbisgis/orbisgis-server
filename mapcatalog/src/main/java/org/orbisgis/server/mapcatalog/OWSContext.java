@@ -27,7 +27,12 @@ package org.orbisgis.server.mapcatalog; /**
  */
 import java.sql.*;
 
+/**
+ * Java model of the table OWSContext
+ * @author Mario Jothy
+ */
 public class OWSContext {
+    private static MapCatalog MC = new MapCatalog();
     private String id_root = null;
     private String id_parent = null;
     private String id_uploader = null;
@@ -50,7 +55,7 @@ public class OWSContext {
         Long last = null;
         try{
             String query = "INSERT INTO owscontext (id_root,id_parent,id_uploader,content, title) VALUES (? , ? , ? , ? , ?);";
-            PreparedStatement pstmt = MapCatalog.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+            PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
 
             pstmt.setString(1, id_root);
             pstmt.setString(2, id_parent);
@@ -76,7 +81,7 @@ public class OWSContext {
     public static void delete(Long id_owscontext) {
         String query = "DELETE FROM owscontext WHERE id_owscontext = ? ;";
         try{
-            PreparedStatement stmt = MapCatalog.getConnection().prepareStatement(query);
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
             stmt.setLong(1, id_owscontext);
             stmt.executeUpdate();
         } catch (SQLException e) {

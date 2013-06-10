@@ -35,9 +35,10 @@ import csp.ContentSecurityPolicy;
 
 @ContentSecurityPolicy
 public class MapCatalogAPI extends Controller {
+    private static MapCatalog MC = MapCatalogC.getMapCatalog();
 
     public static Result getContext(String id){
-        ArrayList<ArrayList<String>> context = MapCatalog.selectWhere("owscontext", "id_owscontext="+id);
+        ArrayList<ArrayList<String>> context = MC.selectWhere("owscontext", "id_owscontext="+id);
         return ok(context.get(0).get(4));
     }
 

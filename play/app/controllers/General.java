@@ -37,6 +37,7 @@ import csp.ContentSecurityPolicy;
 
 @ContentSecurityPolicy
 public class General extends Controller{
+    private static MapCatalog MC = MapCatalogC.getMapCatalog();
 
     public static Result home() {
         return ok(home.render());
@@ -67,7 +68,7 @@ public class General extends Controller{
         String password = log.password;
         String error ="";
         if(email != null && password != null){
-            ArrayList<ArrayList<String>> user = MapCatalog.selectWhere("user","email="+email+", password="+password);
+            ArrayList<ArrayList<String>> user = MC.selectWhere("user","email="+email+", password="+password);
             if(!user.isEmpty()){
                 session("email", email);
                 return ok(home.render());
@@ -88,7 +89,7 @@ public class General extends Controller{
     public static Result signedin(){
         Form<Signin> form = Form.form(Signin.class).bindFromRequest();
         Signin sign = form.get();
-        ArrayList<ArrayList<String>> user = MapCatalog.selectWhere("user","email="+sign.email);
+        ArrayList<ArrayList<String>> user = MC.selectWhere("user","email="+sign.email);
         String error="";
         if(sign.email!=null && sign.password.length()>=6){
             if(user.isEmpty()){

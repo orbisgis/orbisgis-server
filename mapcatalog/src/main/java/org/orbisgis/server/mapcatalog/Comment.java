@@ -27,12 +27,24 @@ package org.orbisgis.server.mapcatalog; /**
  */
 import java.sql.*;
 
+/**
+ * Java model of the table Comment
+ * @author Mario Jothy
+ */
 public class Comment {
+    private static MapCatalog MC = new MapCatalog();
     private String id_writer = null;
     private String id_map = null;
     private String content = "";
     private String title = "default";
 
+    /**
+     * Constructor
+     * @param id_writer
+     * @param id_map
+     * @param content
+     * @param title
+     */
     public Comment(String id_writer, String id_map, String content, String title) {
         this.id_writer = id_writer;
         this.id_map = id_map;
@@ -49,7 +61,7 @@ public class Comment {
         Long last = null;
         try{
             String query = "INSERT INTO comment (id_writer,id_map,content,title) VALUES (? , ? , ? , ?);";
-            PreparedStatement pstmt = MapCatalog.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+            PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
             pstmt.setString(1, id_writer);
             pstmt.setString(2, id_map);
             pstmt.setString(3, content);
@@ -73,7 +85,7 @@ public class Comment {
     public static void delete(Long id_comment) {
         String query = "DELETE FROM comment WHERE id_comment = ? ;";
         try{
-            PreparedStatement stmt = MapCatalog.getConnection().prepareStatement(query);
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
             stmt.setLong(1, id_comment);
             stmt.executeUpdate();
         } catch (SQLException e) {

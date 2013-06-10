@@ -1,16 +1,33 @@
-@(workspaces :java.util.ArrayList[java.util.ArrayList[String]])
+@(folders :java.util.ArrayList[java.util.ArrayList[String]], contexts :java.util.ArrayList[java.util.ArrayList[String]], id_root : String)
 
 @import helper.twitterBootstrap._
 
-@main("MapCatalog","OrbisGIS services") {
+@display(id_parent : String) = {
+    @folders = @MapCatalogC.getMapCatalog.selectWhere("folder","id_root="+id_root+", id_parent="+id_parent)
+    @contexts = @MapCatalogC.getMapCatalog.selectWhere("owscontext","id_root="+id_root+", id_parent="+id_parent)
+    @for(i <-0 until folders.size()){
+        <li>
+            @folders.get(i).get(3)
+            <ul>
+                @display(folders.get(i).get(0))
+                @for(j <-0 until contexts.size()){
+                    <li>
+                        @contexts.get(j).get(5)
+                    </li>
+                }
+            </ul>
+        </li>
+    }
+}
+@main("MapCatalog","Workspace") {
 <head>
     <script type="text/javascript" src="@routes.Assets.at("/javascripts/simpletreemenu.js")">
 
-        /***********************************************
-        * Simple Tree Menu- © Dynamic Drive DHTML code library (www.dynamicdrive.com)
-        * This notice MUST stay intact for legal use
-        * Visit Dynamic Drive at http://www.dynamicdrive.com/ for full source code
-        ***********************************************/
+    /***********************************************
+    * Simple Tree Menu- © Dynamic Drive DHTML code library (www.dynamicdrive.com)
+    * This notice MUST stay intact for legal use
+    * Visit Dynamic Drive at http://www.dynamicdrive.com/ for full source code
+    ***********************************************/
 
     </script>
     <link rel="stylesheet" type="text/css" href="@routes.Assets.at("/stylesheets/simpletree.css")" />
@@ -36,18 +53,16 @@
                 Public workspaces
             </label>
             <form class="form-search">
-                <input type="text" class="input-medium search-query" placeholder="Search a workspace">
+                <input type="text" class="input-medium search-query" placeholder="Search a context">
                 <button type="submit" class="btn">Search</button>
             </form>
 
 
-            <h4>Public workspaces</h4>
+            <h4>Workspace</h4>
             <a href="javascript:ddtreemenu.flatten('treemenu1', 'expand')">Expand All</a> | <a href="javascript:ddtreemenu.flatten('treemenu1', 'contact')">Contact All</a>
 
             <ul id="treemenu1" class="treeview">
-                @for(i <-0 until workspaces.size()){
-                <li style="margin-right:2%"><a href="/mapcatalog/workspace/@workspaces.get(i).get(0)">@workspaces.get(i).get(2) (created by @workspaces.get(i).get(1))</a></li>
-                }
+                @display(null)
             </ul>
             <script type="text/javascript">
                 //ddtreemenu.createTree(treeid, enablepersist, opt_persist_in_days (default is 1))

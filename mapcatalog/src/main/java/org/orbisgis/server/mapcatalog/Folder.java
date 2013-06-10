@@ -33,6 +33,7 @@ import java.sql.*;
  * @author Mario Jothy
  */
 public class Folder {
+    private static MapCatalog MC = new MapCatalog();
     private String id_root = "0";
     private String id_parent = null;
     private String name =  "default";
@@ -57,7 +58,7 @@ public class Folder {
         Long last = null;
         try{
             String query = "INSERT INTO folder (id_root,id_parent,name) VALUES (? , ? , ?);";
-            PreparedStatement pstmt = MapCatalog.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+            PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
             pstmt.setString(1, id_root);
             pstmt.setString(2, id_parent);
             pstmt.setString(3, name);
@@ -80,7 +81,7 @@ public class Folder {
     public static void delete(Long id_folder) {
         String query = "DELETE FROM folder WHERE id_folder = ? ;";
         try{
-            PreparedStatement stmt = MapCatalog.getConnection().prepareStatement(query);
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
             stmt.setLong(1, id_folder);
             stmt.executeUpdate();
         } catch (SQLException e) {

@@ -25,16 +25,30 @@ package org.orbisgis.server.mapcatalog; /**
  * For more information, please consult: <http://www.orbisgis.org/> or contact
  * directly: info_at_ orbisgis.org
  */
-import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
+/**
+ * Java model of the table UserWorkspace
+ */
 public class UserWorkspace {
-    private Long id_user;
-    private Long id_workspace;
-    private Integer read = 0;
-    private Integer write = 0;
-    private Integer manageUser = 0;
+    private static MapCatalog MC = new MapCatalog();
+    private String id_user;
+    private String id_workspace;
+    private String read = "0";
+    private String write = "0";
+    private String manageUser = "0";
 
-    public UserWorkspace(Long id_user, Long id_workspace, Integer read, Integer write, Integer manageUser) {
+    /**
+     * Constructor
+     * @param id_user
+     * @param id_workspace
+     * @param read
+     * @param write
+     * @param manageUser
+     */
+    public UserWorkspace(String id_user, String id_workspace, String read, String write, String manageUser) {
         this.id_user = id_user;
         this.id_workspace = id_workspace;
         this.read = read;
@@ -42,15 +56,46 @@ public class UserWorkspace {
         this.manageUser = manageUser;
     }
 
-    public Long saveUserWorkspace(Connection con) {
-        String value1 = MapCatalog.refactorToSQL(id_user);
-        String value2 = MapCatalog.refactorToSQL(id_workspace);
-        String value3 = MapCatalog.refactorToSQL(read);
-        String value4 = MapCatalog.refactorToSQL(write);
-        String value5 = MapCatalog.refactorToSQL(manageUser);
+    /**
+     * Method that saves a instantiated User_Workspace relation into database. Handles SQL injections.
+     * @return The ID of the User just created (primary key)
+     */
+    public  Long save() {
+        Long last = null;
+        try{
+            String query = "INSERT INTO user_workspace (id_user,id_workspace,read,write,manage_user) VALUES (? , ? , ? , ? , ?);";
+            PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+            pstmt.setString(1, id_user);
+            pstmt.setString(2, id_workspace);
+            pstmt.setString(3, read);
+            pstmt.setString(4, write);
+            pstmt.setString(4, manageUser);
+            pstmt.executeUpdate();
+            ResultSet rs = pstmt.getGeneratedKeys();
+            if(rs.next()){
+                last = rs.getLong(1);
+            }
+            rs.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return last;
+    }
 
-        String query = "INSERT INTO user_workspace (id_user,id_workspace,READ, WRITE, MANAGE_USER) " +
-                "VALUES (" + value1 + "," + value2 + "," + value3 + "," + value4 + "," + value5 +");";
-        return(MapCatalog.executeSQLupdate(con, query));
+    /**
+     * Deletes a user_workspace relation from database
+     * @param id_user The primary key of the user
+     * @param id_workspace The primary key of the workspace
+     */
+    public static void delete(Long id_user, Long id_workspace) {
+        String query = "DELETE FROM user_workspace WHERE id_user = ? AND id_workspace = ?;";
+        try{
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+            stmt.setLong(1, id_user);
+            stmt.setLong(1, id_workspace);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

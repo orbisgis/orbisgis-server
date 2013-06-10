@@ -27,13 +27,25 @@ package org.orbisgis.server.mapcatalog; /**
  */
 import java.sql.*;
 
+/**
+ * Java model of the table User
+ * @author Mario Jothy
+ */
 public class User {
+    private static MapCatalog MC = new MapCatalog();
     private String name = "";
     private String email = "";
     private String password = "";
     private String avatar; //todo reminder
     private String location = "";
 
+    /**
+     * Constructor
+     * @param name
+     * @param email
+     * @param password
+     * @param location
+     */
     public User(String name, String email, String password, String location) {
         this.name = name;
         this.email = email;
@@ -49,7 +61,7 @@ public class User {
         Long last = null;
         try{
             String query = "INSERT INTO user (name,email,password,location) VALUES (? , ? , ? , ?);";
-            PreparedStatement pstmt = MapCatalog.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+            PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
             pstmt.setString(1, name);
             pstmt.setString(2, email);
             pstmt.setString(3, password);
@@ -73,7 +85,7 @@ public class User {
     public static void delete(Long id_user) {
         String query = "DELETE FROM user WHERE id_user = ? ;";
         try{
-            PreparedStatement stmt = MapCatalog.getConnection().prepareStatement(query);
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
             stmt.setLong(1, id_user);
             stmt.executeUpdate();
         } catch (SQLException e) {

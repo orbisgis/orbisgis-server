@@ -66,11 +66,11 @@ DELETE /map/workspaces/:name/contexts/:id               controllers.CatalogAPI.r
 
 # MapCatalog website
 
-GET /home                                                   controllers.General.home()
+GET /home                                                   controllers.General.home
 
-GET /mapcatalog/public                                      controllers.MapCatalogC.index()
+GET /mapcatalog/public                                      controllers.MapCatalogC.index
 
-GET /mapcatalog/:id_workspace                               controllers.MapCatalogC.viewworkspace(id_workspace)
+GET /mapcatalog/workspace/:id_workspace                     controllers.MapCatalogC.viewworkspace(id_workspace : String)
 
 # Authentification
 
