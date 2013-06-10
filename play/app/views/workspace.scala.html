@@ -3,8 +3,8 @@
 @import helper.twitterBootstrap._
 
 @display(id_parent : String) = {
-    @folders = @MapCatalogC.getMapCatalog.selectWhere("folder","id_root="+id_root+", id_parent="+id_parent)
-    @contexts = @MapCatalogC.getMapCatalog.selectWhere("owscontext","id_root="+id_root+", id_parent="+id_parent)
+    @folders = MapCatalogC.getMapCatalog.selectWhere("folder","id_root="+id_root+", id_parent="+id_parent)
+    @contexts = MapCatalogC.getMapCatalog.selectWhere("owscontext","id_root="+id_root+", id_parent="+id_parent)
     @for(i <-0 until folders.size()){
         <li>
             @folders.get(i).get(3)

@@ -41,6 +41,7 @@ import java.sql.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.security.MessageDigest;
 /**
  * Manages workspaces and map contexts
  * @author Mario Jothy
@@ -254,7 +255,16 @@ public class MapCatalog {
        return values.substring(indexbegin, indexend).split(">");
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception{
+        String password = "123456";
 
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update(password.getBytes());
+        byte byteData[] = md.digest();
+        //convert the byte to hex format method 1
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < byteData.length; i++) {
+            sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
+        }
     }
 }

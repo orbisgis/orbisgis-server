@@ -28,6 +28,8 @@
 import jdbc.Database;
 import org.junit.*;
 import org.orbisgis.server.mapcatalog.*;
+
+import java.security.MessageDigest;
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -85,17 +87,27 @@ public class MapCatalogTest {
     }
 
     @Test
-    public void userCreation() throws SQLException{
+    public void userCreation() throws Exception{
         //Creation of the user
         User use = new User("moi", "moi@moi.moi", "aaa", "paris");
         Long id_user = use.save();
+        //hash of password
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update("aaa".getBytes());
+        byte byteData[] = md.digest();
+        //convert the byte to hex format
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < byteData.length; i++) {
+            sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
+        }
+
         String query = "SELECT * FROM user WHERE id_user=" + id_user;
         ArrayList<String[]> value = MC.executeSQLselect(MC.getConnection(), query);
         Assert.assertTrue(
                         value.get(0)[0].equals(id_user.toString())           &&
                         value.get(0)[1].equals("moi")           &&
                         value.get(0)[2].equals("moi@moi.moi")   &&
-                        value.get(0)[3].equals("aaa")           &&
+                        value.get(0)[3].equals(sb.toString())           &&
                         value.get(0)[5].equals("paris")
         );
         //Deletion of the user

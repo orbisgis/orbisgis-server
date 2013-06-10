@@ -25,7 +25,9 @@ package org.orbisgis.server.mapcatalog; /**
  * For more information, please consult: <http://www.orbisgis.org/> or contact
  * directly: info_at_ orbisgis.org
  */
+import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.security.MessageDigest;
 
 /**
  * Java model of the table User
@@ -46,10 +48,19 @@ public class User {
      * @param password
      * @param location
      */
-    public User(String name, String email, String password, String location) {
+    public User(String name, String email, String password, String location) throws NoSuchAlgorithmException {
         this.name = name;
         this.email = email;
-        this.password = password;
+        //hashing the password
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update(password.getBytes());
+        byte byteData[] = md.digest();
+        //convert the byte to hex format
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < byteData.length; i++) {
+            sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
+        }
+        this.password = sb.toString();
         this.location = location;
     }
 

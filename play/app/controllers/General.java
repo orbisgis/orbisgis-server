@@ -32,6 +32,9 @@ import play.data.*;
 import play.mvc.*;
 import views.html.*;
 import org.orbisgis.server.mapcatalog.*;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import csp.ContentSecurityPolicy;
 
@@ -61,14 +64,23 @@ public class General extends Controller{
         return ok(login.render(Form.form(Login.class),""));
     }
 
-    public static Result authenticate(){
+    public static Result authenticate() throws Exception{
         Form<Login> form = Form.form(Login.class).bindFromRequest();
         Login log = form.get();
         String email = log.email;
         String password = log.password;
+        //hash of password
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update(password.getBytes());
+        byte byteData[] = md.digest();
+        //convert the byte to hex format
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < byteData.length; i++) {
+            sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
+        }
         String error ="";
         if(email != null && password != null){
-            ArrayList<ArrayList<String>> user = MC.selectWhere("user","email="+email+", password="+password);
+            ArrayList<ArrayList<String>> user = MC.selectWhere("user","email="+email+", password="+sb.toString());
             if(!user.isEmpty()){
                 session("email", email);
                 return ok(home.render());
@@ -86,7 +98,7 @@ public class General extends Controller{
         return ok(signin.render(Form.form(Signin.class),""));
     }
 
-    public static Result signedin(){
+    public static Result signedin() throws NoSuchAlgorithmException {
         Form<Signin> form = Form.form(Signin.class).bindFromRequest();
         Signin sign = form.get();
         ArrayList<ArrayList<String>> user = MC.selectWhere("user","email="+sign.email);
