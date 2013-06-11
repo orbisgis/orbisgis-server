@@ -33,7 +33,6 @@ import play.mvc.*;
 import views.html.*;
 import org.orbisgis.server.mapcatalog.*;
 
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import csp.ContentSecurityPolicy;
@@ -69,18 +68,9 @@ public class General extends Controller{
         Login log = form.get();
         String email = log.email;
         String password = log.password;
-        //hash of password
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        md.update(password.getBytes());
-        byte byteData[] = md.digest();
-        //convert the byte to hex format
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < byteData.length; i++) {
-            sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
-        }
         String error ="";
         if(email != null && password != null){
-            ArrayList<ArrayList<String>> user = MC.selectWhere("user","email="+email+", password="+sb.toString());
+            ArrayList<ArrayList<String>> user = MC.selectWhere("user","email="+email+", password="+MC.hasher(password));
             if(!user.isEmpty()){
                 session("email", email);
                 return ok(home.render());

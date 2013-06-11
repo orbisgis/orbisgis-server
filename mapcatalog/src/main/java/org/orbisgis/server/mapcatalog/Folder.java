@@ -27,6 +27,8 @@ package org.orbisgis.server.mapcatalog; /**
  */
 
 import java.sql.*;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * The class of the folder model representation
@@ -34,12 +36,13 @@ import java.sql.*;
  */
 public class Folder {
     private static MapCatalog MC = new MapCatalog();
+    private String id_folder = null;
     private String id_root = "0";
     private String id_parent = null;
     private String name =  "default";
 
     /**
-     * The constructor of the org.orbisgis.server.mapcatalog.Folder
+     * The constructor of the Folder
      * @param id_root
      * @param id_parent Null if there is no parent folder (note: A workspace is NOT a folder)
      * @param name
@@ -48,6 +51,36 @@ public class Folder {
         this.id_root = id_root;
         this.id_parent = id_parent;
         this.name = name;
+    }
+
+    /**
+     * Constructor with primary key
+     * @param id_folder
+     * @param id_root
+     * @param id_parent
+     * @param name
+     */
+    public Folder(String id_folder, String id_root, String id_parent, String name) {
+        this.id_folder = id_folder;
+        this.id_root = id_root;
+        this.id_parent = id_parent;
+        this.name = name;
+    }
+
+    public String getId_folder() {
+        return id_folder;
+    }
+
+    public String getId_root() {
+        return id_root;
+    }
+
+    public String getId_parent() {
+        return id_parent;
+    }
+
+    public String getName() {
+        return name;
     }
 
     /**
@@ -87,5 +120,72 @@ public class Folder {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Method that queries the database for folders, with a where clause, be careful, as only the values in the where clause will be checked for SQL injections
+     * @param attributes The attributes in the where clause, you should NEVER let the user bias this parameter, always hard code it.
+     * @param values The values of the attributes, this is totally SQL injection safe
+     * @return A list of Folder containing the result of the query
+     */
+    public static List<Folder> page(String[] attributes, String[] values){
+        String query = "SELECT * FROM folder WHERE ";
+        List<Folder> paged = new LinkedList<Folder>();
+        try {
+            //case argument invalid
+            if(attributes == null || values == null){
+                throw new IllegalArgumentException("Arguments cannot be null");
+            }
+            if(attributes.length != values.length){
+                throw new IllegalArgumentException("String arrays have to be of the same length");
+            }
+            //preparation of the query
+            query+=attributes[0]+" = ?";
+            for(int i=1; i<attributes.length; i++){
+                query += " AND "+attributes[i]+" = ?";
+            }
+            //preparation of the statement
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+            for(int i=0; i<values.length; i++){
+                stmt.setString(i+1, values[i]);
+            }
+            //Retrieving values
+            ResultSet rs = stmt.executeQuery();
+            while(rs.next()){
+                String id_folder = rs.getString("id_folder");
+                String id_root = rs.getString("id_root");
+                String id_parent = rs.getString("id_parent");
+                String name = rs.getString("name");
+                Folder fol = new Folder(id_folder,id_root,id_parent,name);
+                paged.add(fol);
+            }
+            rs.close();
+        } catch (SQLException e) {e.printStackTrace();}
+        return paged;
+    }
+
+    /**
+     * Method that sends a query to database SELECT * FROM FOLDER
+     * @return A list of folder containing the result of the query
+     */
+    public static List<Folder> page(){
+        String query = "SELECT * FROM folder";
+        List<Folder> paged = new LinkedList<Folder>();
+        try {
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+            ResultSet rs = stmt.executeQuery();
+            while(rs.next()){
+                String id_folder = rs.getString("id_folder");
+                String id_root = rs.getString("id_root");
+                String id_parent = rs.getString("id_parent");
+                String name = rs.getString("name");
+                Folder fol = new Folder(id_folder,id_root,id_parent,name);
+                paged.add(fol);
+            }
+            rs.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return paged;
     }
 }

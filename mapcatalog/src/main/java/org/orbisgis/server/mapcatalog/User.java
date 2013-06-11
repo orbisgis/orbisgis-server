@@ -27,7 +27,8 @@ package org.orbisgis.server.mapcatalog; /**
  */
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
-import java.security.MessageDigest;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Java model of the table User
@@ -35,6 +36,7 @@ import java.security.MessageDigest;
  */
 public class User {
     private static MapCatalog MC = new MapCatalog();
+    private String id_user = null;
     private String name = "";
     private String email = "";
     private String password = "";
@@ -51,17 +53,44 @@ public class User {
     public User(String name, String email, String password, String location) throws NoSuchAlgorithmException {
         this.name = name;
         this.email = email;
-        //hashing the password
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        md.update(password.getBytes());
-        byte byteData[] = md.digest();
-        //convert the byte to hex format
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < byteData.length; i++) {
-            sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
-        }
-        this.password = sb.toString();
+        this.password = MC.hasher(password);
         this.location = location;
+    }
+
+    /**
+     * Constructor with primary key
+     * @param id_user
+     * @param name
+     * @param email
+     * @param password
+     * @param location
+     */
+    public User(String id_user, String name, String email, String password, String location) throws NoSuchAlgorithmException {
+        this.id_user = id_user;
+        this.name = name;
+        this.email = email;
+        this.password = MC.hasher(password);
+        this.location = location;
+    }
+
+    public String getId_user() {
+        return id_user;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getLocation() {
+        return location;
     }
 
     /**
@@ -102,5 +131,78 @@ public class User {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Method that queries the database for users, with a where clause, be careful, as only the values in the where clause will be checked for SQL injections
+     * @param attributes The attributes in the where clause, you should NEVER let the user bias this parameter, always hard code it.
+     * @param values The values of the attributes, this is totally SQL injection safe
+     * @return A list of User containing the result of the query
+     */
+    public static List<User> page(String[] attributes, String[] values){
+        String query = "SELECT * FROM user WHERE ";
+        List<User> paged = new LinkedList<User>();
+        try {
+            //case argument invalid
+            if(attributes == null || values == null){
+                throw new IllegalArgumentException("Arguments cannot be null");
+            }
+            if(attributes.length != values.length){
+                throw new IllegalArgumentException("String arrays have to be of the same length");
+            }
+            //preparation of the query
+            query+=attributes[0]+" = ?";
+            for(int i=1; i<attributes.length; i++){
+                query += " AND "+attributes[i]+" = ?";
+            }
+            //preparation of the statement
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+            for(int i=0; i<values.length; i++){
+                stmt.setString(i+1, values[i]);
+            }
+            //Retrieving values
+            ResultSet rs = stmt.executeQuery();
+            while(rs.next()){
+                String id_user = rs.getString("id_user");
+                String name = rs.getString("name");
+                String email = rs.getString("email");
+                String password = rs.getString("password");
+                String location = rs.getString("location");
+                User use = new User(id_user,name,email,password,location);
+                paged.add(use);
+            }
+            rs.close();
+        }
+        catch (SQLException e) {e.printStackTrace();}
+        catch (NoSuchAlgorithmException e) {e.printStackTrace();}
+        return paged;
+    }
+
+    /**
+     * Method that sends a query to database SELECT * FROM USER
+     * @return A list of user containing the result of the query
+     */
+    public static List<User> page(){
+        String query = "SELECT * FROM user";
+        List<User> paged = new LinkedList<User>();
+        try {
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+            ResultSet rs = stmt.executeQuery();
+            while(rs.next()){
+                String id_user = rs.getString("id_user");
+                String name = rs.getString("name");
+                String email = rs.getString("email");
+                String password = rs.getString("password");
+                String location = rs.getString("location");
+                User use = new User(id_user,name,email,password,location);
+                paged.add(use);
+            }
+            rs.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return paged;
     }
 }

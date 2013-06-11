@@ -132,13 +132,13 @@ public class Comment {
     }
 
     /**
-     * Method that queries the database for comments, with a where clause, SQL injection safe
-     * @param attributes the attributes in the where clause
-     * @param values the values of the attributes
+     * Method that queries the database for comments, with a where clause, be careful, as only the values in the where clause will be checked for SQL injections
+     * @param attributes The attributes in the where clause, you should NEVER let the user bias this parameter, always hard code it.
+     * @param values The values of the attributes, this is totally SQL injection safe
      * @return A list of Comment containing the result of the query
      */
-    public static List page(String[] attributes, String[] values){
-        String query = "SELECT * FROM comment WHERE ? = ?";
+    public static List<Comment> page(String[] attributes, String[] values){
+        String query = "SELECT * FROM comment WHERE ";
         List<Comment> paged = new LinkedList<Comment>();
         try {
             //case argument invalid
@@ -146,17 +146,17 @@ public class Comment {
                 throw new IllegalArgumentException("Arguments cannot be null");
             }
             if(attributes.length != values.length){
-                throw new IllegalArgumentException("String array have to be of the same length");
+                throw new IllegalArgumentException("String arrays have to be of the same length");
             }
             //preparation of the query
+            query+=attributes[0]+" = ?";
             for(int i=1; i<attributes.length; i++){
-                query += " AND ? = ?";
+                query += " AND "+attributes[i]+" = ?";
             }
             //preparation of the statement
             PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            for(int i=0; i<attributes.length; i++){
-                stmt.setString(2*i+1, attributes[i]);
-                stmt.setString(2*i+2, values[i]);
+            for(int i=0; i<values.length; i++){
+                stmt.setString(i+1, values[i]);
             }
             //Retrieving values
             ResultSet rs = stmt.executeQuery();

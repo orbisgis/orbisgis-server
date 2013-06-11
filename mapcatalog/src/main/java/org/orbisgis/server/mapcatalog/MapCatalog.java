@@ -37,6 +37,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.io.*;
 import java.util.ArrayList;
@@ -60,7 +61,7 @@ public class MapCatalog {
             e.printStackTrace();
         }
     }
-
+    private MapCatalogProperties mcp = new MapCatalogProperties();
     private String URL = "jdbc:h2:tcp://localhost/~/test";
     private String USER = "sa";
     private String PASSWORD = "";
@@ -72,9 +73,9 @@ public class MapCatalog {
     }
 
     public MapCatalog (){
-        this.URL = "jdbc:h2:tcp://localhost/~/test";
-        this.USER = "sa";
-        this.PASSWORD = "";
+        //this.URL = mcp.getProperty(MapCatalogProperties.DATABASE_URL).toString();
+        //this.USER = mcp.getProperty(MapCatalogProperties.DATABASE_USER).toString();
+        //this.PASSWORD = mcp.getProperty(MapCatalogProperties.DATABASE_PASSWORD).toString();
     }
 
     /**
@@ -255,10 +256,26 @@ public class MapCatalog {
        return values.substring(indexbegin, indexend).split(">");
     }
 
+    public String hasher(String tohash) throws NoSuchAlgorithmException {
+        //hashing the password
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update(tohash.getBytes());
+        byte byteData[] = md.digest();
+        //convert the byte to hex format
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < byteData.length; i++) {
+            sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
+        }
+        return sb.toString();
+    }
+
     public static void main(String[] args) throws Exception{
-        List<Comment> com = Comment.page();
+        String[] attributes = {"id_map", "id_writer"};
+        String[] values = {"1", "1"};
+        List<Comment> com = Comment.page(attributes,values);
         for(Comment c : com) {
             System.out.println(c.getTitle());
+            System.out.println(c.getId_comment());
         }
     }
 }
