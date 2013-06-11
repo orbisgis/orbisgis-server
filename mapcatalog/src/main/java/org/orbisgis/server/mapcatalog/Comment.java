@@ -26,6 +26,8 @@ package org.orbisgis.server.mapcatalog; /**
  * directly: info_at_ orbisgis.org
  */
 import java.sql.*;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Java model of the table Comment
@@ -33,6 +35,7 @@ import java.sql.*;
  */
 public class Comment {
     private static MapCatalog MC = new MapCatalog();
+    private String id_comment = null;
     private String id_writer = null;
     private String id_map = null;
     private String content = "";
@@ -52,12 +55,47 @@ public class Comment {
         this.title = title;
     }
 
+    /**
+     * Constructor with primary key
+     * @param id_comment
+     * @param id_writer
+     * @param id_map
+     * @param content
+     * @param title
+     */
+    public Comment(String id_comment, String id_writer, String id_map, String content, String title) {
+        this.id_comment = id_comment;
+        this.id_writer = id_writer;
+        this.id_map = id_map;
+        this.content = content;
+        this.title = title;
+    }
+
+    public String getId_comment() {
+        return id_comment;
+    }
+
+    public String getId_writer() {
+        return id_writer;
+    }
+
+    public String getId_map() {
+        return id_map;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public String getTitle() {
+        return title;
+    }
 
     /**
      * Method that saves a instantiated comment into database. Handles SQL injections.
      * @return The ID of the comment just created (primary key)
      */
-    public  Long save() {
+    public Long save() {
         Long last = null;
         try{
             String query = "INSERT INTO comment (id_writer,id_map,content,title) VALUES (? , ? , ? , ?);";
@@ -91,5 +129,74 @@ public class Comment {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Method that queries the database for comments, with a where clause, SQL injection safe
+     * @param attributes the attributes in the where clause
+     * @param values the values of the attributes
+     * @return A list of Comment containing the result of the query
+     */
+    public static List page(String[] attributes, String[] values){
+        String query = "SELECT * FROM comment WHERE ? = ?";
+        List<Comment> paged = new LinkedList<Comment>();
+        try {
+            //case argument invalid
+            if(attributes == null || values == null){
+                throw new IllegalArgumentException("Arguments cannot be null");
+            }
+            if(attributes.length != values.length){
+                throw new IllegalArgumentException("String array have to be of the same length");
+            }
+            //preparation of the query
+            for(int i=1; i<attributes.length; i++){
+                query += " AND ? = ?";
+            }
+            //preparation of the statement
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+            for(int i=0; i<attributes.length; i++){
+                stmt.setString(2*i+1, attributes[i]);
+                stmt.setString(2*i+2, values[i]);
+            }
+            //Retrieving values
+            ResultSet rs = stmt.executeQuery();
+            while(rs.next()){
+                String id_comment = rs.getString("id_Comment");
+                String id_writer = rs.getString("id_writer");
+                String id_map = rs.getString("id_map");
+                String content = rs.getString("content");
+                String title = rs.getString("title");
+                Comment com = new Comment(id_comment,id_writer,id_map,content,title);
+                paged.add(com);
+            }
+            rs.close();
+        } catch (SQLException e) {e.printStackTrace();}
+        return paged;
+    }
+
+    /**
+     * Method that sends a query to database SELECT * FROM COMMENT
+     * @return A list of comment containing the result of the query
+     */
+    public static List<Comment> page(){
+        String query = "SELECT * FROM comment";
+        List<Comment> paged = new LinkedList<Comment>();
+        try {
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+            ResultSet rs = stmt.executeQuery();
+            while(rs.next()){
+                String id_comment = rs.getString("id_Comment");
+                String id_writer = rs.getString("id_writer");
+                String id_map = rs.getString("id_map");
+                String content = rs.getString("content");
+                String title = rs.getString("title");
+                Comment com = new Comment(id_comment,id_writer,id_map,content,title);
+                paged.add(com);
+            }
+            rs.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return paged;
     }
 }
