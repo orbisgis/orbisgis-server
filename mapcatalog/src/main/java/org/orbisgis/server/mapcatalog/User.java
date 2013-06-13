@@ -35,7 +35,6 @@ import java.util.List;
  * @author Mario Jothy
  */
 public class User {
-    private static MapCatalog MC = new MapCatalog();
     private String id_user = null;
     private String name = "";
     private String email = "";
@@ -44,16 +43,16 @@ public class User {
     private String location = "";
 
     /**
-     * Constructor
+     * Constructor that hashes the password of the user
      * @param name
      * @param email
-     * @param password
+     * @param passwordtohash
      * @param location
      */
-    public User(String name, String email, String password, String location) throws NoSuchAlgorithmException {
+    public User(String name, String email, String passwordtohash, String location) throws NoSuchAlgorithmException {
         this.name = name;
         this.email = email;
-        this.password = MC.hasher(password);
+        this.password = MapCatalog.hasher(passwordtohash);
         this.location = location;
     }
 
@@ -69,7 +68,7 @@ public class User {
         this.id_user = id_user;
         this.name = name;
         this.email = email;
-        this.password = MC.hasher(password);
+        this.password = password;
         this.location = location;
     }
 
@@ -97,7 +96,7 @@ public class User {
      * Method that saves a instantiated User into database. Handles SQL injections.
      * @return The ID of the User just created (primary key)
      */
-    public  Long save() {
+    public  Long save(MapCatalog MC) {
         Long last = null;
         try{
             String query = "INSERT INTO user (name,email,password,location) VALUES (? , ? , ? , ?);";
@@ -122,7 +121,7 @@ public class User {
      * Deletes a user from database
      * @param id_user The primary key of the user
      */
-    public static void delete(Long id_user) {
+    public static void delete(MapCatalog MC, Long id_user) {
         String query = "DELETE FROM user WHERE id_user = ? ;";
         try{
             PreparedStatement stmt = MC.getConnection().prepareStatement(query);
@@ -139,7 +138,7 @@ public class User {
      * @param values The values of the attributes, this is totally SQL injection safe
      * @return A list of User containing the result of the query
      */
-    public static List<User> page(String[] attributes, String[] values){
+    public static List<User> page(MapCatalog MC, String[] attributes, String[] values){
         String query = "SELECT * FROM user WHERE ";
         List<User> paged = new LinkedList<User>();
         try {
@@ -182,7 +181,7 @@ public class User {
      * Method that sends a query to database SELECT * FROM USER
      * @return A list of user containing the result of the query
      */
-    public static List<User> page(){
+    public static List<User> page(MapCatalog MC){
         String query = "SELECT * FROM user";
         List<User> paged = new LinkedList<User>();
         try {

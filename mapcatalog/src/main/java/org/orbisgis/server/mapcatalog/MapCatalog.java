@@ -66,6 +66,12 @@ public class MapCatalog {
     private String USER = "sa";
     private String PASSWORD = "";
 
+    /**
+     * Constructor to specify a database to connect
+     * @param URL
+     * @param USER
+     * @param PASSWORD
+     */
     public MapCatalog (String URL, String USER, String PASSWORD){
         this.URL = URL;
         this.USER = USER;
@@ -89,31 +95,33 @@ public class MapCatalog {
     }
 
     /**
-     * Executes a SELECT values FROM table WHERE conditions query into database, be carefull, as it does not handle SQL injections
-     * @param con   The connection to the database
-     * @param query The query you wish to execute
-     * @return  The Selected data in a string array
+     * Executes a .sql file
+     * @param file
      */
-    public ArrayList executeSQLselect(Connection con, String query) {
-        Statement stmt;
-        ArrayList<String[]> value = new ArrayList();
+    public void executeSQL(String file){
+        String s;
+        StringBuffer sb = new StringBuffer();
         try{
-            stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery(query);
-            while(rs.next()){
-                int lenght = rs.getMetaData().getColumnCount();
-                String[] temp = new String[lenght];
-                for (int i=0; i<lenght; i++){
-                    temp[i] = rs.getString(i+1);
-                }
-                value.add(temp);
+            FileReader fr = new FileReader(new File(MapCatalog.class.getResource(file).toURI()));
+            BufferedReader br = new BufferedReader(fr);
+            while((s = br.readLine()) != null){
+                sb.append(s);
             }
-            rs.close();
-            con.close();
-        } catch(SQLException e) {
+            br.close();
+            // ";" as a delimiter for each request
+            // then we are sure to have well formed statements
+            String[] inst = sb.toString().split(";");
+            Connection c = this.getConnection();
+            Statement st = c.createStatement();
+            for(int i = 0; i<inst.length; i++){
+                if(!inst[i].trim().equals("")){
+                    st.executeUpdate(inst[i]);
+                }
+            }
+            c.close();
+        } catch(Exception e){
             e.printStackTrace();
         }
-        return value;
     }
 
     /**
@@ -154,11 +162,9 @@ public class MapCatalog {
      * Sends a query to database that returns the workspace list, then write it in a xml file a the root of project.
      */
     public void getWorkspaceList() {
-        String query = "SELECT name FROM workspace";
-        ArrayList<String[]> values;
         try{
             //get the list of workspace names from the database
-            values = executeSQLselect(getConnection(), query);
+            List<Workspace>  list = Workspace.page(this);
 
             Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();;
             Element e ;
@@ -166,10 +172,10 @@ public class MapCatalog {
             Element rootEle = dom.createElement("workspaces");
 
             //Create a node for each workspace, and add the name
-            for (int i=0; i<values.size(); i++) {
+            for (Workspace wor : list) {
                 e = dom.createElement("workspace");
                 e2 = dom.createElement("name");
-                e2.appendChild(dom.createTextNode(values.get(i)[0]));
+                e2.appendChild(dom.createTextNode(wor.getName()));
                 e.appendChild(e2);
                 rootEle.appendChild(e);
             }
@@ -200,11 +206,11 @@ public class MapCatalog {
      * @param id_workspace The workspace which
      */
     public void getContextList(Long id_workspace){
-        String query = "SELECT id_owscontext,id_root,id_parent,id_uploader,content,title,date FROM owscontext WHERE id_root="+id_workspace;
-        ArrayList<String[]> values;
         try{
             //get the ows from database
-            values = executeSQLselect(getConnection(), query);
+            String[] attributes = {"id_root"};
+            String[] values = {id_workspace.toString()};
+            List<OWSContext> list = OWSContext.page(this, attributes, values);
 
             Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();;
             Element e;
@@ -212,13 +218,13 @@ public class MapCatalog {
             Element rootEle = dom.createElement("contexts");
 
             //create a node for each ows
-            for (int i=0; i<values.size(); i++) {
+            for (OWSContext ows : list) {
                 e = dom.createElement("context");
-                e.setAttribute("id", String.valueOf(i));
-                e.setAttribute("date", values.get(i)[6]);
+                e.setAttribute("id", ows.getId_owscontext());
+                e.setAttribute("date", ows.getDate().toString());
                 e2 = dom.createElement("title");
-                e2.setAttribute("xml:lang", getTitleLang(values.get(i)[4])[0]);
-                e2.appendChild(dom.createTextNode(getTitleLang(values.get(i)[4])[1]));
+                e2.setAttribute("xml:lang", getTitleLang(ows.getContent())[0]);
+                e2.appendChild(dom.createTextNode(getTitleLang(ows.getContent())[1]));
                 e.appendChild(e2);
                 rootEle.appendChild(e);
             }
@@ -256,7 +262,13 @@ public class MapCatalog {
        return values.substring(indexbegin, indexend).split(">");
     }
 
-    public String hasher(String tohash) throws NoSuchAlgorithmException {
+    /**
+     * Hashes a string into a string SHA 256
+     * @param tohash The string to hash
+     * @return The hashed string
+     * @throws NoSuchAlgorithmException
+     */
+    public static String hasher(String tohash) throws NoSuchAlgorithmException {
         //hashing the password
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         md.update(tohash.getBytes());
@@ -270,12 +282,5 @@ public class MapCatalog {
     }
 
     public static void main(String[] args) throws Exception{
-        String[] attributes = {"id_map", "id_writer"};
-        String[] values = {"1", "1"};
-        List<Comment> com = Comment.page(attributes,values);
-        for(Comment c : com) {
-            System.out.println(c.getTitle());
-            System.out.println(c.getId_comment());
-        }
     }
 }

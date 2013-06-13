@@ -34,7 +34,6 @@ import java.util.List;
  * @author Mario Jothy
  */
 public class Comment {
-    private static MapCatalog MC = new MapCatalog();
     private String id_comment = null;
     private String id_writer = null;
     private String id_map = null;
@@ -95,7 +94,7 @@ public class Comment {
      * Method that saves a instantiated comment into database. Handles SQL injections.
      * @return The ID of the comment just created (primary key)
      */
-    public Long save() {
+    public Long save(MapCatalog MC) {
         Long last = null;
         try{
             String query = "INSERT INTO comment (id_writer,id_map,content,title) VALUES (? , ? , ? , ?);";
@@ -120,7 +119,7 @@ public class Comment {
      * Deletes a comment from database
      * @param id_comment The primary key of the comment
      */
-    public static void delete(Long id_comment) {
+    public static void delete(MapCatalog MC, Long id_comment) {
         String query = "DELETE FROM comment WHERE id_comment = ? ;";
         try{
             PreparedStatement stmt = MC.getConnection().prepareStatement(query);
@@ -137,7 +136,7 @@ public class Comment {
      * @param values The values of the attributes, this is totally SQL injection safe
      * @return A list of Comment containing the result of the query
      */
-    public static List<Comment> page(String[] attributes, String[] values){
+    public static List<Comment> page(MapCatalog MC, String[] attributes, String[] values){
         String query = "SELECT * FROM comment WHERE ";
         List<Comment> paged = new LinkedList<Comment>();
         try {
@@ -178,7 +177,7 @@ public class Comment {
      * Method that sends a query to database SELECT * FROM COMMENT
      * @return A list of comment containing the result of the query
      */
-    public static List<Comment> page(){
+    public static List<Comment> page(MapCatalog MC){
         String query = "SELECT * FROM comment";
         List<Comment> paged = new LinkedList<Comment>();
         try {

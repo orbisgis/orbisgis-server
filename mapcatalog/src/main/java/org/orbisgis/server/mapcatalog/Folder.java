@@ -35,7 +35,6 @@ import java.util.List;
  * @author Mario Jothy
  */
 public class Folder {
-    private static MapCatalog MC = new MapCatalog();
     private String id_folder = null;
     private String id_root = "0";
     private String id_parent = null;
@@ -87,7 +86,7 @@ public class Folder {
      * Method that saves a instantiated folder into database. Handles SQL injections.
      * @return The ID of the folder just created (primary key)
      */
-    public  Long save() {
+    public  Long save(MapCatalog MC) {
         Long last = null;
         try{
             String query = "INSERT INTO folder (id_root,id_parent,name) VALUES (? , ? , ?);";
@@ -111,7 +110,7 @@ public class Folder {
      * Deletes a folder from database
      * @param id_folder The primary key of the folder
      */
-    public static void delete(Long id_folder) {
+    public static void delete(MapCatalog MC, Long id_folder) {
         String query = "DELETE FROM folder WHERE id_folder = ? ;";
         try{
             PreparedStatement stmt = MC.getConnection().prepareStatement(query);
@@ -128,7 +127,7 @@ public class Folder {
      * @param values The values of the attributes, this is totally SQL injection safe
      * @return A list of Folder containing the result of the query
      */
-    public static List<Folder> page(String[] attributes, String[] values){
+    public static List<Folder> page(MapCatalog MC, String[] attributes, String[] values){
         String query = "SELECT * FROM folder WHERE ";
         List<Folder> paged = new LinkedList<Folder>();
         try {
@@ -168,7 +167,7 @@ public class Folder {
      * Method that sends a query to database SELECT * FROM FOLDER
      * @return A list of folder containing the result of the query
      */
-    public static List<Folder> page(){
+    public static List<Folder> page(MapCatalog MC){
         String query = "SELECT * FROM folder";
         List<Folder> paged = new LinkedList<Folder>();
         try {

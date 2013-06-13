@@ -34,13 +34,13 @@ import java.util.List;
  * @author Mario Jothy
  */
 public class OWSContext {
-    private static MapCatalog MC = new MapCatalog();
     private String id_owscontext = null;
     private String id_root = null;
     private String id_parent = null;
     private String id_uploader = null;
     private String content = "";
     private String title = "default";
+    private Date date = null;
 
     /**
      * Constructor
@@ -66,14 +66,16 @@ public class OWSContext {
      * @param id_uploader
      * @param content
      * @param title
+     * @param date
      */
-    public OWSContext(String id_owscontext, String id_root, String id_parent, String id_uploader, String content, String title) {
+    public OWSContext(String id_owscontext, String id_root, String id_parent, String id_uploader, String content, String title, Date date) {
         this.id_owscontext = id_owscontext;
         this.id_root = id_root;
         this.id_parent = id_parent;
         this.id_uploader = id_uploader;
         this.content = content;
         this.title = title;
+        this.date = date;
     }
 
     public String getId_owscontext() {
@@ -100,11 +102,15 @@ public class OWSContext {
         return title;
     }
 
+    public Date getDate() {
+        return date;
+    }
+
     /**
      * Method that saves a instantiated OWSContext into database. Handles SQL injections.
      * @return The ID of the OWSContext just created (primary key)
      */
-    public  Long save() {
+    public  Long save(MapCatalog MC) {
         Long last = null;
         try{
             String query = "INSERT INTO owscontext (id_root,id_parent,id_uploader,content, title) VALUES (? , ? , ? , ? , ?);";
@@ -131,7 +137,7 @@ public class OWSContext {
      * Deletes a owscontext from database
      * @param id_owscontext The primary key of the owscontext
      */
-    public static void delete(Long id_owscontext) {
+    public static void delete(MapCatalog MC, Long id_owscontext) {
         String query = "DELETE FROM owscontext WHERE id_owscontext = ? ;";
         try{
             PreparedStatement stmt = MC.getConnection().prepareStatement(query);
@@ -148,7 +154,7 @@ public class OWSContext {
      * @param values The values of the attributes, this is totally SQL injection safe
      * @return A list of owscontext containing the result of the query
      */
-    public static List<OWSContext> page(String[] attributes, String[] values){
+    public static List<OWSContext> page(MapCatalog MC, String[] attributes, String[] values){
         String query = "SELECT * FROM owscontext WHERE ";
         List<OWSContext> paged = new LinkedList<OWSContext>();
         try {
@@ -178,7 +184,8 @@ public class OWSContext {
                 String id_uploader = rs.getString("id_uploader");
                 String content = rs.getString("content");
                 String title = rs.getString("title");
-                OWSContext ows = new OWSContext(id_owscontext,id_root,id_parent,id_uploader,content,title);
+                Date date = rs.getDate("date");
+                OWSContext ows = new OWSContext(id_owscontext,id_root,id_parent,id_uploader,content,title,date);
                 paged.add(ows);
             }
             rs.close();
@@ -190,7 +197,7 @@ public class OWSContext {
      * Method that sends a query to database SELECT * FROM OWSCONTEXT
      * @return A list of owscontext containing the result of the query
      */
-    public static List<OWSContext> page(){
+    public static List<OWSContext> page(MapCatalog MC){
         String query = "SELECT * FROM owscontext";
         List<OWSContext> paged = new LinkedList<OWSContext>();
         try {
@@ -203,7 +210,8 @@ public class OWSContext {
                 String id_uploader = rs.getString("id_uploader");
                 String content = rs.getString("content");
                 String title = rs.getString("title");
-                OWSContext ows = new OWSContext(id_owscontext,id_root,id_parent,id_uploader,content,title);
+                Date date = rs.getDate("date");
+                OWSContext ows = new OWSContext(id_owscontext,id_root,id_parent,id_uploader,content,title,date);
                 paged.add(ows);
             }
             rs.close();

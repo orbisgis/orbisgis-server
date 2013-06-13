@@ -30,7 +30,9 @@ import jdbc.Database;
 import org.junit.*;
 import org.orbisgis.server.mapcatalog.*;
 
+import java.math.BigDecimal;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,12 +42,14 @@ import java.util.List;
  * @author Mario Jothy
  */
 public class MapCatalogTest {
-
-    private MapCatalog MC = new MapCatalog("jdbc:h2:tcp://localhost/~/testdb","sa","pass");
+    private MapCatalog MC = new MapCatalog("jdbc:h2:./target/testdb","sa","");
 
     @Before
-    public void init() throws SQLException{;
+    public void init(){
+        MC.executeSQL("ups.sql");
+        MC.executeSQL("populate.sql");
     }
+
     @Test
     public void workspaceCreation () throws SQLException{
 
@@ -70,104 +74,98 @@ public class MapCatalogTest {
 
     @Test
     public void folderCreation () throws SQLException{
+
         //Creation of the folder
-        Folder fol = new Folder("2", null, "aaa");
-        Long id_folder = fol.save();
-        String query = "SELECT * FROM folder WHERE id_folder=" + id_folder;
-        ArrayList<String[]> value = MC.executeSQLselect(MC.getConnection(), query);
+        Folder fol = new Folder("1", null, "bbb");
+        Long id_folder = fol.save(MC);
+        String[] attributes = {"id_folder"};
+        String[] values = {id_folder.toString()};
+        List<Folder> list= Folder.page(MC, attributes,values);
         Assert.assertTrue(
-                        value.get(0)[0].equals(id_folder.toString())    &&
-                        value.get(0)[1].equals("2")    &&
-                        value.get(0)[2] == null        &&
-                        value.get(0)[3].equals("aaa")
+                                list.get(0).getId_root().equals("1")
+                        &&      list.get(0).getId_parent()==null
+                        &&      list.get(0).getName().equals("bbb")
         );
         //Deletion of the folder
-        Folder.delete(id_folder);
-        query = "SELECT name FROM folder WHERE id_folder="+id_folder;
-        value = MC.executeSQLselect(MC.getConnection(), query);
+        Folder.delete(MC, id_folder);
+        list= Folder.page(MC, attributes,values);
         Assert.assertTrue(
-                        value.isEmpty()
+                list.isEmpty()
         );
     }
 
     @Test
-    public void userCreation() throws Exception{
-        //Creation of the user
-        User use = new User("moi", "moi@moi.moi", "aaa", "paris");
-        Long id_user = use.save();
-        //hash of password
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        md.update("aaa".getBytes());
-        byte byteData[] = md.digest();
-        //convert the byte to hex format
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < byteData.length; i++) {
-            sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
-        }
+    public void userCreation () throws SQLException, NoSuchAlgorithmException {
 
-        String query = "SELECT * FROM user WHERE id_user=" + id_user;
-        ArrayList<String[]> value = MC.executeSQLselect(MC.getConnection(), query);
+        //Creation of the workspace
+        User use = new User("name", "email", "pass" , "loc");
+        Long id_user = use.save(MC);
+        String[] attributes = {"id_user"};
+        String[] values = {id_user.toString()};
+        List<User> list= User.page(MC, attributes,values);
         Assert.assertTrue(
-                        value.get(0)[0].equals(id_user.toString())           &&
-                        value.get(0)[1].equals("moi")           &&
-                        value.get(0)[2].equals("moi@moi.moi")   &&
-                        value.get(0)[3].equals(sb.toString())           &&
-                        value.get(0)[5].equals("paris")
+                                list.get(0).getName().equals("name")
+                        &&      list.get(0).getEmail().equals("email")
+                        &&      list.get(0).getPassword().equals(MapCatalog.hasher("pass"))
+                        &&      list.get(0).getLocation().equals("loc")
         );
-        //Deletion of the user
-        User.delete(id_user);
-        query = "SELECT name FROM user WHERE id_user="+id_user;
-        value = MC.executeSQLselect(MC.getConnection(), query);
+        //Deletion of the workspace
+        User.delete(MC, id_user);
+        list= User.page(MC, attributes,values);
         Assert.assertTrue(
-                value.isEmpty()
+                list.isEmpty()
         );
     }
 
     @Test
-    public void commentCreation() throws SQLException{
+    public void owsCreation () throws SQLException{
+
+        //Creation of the owscontext
+        OWSContext ows = new OWSContext("1", null, null , "acontent", "title");
+        Long id_owscontext = ows.save(MC);
+        String[] attributes = {"id_owscontext"};
+        String[] values = {id_owscontext.toString()};
+        List<OWSContext> list= OWSContext.page(MC, attributes,values);
+        Assert.assertTrue(
+                                list.get(0).getId_root().equals("1")
+                        &&      list.get(0).getId_parent()==null
+                        &&      list.get(0).getId_uploader()==null
+                        &&      list.get(0).getContent().equals("acontent")
+                        &&      list.get(0).getTitle().equals("title")
+        );
+        //Deletion of the workspace
+        OWSContext.delete(MC, id_owscontext);
+        list= OWSContext.page(MC, attributes,values);
+        Assert.assertTrue(
+                list.isEmpty()
+        );
+    }
+
+    @Test
+    public void commentCreation () throws SQLException{
+
         //Creation of the comment
-        Comment com = new Comment(null, null, "a content", "default");
-        Long id_comment = com.save();
-        String query = "SELECT * FROM comment WHERE id_comment=" + id_comment;
-        ArrayList<String[]> value = MC.executeSQLselect(MC.getConnection(), query);
+        Comment ows = new Comment(null, null , "acontent", "title");
+        Long id_comment = ows.save(MC);
+        String[] attributes = {"id_comment"};
+        String[] values = {id_comment.toString()};
+        List<Comment> list= Comment.page(MC, attributes,values);
         Assert.assertTrue(
-                        value.get(0)[0].equals(id_comment.toString())               &&
-                        value.get(0)[1]==null               &&
-                        value.get(0)[2]==null               &&
-                        value.get(0)[3].equals("a content") &&
-                        value.get(0)[4].equals("default")
+                                list.get(0).getId_writer()==null
+                        &&      list.get(0).getId_map()==null
+                        &&      list.get(0).getContent().equals("acontent")
+                        &&      list.get(0).getTitle().equals("title")
         );
-        //Deletion of the comment
-        Comment.delete(id_comment);
-        query = "SELECT content FROM comment WHERE id_comment="+id_comment;
-        value = MC.executeSQLselect(MC.getConnection(), query);
+        //Deletion of the workspace
+        Comment.delete(MC, id_comment);
+        list= Comment.page(MC, attributes,values);
         Assert.assertTrue(
-                value.isEmpty()
+                list.isEmpty()
         );
     }
 
-
-    @Test
-    public void owsCreation() throws SQLException{
-        //Creation of the ows
-        OWSContext ows = new OWSContext("2", null, null, "a content", "title");
-        Long id_owscontext = ows.save();
-        String query = "SELECT * FROM owscontext WHERE id_owscontext=" + id_owscontext;
-        ArrayList<String[]> value = MC.executeSQLselect(MC.getConnection(), query);
-        Assert.assertTrue(
-                        value.get(0)[0].equals(id_owscontext.toString())     &&
-                        value.get(0)[1].equals("2")     &&
-                        value.get(0)[2]==null           &&
-                        value.get(0)[3]==null           &&
-                        value.get(0)[4].equals("a content") &&
-                        value.get(0)[5].equals("title")
-        );
-        //Deletion of the owscontext
-        OWSContext.delete(id_owscontext);
-        query = "SELECT content FROM owscontext WHERE id_owscontext="+id_owscontext;
-        value = MC.executeSQLselect(MC.getConnection(), query);
-        Assert.assertTrue(
-                value.isEmpty()
-        );
+    @After
+    public void end(){
+        MC.executeSQL("down.sql");
     }
 }

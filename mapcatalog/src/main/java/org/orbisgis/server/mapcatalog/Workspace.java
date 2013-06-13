@@ -36,7 +36,6 @@ import java.util.List;
  * @author Mario Jothy
  */
 public class Workspace {
-    private static MapCatalog MC = new MapCatalog();
     private String id_workspace = null;
     private String id_creator = null;
     private String name = "default";
@@ -68,6 +67,8 @@ public class Workspace {
         isPublic = aPublic;
     }
 
+
+
     public String getId_workspace() {
         return id_workspace;
     }
@@ -88,7 +89,7 @@ public class Workspace {
      * Method that saves a instantiated workspace into database. Handles SQL injections.
      * @return The ID of the workspace just created (primary key)
      */
-    public  Long save() {
+    public  Long save(MapCatalog MC) {
         Long last = null;
         try{
             String query = "INSERT INTO workspace (id_creator,name,isPublic) VALUES (? , ? , ? );";
@@ -112,7 +113,7 @@ public class Workspace {
      * Deletes a workspace from database
      * @param id_workspace The primary key of the workspace
      */
-    public static void delete(Long id_workspace) {
+    public static void delete(MapCatalog MC, Long id_workspace) {
         String query = "DELETE FROM workspace WHERE id_workspace = ? ;";
         try{
             PreparedStatement stmt = MC.getConnection().prepareStatement(query);
@@ -129,7 +130,7 @@ public class Workspace {
      * @param values The values of the attributes, this is totally SQL injection safe
      * @return A list of Workspace containing the result of the query
      */
-    public static List<Workspace> page(String[] attributes, String[] values){
+    public static List<Workspace> page(MapCatalog MC, String[] attributes, String[] values){
         String query = "SELECT * FROM workspace WHERE ";
         List<Workspace> paged = new LinkedList<Workspace>();
         try {
@@ -170,7 +171,7 @@ public class Workspace {
      * Method that sends a query to database SELECT * FROM Workspace
      * @return A list of Workspace containing the result of the query
      */
-    public static List<Workspace> page(){
+    public static List<Workspace> page(MapCatalog MC){
         String query = "SELECT * FROM workspace";
         List<Workspace> paged = new LinkedList<Workspace>();
         try {
