@@ -1,4 +1,4 @@
-/**
+package org.orbisgis.server.mapcatalog; /**
  * OrbisGIS is a GIS application dedicated to scientific spatial simulation.
  * This cross-platform GIS is developed at French IRSTV institute and is able to
  * manipulate and create vector and raster spatial information.
@@ -25,6 +25,7 @@
  * For more information, please consult: <http://www.orbisgis.org/> or contact
  * directly: info_at_ orbisgis.org
  */
+
 import jdbc.Database;
 import org.junit.*;
 import org.orbisgis.server.mapcatalog.*;
@@ -32,6 +33,7 @@ import org.orbisgis.server.mapcatalog.*;
 import java.security.MessageDigest;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test class for org.orbisgis.server.mapcatalog.MapCatalog
@@ -39,28 +41,30 @@ import java.util.ArrayList;
  */
 public class MapCatalogTest {
 
-    private MapCatalog MC = new MapCatalog();
+    private MapCatalog MC = new MapCatalog("jdbc:h2:tcp://localhost/~/testdb","sa","pass");
 
+    @Before
+    public void init() throws SQLException{;
+    }
     @Test
     public void workspaceCreation () throws SQLException{
 
         //Creation of the workspace
         Workspace wor = new Workspace(null, "bbb", "0");
-        Long id_workspace = wor.save();
-        String query = "SELECT * FROM workspace WHERE id_workspace=" + id_workspace;
-        ArrayList<String[]> value = MC.executeSQLselect(MC.getConnection(), query);
+        Long id_workspace = wor.save(MC);
+        String[] attributes = {"id_workspace"};
+        String[] values = {id_workspace.toString()};
+        List<Workspace> list= Workspace.page(MC, attributes,values);
         Assert.assertTrue(
-                        value.get(0)[0].equals(id_workspace.toString()) &&
-                        value.get(0)[1] == null &&
-                        value.get(0)[2].equals("bbb") &&
-                        value.get(0)[3].equals("0")
+                        list.get(0).getId_creator() == null
+                &&      list.get(0).getName().equals("bbb")
+                &&      list.get(0).getPublic().equals("0")
         );
         //Deletion of the workspace
-        Workspace.delete(id_workspace);
-        query = "SELECT name FROM workspace WHERE id_workspace="+id_workspace;
-        value = MC.executeSQLselect(MC.getConnection(), query);
+        Workspace.delete(MC, id_workspace);
+        list= Workspace.page(MC, attributes,values);
         Assert.assertTrue(
-                        value.isEmpty()
+                        list.isEmpty()
         );
     }
 
