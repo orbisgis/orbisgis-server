@@ -1,23 +1,23 @@
-@(folders :java.util.ArrayList[java.util.ArrayList[String]], contexts :java.util.ArrayList[java.util.ArrayList[String]], id_root : String)
+@(id_root : String)
 
 @import helper.twitterBootstrap._
 
 @display(id_parent : String) = {
-    @folders = MapCatalogC.getMapCatalog.selectWhere("folder","id_root="+id_root+", id_parent="+id_parent)
-    @contexts = MapCatalogC.getMapCatalog.selectWhere("owscontext","id_root="+id_root+", id_parent="+id_parent)
-    @for(i <-0 until folders.size()){
-        <li>
-            @folders.get(i).get(3)
-            <ul>
-                @display(folders.get(i).get(0))
-                @for(j <-0 until contexts.size()){
-                    <li>
-                        @contexts.get(j).get(5)
-                    </li>
-                }
-            </ul>
-        </li>
-    }
+    @{var folders = MapCatalogC.getMapCatalog.selectWhere("folder","id_root="+id_root+", id_parent="+id_parent);
+    var contexts = MapCatalogC.getMapCatalog.selectWhere("owscontext","id_root="+id_root+", id_parent="+id_parent);
+    for(i <-0 until folders.size()){
+    <li>
+        folders.get(i).get(3)
+        <ul>
+            display(folders.get(i).get(0))
+            {for(j <-0 until contexts.size()){
+            <li>
+                contexts.get(j).get(5)
+            </li>
+            }}
+        </ul>
+    </li>
+    }}
 }
 @main("MapCatalog","Workspace") {
 <head>

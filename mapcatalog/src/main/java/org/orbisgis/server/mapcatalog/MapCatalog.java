@@ -79,9 +79,6 @@ public class MapCatalog {
     }
 
     public MapCatalog (){
-        //this.URL = mcp.getProperty(MapCatalogProperties.DATABASE_URL).toString();
-        //this.USER = mcp.getProperty(MapCatalogProperties.DATABASE_USER).toString();
-        //this.PASSWORD = mcp.getProperty(MapCatalogProperties.DATABASE_PASSWORD).toString();
     }
 
     /**
@@ -95,6 +92,20 @@ public class MapCatalog {
     }
 
     /**
+     * Initialize the database, and returns the MapCatalog object that provide the connection to it
+     * @param mcp
+     * @return
+     */
+    public static MapCatalog init(MapCatalogProperties mcp){
+        String URL = mcp.getProperty(MapCatalogProperties.DATABASE_URL).toString();
+        String user = mcp.getProperty(MapCatalogProperties.DATABASE_USER).toString();
+        String password = mcp.getProperty(MapCatalogProperties.DATABASE_PASSWORD).toString();
+        MapCatalog mc = new MapCatalog(URL, user, password);
+        mc.executeSQL("ups.sql");
+        return mc;
+    }
+
+    /**
      * Executes a .sql file
      * @param file
      */
@@ -102,22 +113,16 @@ public class MapCatalog {
         String s;
         StringBuffer sb = new StringBuffer();
         try{
-            FileReader fr = new FileReader(new File(MapCatalog.class.getResource(file).toURI()));
+            //FileReader fr = new FileReader(new File(MapCatalog.class.getResource(file).toURI()));
+            InputStreamReader fr = new InputStreamReader(getClass().getResourceAsStream(file));
             BufferedReader br = new BufferedReader(fr);
             while((s = br.readLine()) != null){
                 sb.append(s);
             }
             br.close();
-            // ";" as a delimiter for each request
-            // then we are sure to have well formed statements
-            String[] inst = sb.toString().split(";");
             Connection c = this.getConnection();
             Statement st = c.createStatement();
-            for(int i = 0; i<inst.length; i++){
-                if(!inst[i].trim().equals("")){
-                    st.executeUpdate(inst[i]);
-                }
-            }
+            st.execute(sb.toString());
             c.close();
         } catch(Exception e){
             e.printStackTrace();

@@ -1,3 +1,5 @@
+package config
+
 /**
  * OrbisGIS is a GIS application dedicated to scientific spatial simulation.
  * This cross-platform GIS is developed at French IRSTV institute and is able to
@@ -28,6 +30,7 @@
  */
 
 import java.util
+import org.orbisgis.server.mapcatalog.{MapCatalog, MapCatalogProperties}
 import play.api._
 import controllers._
 import org.orbisgis.core.workspace.CoreWorkspace
@@ -36,7 +39,7 @@ import org.apache.commons.io.{FileUtils => FU}
 import org.orbisgis.server.wms.WMSProperties
 
 object Global extends GlobalSettings {
-
+  var mc = new MapCatalog();
   /**
    * Feeds the workspace used by the WMS server and starts the application.
    * @param app
@@ -53,6 +56,8 @@ object Global extends GlobalSettings {
     Logger.info("WMS Context initialized");
 
     WPS.init()
+
+    mc = MapCatalog.init(mapCatalogProperties());
   }
 
   override def onStop(app: Application) {
@@ -73,5 +78,18 @@ object Global extends GlobalSettings {
       }
     })
     wp
+  }
+
+  private def mapCatalogProperties() : MapCatalogProperties = {
+    val mcp: MapCatalogProperties = new MapCatalogProperties();
+    val keys: util.HashSet[String] = MapCatalogProperties.getDefaultKeys
+    keys.foreach(key => {
+      val a =Play.current.configuration.getString(key)
+      a match {
+        case str : Some[String] => mcp.putProperty(key, str.get)
+        case _ =>
+      }
+    })
+    mcp
   }
 }

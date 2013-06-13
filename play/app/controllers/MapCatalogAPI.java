@@ -43,6 +43,6 @@ public class MapCatalogAPI extends Controller {
     }
 
     public static void deleteContext(String id){
-        OWSContext.delete(Long.valueOf(id));
+        OWSContext.delete(MC, Long.valueOf(id));
     }
 }

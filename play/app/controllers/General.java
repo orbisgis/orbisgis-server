@@ -96,7 +96,7 @@ public class General extends Controller{
         if(sign.email!=null && sign.password.length()>=6){
             if(user.isEmpty()){
                 User usr = new User(sign.name, sign.email, sign.password, sign.location);
-                usr.save();
+                usr.save(MC);
                 return ok(home.render());
             }else{error="Error: Email already used";}
         }else{error="Error: Email or password invalid";}

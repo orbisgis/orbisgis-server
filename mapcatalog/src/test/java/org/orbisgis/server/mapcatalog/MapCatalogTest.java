@@ -26,15 +26,11 @@ package org.orbisgis.server.mapcatalog; /**
  * directly: info_at_ orbisgis.org
  */
 
-import jdbc.Database;
 import org.junit.*;
 import org.orbisgis.server.mapcatalog.*;
 
-import java.math.BigDecimal;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

@@ -28,32 +28,32 @@ package controllers;
  * directly: info_at_ orbisgis.org
  */
 
+import config.Global;
 import play.*;
 import play.mvc.*;
 import views.html.*;
-
 import org.orbisgis.server.mapcatalog.MapCatalog;
 import java.util.ArrayList;
-
 import csp.ContentSecurityPolicy;
 
 @ContentSecurityPolicy
 public class MapCatalogC extends Controller{
 
-    private static MapCatalog MC = new MapCatalog();
+    private static MapCatalog MC = Global.mc();
 
     public static MapCatalog getMapCatalog(){
         return MC;
     }
 
     public static Result index() {
-        ArrayList<ArrayList<String>> workspaces = MC.selectWhere("workspace","isPublic = 1");
-        return ok(mapCatalog.render(workspaces));
+        //if(session().get("email")!=null){
+            ArrayList<ArrayList<String>> workspaces = MC.selectWhere("workspace","isPublic = 1");
+            return ok(mapCatalog.render(workspaces));
+        //}
+        //return redirect(routes.General.login());
     }
 
     public static Result viewworkspace(String id_workspace){
-        ArrayList<ArrayList<String>> folders = new ArrayList<ArrayList<String>>();
-        ArrayList<ArrayList<String>> contexts = new ArrayList<ArrayList<String>>();;
-        return ok(workspace.render(folders,contexts,id_workspace));
+        return ok(workspace.render(id_workspace));
     }
 }
