@@ -1,21 +1,8 @@
-@(workspaces :java.util.ArrayList[java.util.ArrayList[String]])
+@(workspaces : List[org.orbisgis.server.mapcatalog.Workspace])
 
 @import helper.twitterBootstrap._
 
 @main("MapCatalog","OrbisGIS services") {
-<head>
-    <script type="text/javascript" src="@routes.Assets.at("/javascripts/simpletreemenu.js")">
-
-        /***********************************************
-        * Simple Tree Menu- © Dynamic Drive DHTML code library (www.dynamicdrive.com)
-        * This notice MUST stay intact for legal use
-        * Visit Dynamic Drive at http://www.dynamicdrive.com/ for full source code
-        ***********************************************/
-
-    </script>
-    <link rel="stylesheet" type="text/css" href="@routes.Assets.at("/stylesheets/simpletree.css")" />
-</head>
-
 <div class="container">
     <div class="page-header">
         <h1>
@@ -26,33 +13,41 @@
 <div class="container-fluid" >
     <div class="row-fluid">
         <div class="span4" id="navigate" style="background-color:#61a8df;padding-left: 5px">
-            <h2>Navigate</h2>
-            <label class="radio">
-                <input type="radio" name="brutalfilter" id="brutalfilter" value="My workspaces">
-                My workspaces
-            </label>
-            <label class="radio">
-                <input type="radio" name="brutalfilter" id="brutalfilter2" value="Public workspaces" checked>
-                Public workspaces
-            </label>
+
+            <ul class="nav nav-tabs" style="margin-top:2%">
+                <li @if(flash.contains("section")){class="active"}>
+                    <a href="@routes.MapCatalogC.myWorkspaces()"><h4>My workspaces</h4></a>
+                </li>
+                <li @if(!flash.contains("section")){class="active"}>
+                    <a href="@routes.MapCatalogC.index()"><h4>Public workspaces</h4></a>
+                </li>
+            </ul>
             <form class="form-search">
                 <input type="text" class="input-medium search-query" placeholder="Search a workspace">
                 <button type="submit" class="btn">Search</button>
             </form>
 
-
-            <h4>Public workspaces</h4>
-            <a href="javascript:ddtreemenu.flatten('treemenu1', 'expand')">Expand All</a> | <a href="javascript:ddtreemenu.flatten('treemenu1', 'contact')">Contact All</a>
-
-            <ul id="treemenu1" class="treeview">
-                @for(i <-0 until workspaces.size()){
-                <li style="margin-right:2%"><a href="/mapcatalog/workspace/@workspaces.get(i).get(0)">@workspaces.get(i).get(2) (created by @workspaces.get(i).get(1))</a></li>
-                }
-            </ul>
-            <script type="text/javascript">
-                //ddtreemenu.createTree(treeid, enablepersist, opt_persist_in_days (default is 1))
-                ddtreemenu.createTree("treemenu1", true)
-            </script>
+            <h4>Workspaces</h4>
+            <div class="CSSworktable" style="width:98%;margin-bottom:1%">
+                <table >
+                    <tr>
+                        <td>Name</td>
+                        <td>Creator</td>
+                        <td>Action</td>
+                    </tr>
+                    @for(workspace <- workspaces){
+                    <tr>
+                        <td >
+                            <a href="/mapcatalog/workspace/@workspace.getId_workspace()">
+                                <img src="@routes.Assets.at("/images/workspace.png")" alt="Map">@workspace.getName()
+                            </a>
+                        </td>
+                        <td>@workspace.getId_creator()</td>
+                        <td><a href="/mapcatalog/workspace/@workspace.getId_workspace()">View</a></td>
+                    </tr>
+                    }
+                </table>
+            </div>
         </div>
         <div class="span8" id="display" style="background-color:#70c265;">
             <h2>Display</h2>

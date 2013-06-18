@@ -32,8 +32,10 @@ import config.Global;
 import play.*;
 import play.mvc.*;
 import views.html.*;
-import org.orbisgis.server.mapcatalog.MapCatalog;
+import org.orbisgis.server.mapcatalog.*;
 import java.util.ArrayList;
+import java.util.List;
+
 import csp.ContentSecurityPolicy;
 
 @ContentSecurityPolicy
@@ -46,14 +48,42 @@ public class MapCatalogC extends Controller{
     }
 
     public static Result index() {
-        //if(session().get("email")!=null){
-            ArrayList<ArrayList<String>> workspaces = MC.selectWhere("workspace","isPublic = 1");
-            return ok(mapCatalog.render(workspaces));
-        //}
-        //return redirect(routes.General.login());
+        String[] attributes = {"isPublic"};
+        String[] values = {"1"};
+        List<Workspace> list = Workspace.page(MC, attributes,values);
+        return ok(mapCatalog.render(list));
     }
 
-    public static Result viewworkspace(String id_workspace){
-        return ok(workspace.render(id_workspace));
+    @Security.Authenticated(Secured.class)
+    public static Result myWorkspaces(){
+        String[] attributes = {"isPublic","id_creator"};
+        String id = session("id_user");
+        String[] values = {"0",id};
+        List<Workspace> list = Workspace.page(MC, attributes,values);
+        flash("section","private");
+        return ok(mapCatalog.render(list));
+    }
+
+    @Security.Authenticated(Secured.class)
+    public static Result viewWorkspace(String id_workspace){
+        String[] attributes = {"id_root", "id_parent"};
+        String[] values = {id_workspace, null};
+        List<Folder> listF = Folder.page(MC,attributes,values);
+        List<OWSContext> listC = OWSContext.page(MC, attributes, values);
+        System.out.println(listF.size());
+        System.out.println(listC.size());
+        return ok(workspace.render(listF,listC));
+    }
+
+    @Security.Authenticated(Secured.class)
+    public static Result viewFolder(String id_folder){
+        String[] attributes = {"id_parent"};
+        String[] values = {id_folder};
+        List<Folder> listF = Folder.page(MC,attributes,values);
+        List<OWSContext> listC = OWSContext.page(MC, attributes, values);
+
+        List<String> path = Folder.getPath(MC, id_folder);
+
+        return ok(folder.render(listF,listC,path));
     }
 }

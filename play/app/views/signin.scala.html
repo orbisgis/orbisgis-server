@@ -7,7 +7,11 @@
     <div class="page-header">
             <h1>Sign In</h1>
     </div>
-    <p style="color:FireBrick">@error</p>
+    @if(error!=""){
+    <div class="alert alert-error">
+        @error
+    </div>
+    }
     @helper.form(routes.General.signedin) {
     <div class="control-group">
         <label class="control-label" for="inputName">Name</label>
@@ -31,6 +35,8 @@
         </div>
     </div>
     }
-    <p style="color:DeepSkyBlue">Info: Your password must contain more than 6 characters</p>
+    <div class="alert alert-info">
+        Info: Your password must contain more than 6 characters
+    </div>
 </div>
 }

@@ -4,7 +4,7 @@
 
 GET  /wms/manage					    controllers.Application.index
 
-GET  /wms/assets/*file					controllers.Assets.at(path="/public", file)
+GET  /assets/*file					    controllers.Assets.at(path="/public", file)
 
 GET  /wms/wms						    controllers.WMS.wms
 
@@ -70,7 +70,11 @@ GET /home                                                   controllers.General.
 
 GET /mapcatalog/public                                      controllers.MapCatalogC.index
 
-GET /mapcatalog/workspace/:id_workspace                     controllers.MapCatalogC.viewworkspace(id_workspace : String)
+GET /mapcatalog/myworkspaces                                controllers.MapCatalogC.myWorkspaces
+
+GET /mapcatalog/workspace/:id_workspace                     controllers.MapCatalogC.viewWorkspace(id_workspace : String)
+
+GET /mapcatalog/                                            controllers.MapCatalogC.viewFolder(id_folder :  String)
 
 # Authentification
 
@@ -82,7 +86,7 @@ POST /login                                                 controllers.General.
 
 GET /signin                                                 controllers.General.signin
 
-POST /signin                                                 controllers.General.signedin
+POST /signin                                                controllers.General.signedin
 
 #API REST
 

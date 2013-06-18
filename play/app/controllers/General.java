@@ -35,6 +35,8 @@ import org.orbisgis.server.mapcatalog.*;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.List;
+
 import csp.ContentSecurityPolicy;
 
 @ContentSecurityPolicy
@@ -70,9 +72,13 @@ public class General extends Controller{
         String password = log.password;
         String error ="";
         if(email != null && password != null){
-            ArrayList<ArrayList<String>> user = MC.selectWhere("user","email="+email+", password="+MC.hasher(password));
-            if(!user.isEmpty()){
+            String[] attributes = {"email","password"};
+            String[] values = {email,MapCatalog.hasher(password)};
+            List<User> list = User.page(MC, attributes, values);
+            if(!list.isEmpty()){
+                session().clear();
                 session("email", email);
+                session("id_user", list.get(0).getId_user());
                 return ok(home.render());
             }else{error="Error: Email or password invalid";}
         }

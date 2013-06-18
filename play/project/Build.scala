@@ -14,7 +14,7 @@ object ApplicationBuild extends Build {
       "javax.media" % "jai_core" % "1.1.3" from "http://repo.orbisgis.org/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar",
       "junit" % "junit" % "4.10" % "test",
       "org.orbisgis.server" % "orbiswms-lib" % "1.0-SNAPSHOT" changing(),
-      "org.orbisgis.server" % "mapcatalog" % "1.4-SNAPSHOT" changing(),
+      "org.orbisgis.server" % "mapcatalog" % "1.7-SNAPSHOT" changing(),
       javaCore
     )
 
