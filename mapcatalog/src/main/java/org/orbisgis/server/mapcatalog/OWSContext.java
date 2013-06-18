@@ -26,6 +26,7 @@ package org.orbisgis.server.mapcatalog; /**
  * directly: info_at_ orbisgis.org
  */
 import java.sql.*;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -168,12 +169,20 @@ public class OWSContext {
             //preparation of the query
             query+=attributes[0]+" = ?";
             for(int i=1; i<attributes.length; i++){
-                query += " AND "+attributes[i]+" = ?";
+                if(values[i]==null){
+                    query += "AND "+attributes[i]+" IS NULL";
+                }else{
+                    query += " AND "+attributes[i]+" = ?";
+                }
             }
             //preparation of the statement
             PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+            int j=1;
             for(int i=0; i<values.length; i++){
-                stmt.setString(i+1, values[i]);
+                if(values[i]!=null){
+                    stmt.setString(j, values[i]);
+                    j++;
+                }
             }
             //Retrieving values
             ResultSet rs = stmt.executeQuery();
@@ -219,5 +228,24 @@ public class OWSContext {
             e.printStackTrace();
         }
         return paged;
+    }
+
+    public static List<String> getPath(MapCatalog MC, String id_owscontext){
+        String id = id_owscontext;
+        List<String> list = new LinkedList<String>();
+        String id_root=null;
+        while(id!=null){
+            String[] attributes={"id_owscontext"};
+            String[] values={id};
+            List<OWSContext> temp = OWSContext.page(MC, attributes, values);
+            id = temp.get(0).getId_parent();
+            list.add(temp.get(0).getTitle());
+            id_root = temp.get(0).getId_root();
+        }
+        String[] attributes={"id_workspace"};
+        String[] values={id_root};
+        list.add(Workspace.page(MC,attributes,values).get(0).getName());
+        Collections.reverse(list);
+        return list;
     }
 }

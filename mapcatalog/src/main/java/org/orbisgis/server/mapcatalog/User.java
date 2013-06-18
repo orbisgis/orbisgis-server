@@ -152,12 +152,20 @@ public class User {
             //preparation of the query
             query+=attributes[0]+" = ?";
             for(int i=1; i<attributes.length; i++){
-                query += " AND "+attributes[i]+" = ?";
+                if(values[i]==null){
+                    query += "AND "+attributes[i]+" IS NULL";
+                }else{
+                    query += " AND "+attributes[i]+" = ?";
+                }
             }
             //preparation of the statement
             PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+            int j=1;
             for(int i=0; i<values.length; i++){
-                stmt.setString(i+1, values[i]);
+                if(values[i]!=null){
+                    stmt.setString(j, values[i]);
+                    j++;
+                }
             }
             //Retrieving values
             ResultSet rs = stmt.executeQuery();
