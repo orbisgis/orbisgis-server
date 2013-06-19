@@ -31,6 +31,7 @@ package org.orbisgis.server.wms;
 import com.vividsolutions.jts.geom.Envelope;
 import net.opengis.wms.Layer;
 import org.apache.log4j.Logger;
+import org.cts.crs.CRSException;
 import org.gdms.data.DataSource;
 import org.gdms.data.DataSourceFactory;
 import org.gdms.data.schema.DefaultMetadata;
@@ -46,8 +47,6 @@ import org.gdms.driver.DiskBufferDriver;
 import org.gdms.driver.DriverException;
 import org.gdms.source.SourceManager;
 import org.gdms.sql.function.spatial.geometry.crs.ST_Transform;
-import org.geotools.referencing.CRS;
-import org.opengis.referencing.FactoryException;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
 import org.orbisgis.core.layerModel.ILayer;
@@ -65,6 +64,7 @@ import java.util.Map;
 /**
  * Abstract class used to store method shared between GetMapHandler and GetFeatureInfoHandler.
  * @author Alexis Guéganno
+ * @author Erwan Bocher
  */
 public abstract class AbstractGetHandler {
 
@@ -325,14 +325,14 @@ public abstract class AbstractGetHandler {
      * @throws org.opengis.referencing.FactoryException If we failed at building the new CRS, if targetCrs is not a known EPSG code
      */
     private Metadata getProjectedMetadata(Metadata md, String targetCrs)
-            throws DriverException, FactoryException {
+            throws DriverException, CRSException {
         int spatialFieldIndex = MetadataUtilities.getSpatialFieldIndex(md);
         Type geomType = md.getFieldType(spatialFieldIndex);
         Constraint[] constraints = geomType.getConstraints().clone();
         for(int i=0; i<constraints.length; i++){
             Constraint c = constraints[i];
             if(c.getConstraintCode() == Constraint.CRS){
-                constraints[i] = new CRSConstraint(CRS.decode(targetCrs));
+                constraints[i] = new CRSConstraint(DataSourceFactory.getCRSFactory().getCRS(targetCrs));
                 break;
             }
         }
