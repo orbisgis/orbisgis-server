@@ -55,8 +55,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 import org.cts.crs.CRSException;
 import org.cts.crs.CoordinateReferenceSystem;
 
@@ -70,6 +69,7 @@ import org.cts.crs.CoordinateReferenceSystem;
  */
 public final class GetCapabilitiesHandler {
 
+    private static final Logger LOGGER = Logger.getLogger(GetCapabilitiesHandler.class);
     private final WMSProperties properties;
     private Map<String, Layer> layerMap = new HashMap<String, Layer>();
     private Map<String, String[]> layerStyles;
@@ -375,6 +375,7 @@ public final class GetCapabilitiesHandler {
                 try {
                     code = Integer.valueOf(crs.getAuthorityKey());
                 } catch (NumberFormatException ex) {
+                    LOGGER.error("Cannot find a unique authority key from the crs "+ crs.getName(), ex);
                 }
                 if (code != null) {
                     bBox.setCRS("EPSG:" + code);
