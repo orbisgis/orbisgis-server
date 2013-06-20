@@ -6,7 +6,7 @@
 <div class="container">
     <div class="page-header">
         <h1>
-            <img src="@routes.Assets.at("/images/OrbisMapCatalog.png")" alt="Map Catalog"></img>
+            <img src="@routes.Assets.at("images/OrbisMapCatalog.png")" alt="Map Catalog"></img>
         </h1>
     </div>
 </div>
@@ -26,8 +26,25 @@
                 <input type="text" class="input-medium search-query" placeholder="Search a workspace">
                 <button type="submit" class="btn">Search</button>
             </form>
-
             <h4>Workspaces</h4>
+            <a href="javascript:alert('hi');"> Cliquez ici </a>
+            <div style="background-color:#FFFFFF;width:100%+5px;margin-left:-5px">
+                <img src="@routes.Assets.at("images/add.png")" onclick="toggle('addAWorkspace')" alt="add"> create my own workspace</img>
+                <form id="addAWorkspace" style="margin-left:2%;padding-bottom:2px" style="display:none" action="@routes.MapCatalogC.createWorkspace()">
+                    <fieldset>
+                        <label>Name</label>
+                        <input type="text" placeholder="Type the name of the workspace" name="name">
+                        <span class="help-block">Decide whether the workspace is public or not:</span>
+                        <label class="radio">
+                            <input type="radio" name="public" value="true" checked>Public
+                        </label>
+                        <label class="radio">
+                            <input type="radio" name="public" value="false">Private
+                        </label>
+                        <button type="submit" class="btn">Submit</button>
+                    </fieldset>
+                </form>
+            </div>
             <div class="CSSworktable" style="width:98%;margin-bottom:1%">
                 <table >
                     <tr>
@@ -39,7 +56,7 @@
                     <tr>
                         <td >
                             <a href="/mapcatalog/workspace/@workspace.getId_workspace()">
-                                <img src="@routes.Assets.at("/images/workspace.png")" alt="Map">@workspace.getName()
+                                <img src="@routes.Assets.at("images/workspace.png")" alt="Map">@workspace.getName()
                             </a>
                         </td>
                         <td>@workspace.getId_creator()</td>
@@ -54,4 +71,13 @@
         </div>
     </div>
 </div>
+<script type="text/javascript">
+    function toggle(divtag){
+    if(document.getElementById(divtag).style.display=='none'){
+    document.getElementById(divtag).style.display='block';
+    } else {
+    document.getElementById(divtag).style.display='none';
+    }
+    }
+</script>
 }

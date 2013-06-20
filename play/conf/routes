@@ -76,6 +76,8 @@ GET /mapcatalog/workspace/:id_workspace                     controllers.MapCatal
 
 GET /mapcatalog/                                            controllers.MapCatalogC.viewFolder(id_folder :  String)
 
+GET /createworkspace                                        controllers.MapCatalogC.createWorkspace
+
 # Authentification
 
 GET /login                                                  controllers.General.login

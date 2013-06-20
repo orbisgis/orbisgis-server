@@ -197,21 +197,17 @@ public class Folder {
         return paged;
     }
 
-    public static List<String> getPath(MapCatalog MC, String id_folder){
+    public static List<Folder> getPath(MapCatalog MC, String id_folder){
         String id = id_folder;
-        List<String> list = new LinkedList<String>();
-        String id_root=null;
+        List<Folder> list = new LinkedList<Folder>();
         while(id!=null){
             String[] attributes={"id_folder"};
             String[] values={id};
-            List<Folder> temp = Folder.page(MC, attributes, values);
-            id = temp.get(0).getId_parent();
-            list.add(temp.get(0).getName());
-            id_root = temp.get(0).getId_root();
+            Folder fol = Folder.page(MC, attributes, values).get(0);
+            list.add(fol);
+            id = fol.getId_parent();
         }
-        String[] attributes={"id_workspace"};
-        String[] values={id_root};
-        list.add(Workspace.page(MC,attributes,values).get(0).getName());
+        //Reversing the list
         Collections.reverse(list);
         return list;
     }

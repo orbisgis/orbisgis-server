@@ -1,4 +1,4 @@
-@(folders : List[org.orbisgis.server.mapcatalog.Folder], contexts : List[org.orbisgis.server.mapcatalog.OWSContext], path : List[String])
+@(folders : List[org.orbisgis.server.mapcatalog.Folder], contexts : List[org.orbisgis.server.mapcatalog.OWSContext], path : List[org.orbisgis.server.mapcatalog.Folder])
 
 @import helper.twitterBootstrap._
 
@@ -23,8 +23,8 @@
 
             <h4>Workspaces</h4>
             <ul class="breadcrumb">
-                @for(name <- path){
-                <li>@name<span class="divider">/</span></li>
+                @for(folder <- path){
+                <li><a href="@routes.MapCatalogC.viewFolder(folder.getId_folder())">@folder.getName()</a><span class="divider">/</span></li>
                 }
             </ul>
             <div class="CSSworktable" style="width:98%;margin-bottom:1%">

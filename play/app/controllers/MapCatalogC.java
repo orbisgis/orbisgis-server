@@ -30,10 +30,10 @@ package controllers;
 
 import config.Global;
 import play.*;
+import play.data.*;
 import play.mvc.*;
 import views.html.*;
 import org.orbisgis.server.mapcatalog.*;
-import java.util.ArrayList;
 import java.util.List;
 
 import csp.ContentSecurityPolicy;
@@ -70,8 +70,6 @@ public class MapCatalogC extends Controller{
         String[] values = {id_workspace, null};
         List<Folder> listF = Folder.page(MC,attributes,values);
         List<OWSContext> listC = OWSContext.page(MC, attributes, values);
-        System.out.println(listF.size());
-        System.out.println(listC.size());
         return ok(workspace.render(listF,listC));
     }
 
@@ -81,9 +79,22 @@ public class MapCatalogC extends Controller{
         String[] values = {id_folder};
         List<Folder> listF = Folder.page(MC,attributes,values);
         List<OWSContext> listC = OWSContext.page(MC, attributes, values);
-
-        List<String> path = Folder.getPath(MC, id_folder);
+        List<Folder> path = Folder.getPath(MC, id_folder);
 
         return ok(folder.render(listF,listC,path));
+    }
+
+    @Security.Authenticated(Secured.class)
+    public static Result createWorkspace(){
+        DynamicForm form = Form.form().bindFromRequest();
+        String name = form.get("name");
+        String isPublic ;
+        if(form.get("public").equals("true")){
+            isPublic="1";
+        }else{isPublic="0";}
+        Workspace work = new Workspace(session("id_user"),name,isPublic);
+        Long id = work.save(MC);
+        System.out.println("WORKSPACE CREATED");
+        return viewWorkspace(id.toString());
     }
 }
