@@ -45,10 +45,6 @@ import org.gdms.source.SourceManager;
 import org.gdms.source.SourceRemovalEvent;
 import org.gdms.sql.function.FunctionException;
 import org.gdms.sql.function.spatial.geometry.crs.ST_Transform;
-import org.geotools.referencing.CRS;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.orbisgis.core.DataManager;
 import org.orbisgis.core.Services;
 
@@ -59,6 +55,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
+import org.apache.log4j.Logger;
+import org.cts.crs.CRSException;
+import org.cts.crs.CoordinateReferenceSystem;
 
 /**
  * Creates the answer to a getCapabilities request and writes it into the output
@@ -66,9 +65,11 @@ import java.util.*;
  *
  * @author Tony MARTIN
  * @author Alexis Guéganno
+ * @author Erwan Bocher
  */
 public final class GetCapabilitiesHandler {
 
+    private static final Logger LOGGER = Logger.getLogger(GetCapabilitiesHandler.class);
     private final WMSProperties properties;
     private Map<String, Layer> layerMap = new HashMap<String, Layer>();
     private Map<String, String[]> layerStyles;
@@ -79,85 +80,86 @@ public final class GetCapabilitiesHandler {
     private static final int SOUTH = -90;
     private static final int NORTH = 90;
 
-        /**
-         * Handles the getCapabilities request and gives the XML formated server
-         * capabilities to the outputStream
-         *
-         * @param output servlet outputStream
-         * @param wmsResponse HttpServletResponse modified for WMS use
-         * @throws WMSException
-         * @throws UnsupportedEncodingException
-         */
-        public void getCap(OutputStream output, WMSResponse wmsResponse) throws WMSException, UnsupportedEncodingException {
-                PrintStream pr = new PrintStream(output, false, "UTF-8");
-                WMSCapabilities cap = new WMSCapabilities();
-                //Setting service WMS metadata
-                cap.setService(getService());
-                //Setting Capability parameters
-                //Setting Layers capabilities
-                Capability c = new Capability();
-                //Bounding box of the highest layer is dummy
-                Envelope dummy = new Envelope(WEST,EAST, SOUTH,NORTH);
-                EXGeographicBoundingBox bb = getGeographicBoundingBox(dummy, "EPSG:4326");
-                Layer availableLayers = new Layer();
-                availableLayers.setEXGeographicBoundingBox(bb);
-                BoundingBox bBox = new BoundingBox();
-                bBox.setCRS("EPSG:4326");
-                bBox.setMaxx(EAST);
-                bBox.setMinx(WEST);
-                bBox.setMaxy(NORTH);
-                bBox.setMiny(SOUTH);
-                availableLayers.getBoundingBox().add(bBox);
-                for (Layer e : layerMap.values()) {
-                        availableLayers.getLayer().add(e);
-                }
-                //Server supported CRS
-                availableLayers.getCRS().addAll(authCRS);
-                availableLayers.setName("Available_layers");
-                availableLayers.setTitle("Server available layers");
-                c.setLayer(availableLayers);
-                //Setting the request capabilities
-                //GetMap capabilities
-                Request req = new Request();
-                req.setGetMap(getMapOperation(wmsResponse));
-                //GetCap capabilities
-                req.setGetCapabilities(getCapOperation(wmsResponse));
-                //GetFeatureInfo capabilities
-                req.setGetFeatureInfo(getFeatureOperation(wmsResponse));
-                c.setRequest(req);
-                cap.setCapability(c);
-
-                try {
-                        //Marshalling the WMS Capabilities into an XML response
-                        Marshaller marshaller = jaxbContext.createMarshaller();
-                        NamespacePrefixMapper mapper = new NamespaceMapper();
-                        marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", mapper);
-
-                        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-
-                        wmsResponse.setContentType("text/xml;charset=UTF-8");
-                        marshaller.marshal(cap, pr);
-
-                } catch (JAXBException ex) {
-                        wmsResponse.setContentType("text/xml;charset=UTF-8");
-                        wmsResponse.setResponseCode(500);
-                        pr.append("<?xml version='1.0' encoding=\"UTF-8\"?><ServiceExceptionReport xmlns=\"http://www.opengis.net/ogc\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"1.3.0\" xsi:schemaLocation=\"http://www.opengis.net/ogc http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd\"><ServiceException>Something went wrong</ServiceException></ServiceExceptionReport>");
-                        pr.append(ex.toString());
-                        ex.printStackTrace(pr);
-                }
+    /**
+     * Handles the getCapabilities request and gives the XML formated server
+     * capabilities to the outputStream
+     *
+     * @param output servlet outputStream
+     * @param wmsResponse HttpServletResponse modified for WMS use
+     * @throws WMSException
+     * @throws UnsupportedEncodingException
+     */
+    public void getCap(OutputStream output, WMSResponse wmsResponse) throws WMSException, UnsupportedEncodingException {
+        PrintStream pr = new PrintStream(output, false, "UTF-8");
+        WMSCapabilities cap = new WMSCapabilities();
+        //Setting service WMS metadata
+        cap.setService(getService());
+        //Setting Capability parameters
+        //Setting Layers capabilities
+        Capability c = new Capability();
+        //Bounding box of the highest layer is dummy
+        Envelope dummy = new Envelope(WEST, EAST, SOUTH, NORTH);
+        EXGeographicBoundingBox bb = getGeographicBoundingBox(dummy, "EPSG:4326");
+        Layer availableLayers = new Layer();
+        availableLayers.setEXGeographicBoundingBox(bb);
+        BoundingBox bBox = new BoundingBox();
+        bBox.setCRS("EPSG:4326");
+        bBox.setMaxx(EAST);
+        bBox.setMinx(WEST);
+        bBox.setMaxy(NORTH);
+        bBox.setMiny(SOUTH);
+        availableLayers.getBoundingBox().add(bBox);
+        for (Layer e : layerMap.values()) {
+            availableLayers.getLayer().add(e);
         }
+        //Server supported CRS
+        availableLayers.getCRS().addAll(authCRS);
+        availableLayers.setName("Available_layers");
+        availableLayers.setTitle("Server available layers");
+        c.setLayer(availableLayers);
+        //Setting the request capabilities
+        //GetMap capabilities
+        Request req = new Request();
+        req.setGetMap(getMapOperation(wmsResponse));
+        //GetCap capabilities
+        req.setGetCapabilities(getCapOperation(wmsResponse));
+        //GetFeatureInfo capabilities
+        req.setGetFeatureInfo(getFeatureOperation(wmsResponse));
+        c.setRequest(req);
+        cap.setCapability(c);
+
+        try {
+            //Marshalling the WMS Capabilities into an XML response
+            Marshaller marshaller = jaxbContext.createMarshaller();
+            NamespacePrefixMapper mapper = new NamespaceMapper();
+            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", mapper);
+
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+            wmsResponse.setContentType("text/xml;charset=UTF-8");
+            marshaller.marshal(cap, pr);
+
+        } catch (JAXBException ex) {
+            wmsResponse.setContentType("text/xml;charset=UTF-8");
+            wmsResponse.setResponseCode(500);
+            pr.append("<?xml version='1.0' encoding=\"UTF-8\"?><ServiceExceptionReport xmlns=\"http://www.opengis.net/ogc\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" version=\"1.3.0\" xsi:schemaLocation=\"http://www.opengis.net/ogc http://schemas.opengis.net/wms/1.3.0/exceptions_1_3_0.xsd\"><ServiceException>Something went wrong</ServiceException></ServiceExceptionReport>");
+            pr.append(ex.toString());
+            ex.printStackTrace(pr);
+        }
+    }
 
     /**
      * Prepare the Service JAXB object in order to build the XML response.
+     *
      * @return A Service instance
      */
-    private Service getService(){
+    private Service getService() {
         Service s = new Service();
         s.setName("WMS");
-        s.setTitle((String)properties.getProperty(WMSProperties.TITLE));
+        s.setTitle((String) properties.getProperty(WMSProperties.TITLE));
         OnlineResource oR = new OnlineResource();
-        oR.setHref((String)properties.getProperty(WMSProperties.RESOURCE_URL));
-        oR.setTitle((String)properties.getProperty(WMSProperties.RESOURCE_NAME));
+        oR.setHref((String) properties.getProperty(WMSProperties.RESOURCE_URL));
+        oR.setTitle((String) properties.getProperty(WMSProperties.RESOURCE_NAME));
         s.setOnlineResource(oR);
         ContactInformation cI = new ContactInformation();
         cI.setContactElectronicMailAddress("info@orbisgis.org");
@@ -170,10 +172,10 @@ public final class GetCapabilitiesHandler {
         opFeature.getFormat().add("text/xml");
         //GET
         Get getFeature = new Get();
-        getFeature.setOnlineResource(buildOnlineResource(wmsResponse,WMSProperties.FEATURE_GET, "GetFeatureInfo"));
+        getFeature.setOnlineResource(buildOnlineResource(wmsResponse, WMSProperties.FEATURE_GET, "GetFeatureInfo"));
         //POST
         Post postFeature = new Post();
-        postFeature.setOnlineResource(buildOnlineResource(wmsResponse,WMSProperties.FEATURE_POST, "GetFeatureInfo"));
+        postFeature.setOnlineResource(buildOnlineResource(wmsResponse, WMSProperties.FEATURE_POST, "GetFeatureInfo"));
         //Both in HTTP
         HTTP httpFeature = new HTTP();
         httpFeature.setGet(getFeature);
@@ -184,18 +186,18 @@ public final class GetCapabilitiesHandler {
         return opFeature;
     }
 
-
     /**
      * Gets the parameters of the GetCapabilities capability answer.
+     *
      * @return The operation type representing the GetCapabilities operation.
      */
     private OperationType getCapOperation(WMSResponse wmsResponse) {
         OperationType opCap = new OperationType();
         opCap.getFormat().add("text/xml");
         Get getCap = new Get();
-        getCap.setOnlineResource(buildOnlineResource(wmsResponse,WMSProperties.CAP_GET, "GetCapabilities"));
+        getCap.setOnlineResource(buildOnlineResource(wmsResponse, WMSProperties.CAP_GET, "GetCapabilities"));
         Post postCap = new Post();
-        postCap.setOnlineResource(buildOnlineResource(wmsResponse,WMSProperties.CAP_POST, "GetCapabilities"));
+        postCap.setOnlineResource(buildOnlineResource(wmsResponse, WMSProperties.CAP_POST, "GetCapabilities"));
         HTTP httpCap = new HTTP();
         httpCap.setGet(getCap);
         httpCap.setPost(postCap);
@@ -207,6 +209,7 @@ public final class GetCapabilitiesHandler {
 
     /**
      * Gets the parameters of the GetMap capability answer.
+     *
      * @return The operation type representing the getMap operation.
      */
     private OperationType getMapOperation(WMSResponse wmsResponse) {
@@ -215,9 +218,9 @@ public final class GetCapabilitiesHandler {
             opMap.getFormat().add(im.toString());
         }
         Get get = new Get();
-        get.setOnlineResource(buildOnlineResource(wmsResponse,WMSProperties.MAP_GET, "GetMap"));
+        get.setOnlineResource(buildOnlineResource(wmsResponse, WMSProperties.MAP_GET, "GetMap"));
         Post post = new Post();
-        post.setOnlineResource(buildOnlineResource(wmsResponse,WMSProperties.MAP_POST, "GetMap"));
+        post.setOnlineResource(buildOnlineResource(wmsResponse, WMSProperties.MAP_POST, "GetMap"));
         //We feed the http object
         HTTP http = new HTTP();
         http.setGet(get);
@@ -228,10 +231,10 @@ public final class GetCapabilitiesHandler {
         return opMap;
     }
 
-    private OnlineResource buildOnlineResource(WMSResponse wmsResponse, String key, String title){
+    private OnlineResource buildOnlineResource(WMSResponse wmsResponse, String key, String title) {
         OnlineResource oRGet = new OnlineResource();
-        String map = (String)properties.getProperty(key);
-        if(map == null){
+        String map = (String) properties.getProperty(key);
+        if (map == null) {
             oRGet.setHref(wmsResponse.getRequestUrl());
         } else {
             oRGet.setHref(map);
@@ -247,17 +250,21 @@ public final class GetCapabilitiesHandler {
         try {
             jaxbContext = JAXBContext.newInstance("net.opengis.wms:net.opengis.sld._1_2:net.opengis.se._2_0.core:oasis.names.tc.ciq.xsdschema.xal._2");
         } catch (JAXBException ex) {
-            throw new RuntimeException("Failed to build the JAXB Context, can't build the associated XML.",ex);
+            throw new RuntimeException("Failed to build the JAXB Context, can't build the associated XML.", ex);
         }
-        Set<String> codes = CRS.getSupportedCodes("EPSG");
-        LinkedList<String> ll = new LinkedList<String>();
-        for(String s : codes){
-            ll.add("EPSG:"+s);
-        }
-        authCRS = ll;
 
         final DataSourceFactory dsf = Services.getService(DataManager.class).getDataSourceFactory();
         final SourceManager sm = dsf.getSourceManager();
+
+
+        Set<String> codes = DataSourceFactory.getCRSFactory().getSupportedCodes("EPSG");
+        LinkedList<String> ll = new LinkedList<String>();
+        for (String s : codes) {
+            ll.add("EPSG:" + s);
+        }
+        authCRS = ll;
+
+
         SourceListener sourceListener = new CapListener(dsf);
         String[] layerNames = sm.getSourceNames();
         for (int i = 0; i < layerNames.length; i++) {
@@ -267,7 +274,7 @@ public final class GetCapabilitiesHandler {
         sm.addSourceListener(sourceListener);
     }
 
-    private EXGeographicBoundingBox getDummyGeographic(){
+    private EXGeographicBoundingBox getDummyGeographic() {
         EXGeographicBoundingBox ret = new EXGeographicBoundingBox();
         ret.setEastBoundLongitude(EAST);
         ret.setWestBoundLongitude(WEST);
@@ -277,25 +284,24 @@ public final class GetCapabilitiesHandler {
 
     }
 
-    private EXGeographicBoundingBox getGeographicBoundingBox(Envelope env, String epsgCode){
+    private EXGeographicBoundingBox getGeographicBoundingBox(Envelope env, String epsgCode) {
         Envelope newEnvelope;
-        if("EPSG:4326".equals(epsgCode)){
+        if ("EPSG:4326".equals(epsgCode)) {
             newEnvelope = env;
         } else {
-            try{
+            try {
+                DataSourceFactory dsf = Services.getService(DataManager.class).getDataSourceFactory();
                 GeometryFactory gf = new GeometryFactory();
                 Polygon poly = (Polygon) gf.toGeometry(env);
                 ST_Transform transformFunction = new ST_Transform();
-                CoordinateReferenceSystem inputCRS = CRS.decode(epsgCode);
+                CoordinateReferenceSystem inputCRS = DataSourceFactory.getCRSFactory().getCRS(epsgCode);
                 Value val = transformFunction.evaluate(null,
                         ValueFactory.createValue(poly, inputCRS),
                         ValueFactory.createValue("EPSG:4326"));
                 newEnvelope = val.getAsGeometry().getEnvelopeInternal();
-            } catch (FunctionException fe){
+            } catch (FunctionException fe) {
                 return getDummyGeographic();
-            }  catch (NoSuchAuthorityCodeException fe){
-                return getDummyGeographic();
-            }  catch (FactoryException fe){
+            } catch (CRSException ex) {
                 return getDummyGeographic();
             }
         }
@@ -308,14 +314,15 @@ public final class GetCapabilitiesHandler {
     }
 
     /**
-     * This listener is used to maintain a map of JAXB Layer instance up to date, whatever the changes in the
-     * registered sources are. That means we update the map on name changes and when layers are added or removed.
+     * This listener is used to maintain a map of JAXB Layer instance up to
+     * date, whatever the changes in the registered sources are. That means we
+     * update the map on name changes and when layers are added or removed.
      */
     private class CapListener implements SourceListener {
 
         private DataSourceFactory dsf;
 
-        public CapListener(DataSourceFactory dsf){
+        public CapListener(DataSourceFactory dsf) {
             this.dsf = dsf;
         }
 
@@ -336,7 +343,7 @@ public final class GetCapabilitiesHandler {
                     CoordinateReferenceSystem crs = ds.getCRS();
                     ds.close();
                     BoundingBox bBox = getBoundingBox(env, crs);
-                    if(bBox == null){
+                    if (bBox == null) {
                         return;
                     }
                     layer.getCRS().add(bBox.getCRS());
@@ -361,19 +368,20 @@ public final class GetCapabilitiesHandler {
             }
         }
 
-        private BoundingBox getBoundingBox(Envelope env, CoordinateReferenceSystem crs){
+        private BoundingBox getBoundingBox(Envelope env, CoordinateReferenceSystem crs) {
             BoundingBox bBox = new BoundingBox();
             if (crs != null) {
-            Integer code = null;
-            try {
-            code = CRS.lookupEpsgCode(crs, true);
-            } catch (FactoryException ex) {
-            }
-            if (code != null) {
-                bBox.setCRS("EPSG:" + code);
-            } else {
-                return null;
-            }
+                Integer code = null;
+                try {
+                    code = Integer.valueOf(crs.getAuthorityKey());
+                } catch (NumberFormatException ex) {
+                    LOGGER.error("Cannot find a unique authority key from the crs "+ crs.getName(), ex);
+                }
+                if (code != null) {
+                    bBox.setCRS("EPSG:" + code);
+                } else {
+                    return null;
+                }
             } else {
                 return null;
             }
