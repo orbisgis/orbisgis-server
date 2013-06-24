@@ -31,10 +31,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.security.NoSuchAlgorithmException;
@@ -166,7 +163,7 @@ public class MapCatalog {
     /**
      * Sends a query to database that returns the workspace list, then write it in a xml file a the root of project.
      */
-    public void getWorkspaceList() {
+    public InputStream getWorkspaceList() {
         try{
             //get the list of workspace names from the database
             List<Workspace>  list = Workspace.page(this);
@@ -185,7 +182,6 @@ public class MapCatalog {
                 rootEle.appendChild(e);
             }
             dom.appendChild(rootEle);
-
             //transform the dom in XML
             try {
                 Transformer tr = TransformerFactory.newInstance().newTransformer();
@@ -193,28 +189,30 @@ public class MapCatalog {
                 tr.setOutputProperty(OutputKeys.METHOD, "xml");
                 tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
                 tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-                tr.transform(new DOMSource(dom),
-                        new StreamResult(new FileOutputStream("workspaces")));
-
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                Source xmlSource = new DOMSource(dom);
+                Result outputTarget = new StreamResult(outputStream);
+                tr.transform(xmlSource, outputTarget);
+                InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
+                return is;
             } catch (TransformerException te) {
                 System.out.println(te.getMessage());
-            } catch (IOException ioe) {
-                System.out.println(ioe.getMessage());
             }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        return null;
     }
 
     /**
      * Queries the database for the list of context, then writes it into a XML file
      * @param id_workspace The workspace which
      */
-    public void getContextList(Long id_workspace){
+    public InputStream getContextList(String id_workspace){
         try{
             //get the ows from database
             String[] attributes = {"id_root"};
-            String[] values = {id_workspace.toString()};
+            String[] values = {id_workspace};
             List<OWSContext> list = OWSContext.page(this, attributes, values);
 
             Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();;
@@ -242,15 +240,19 @@ public class MapCatalog {
                 tr.setOutputProperty(OutputKeys.METHOD, "xml");
                 tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
                 tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-                tr.transform(new DOMSource(dom),
-                        new StreamResult(new FileOutputStream("contexts")));
-
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                Source xmlSource = new DOMSource(dom);
+                Result outputTarget = new StreamResult(outputStream);
+                tr.transform(xmlSource, outputTarget);
+                InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
+                return is;
             } catch (Exception exe) {
                 exe.printStackTrace();
             }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+        return null;
     }
 
     /**

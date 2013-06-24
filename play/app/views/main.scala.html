@@ -34,7 +34,7 @@
             </ul>
             <ul class="nav" style="margin-left:90%;position:absolute">
                 <li class="divider-vertical"></li>
-                @if(session().get("email")==null){
+                @if(session.get("email")==null){
                     <li><a href="@controllers.routes.General.login">Login</a></li>
                 }else{
                     <li><a href="@controllers.routes.General.logout">Logout</a></li>
@@ -45,6 +45,5 @@
     </div>
 </div>
 @content
-<a href="#" onclick="alert('truc')">azerazer</a>
 </body>
 </html>

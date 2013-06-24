@@ -31,6 +31,8 @@ package controllers;
 import play.mvc.*;
 import org.orbisgis.server.mapcatalog.*;
 import java.util.ArrayList;
+import java.util.List;
+
 import csp.ContentSecurityPolicy;
 
 @ContentSecurityPolicy
@@ -38,11 +40,24 @@ public class MapCatalogAPI extends Controller {
     private static MapCatalog MC = MapCatalogC.getMapCatalog();
 
     public static Result getContext(String id){
-        ArrayList<ArrayList<String>> context = MC.selectWhere("owscontext", "id_owscontext="+id);
-        return ok(context.get(0).get(4));
+        String[] attributes = {"id_owscontext"};
+        String[] values = {id};
+        List<OWSContext> list = OWSContext.page(MC, attributes, values);
+        return ok(list.get(0).getContent());
     }
 
-    public static void deleteContext(String id){
+    public static Result deleteContext(String id){
         OWSContext.delete(MC, Long.valueOf(id));
+        return noContent();
     }
+
+    public static Result listWorkspaces(){
+        return ok(MC.getWorkspaceList());
+    }
+
+    public static Result listContexts(String id_workspace){
+        return ok(MC.getContextList(id_workspace));
+    }
+
+
 }

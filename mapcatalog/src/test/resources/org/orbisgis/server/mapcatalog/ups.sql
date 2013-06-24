@@ -13,6 +13,7 @@ create table IF NOT EXISTS workspace (
   id_creator			bigint ,
   name				    varchar(255),
   isPublic              tinyint(1) default 0,
+  description           varchar(1000),
   constraint pk_workspace primary key (id_workspace)
 );
 

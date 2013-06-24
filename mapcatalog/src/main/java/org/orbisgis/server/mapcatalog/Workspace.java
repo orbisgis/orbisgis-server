@@ -40,17 +40,20 @@ public class Workspace {
     private String id_creator = null;
     private String name = "default";
     private String isPublic = "0"; // 0 or 1
+    private String description = "";
 
     /**
      * Constructor of the workspace
      * @param id_creator
      * @param name
      * @param aPublic
+     * @param description
      */
-    public Workspace(String id_creator, String name, String aPublic) {
+    public Workspace(String id_creator, String name, String aPublic, String description) {
         this.id_creator = id_creator;
         this.name = name;
         this.isPublic = aPublic;
+        this.description = description;
     }
 
     /**
@@ -59,12 +62,14 @@ public class Workspace {
      * @param id_creator
      * @param name
      * @param aPublic
+     * @param description
      */
-    public Workspace(String id_workspace, String id_creator, String name, String aPublic) {
+    public Workspace(String id_workspace, String id_creator, String name, String aPublic, String description) {
         this.id_workspace = id_workspace;
         this.id_creator = id_creator;
         this.name = name;
-        isPublic = aPublic;
+        this.isPublic = aPublic;
+        this.description = description;
     }
 
 
@@ -85,6 +90,10 @@ public class Workspace {
         return isPublic;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
     /**
      * Method that saves a instantiated workspace into database. Handles SQL injections.
      * @return The ID of the workspace just created (primary key)
@@ -92,11 +101,12 @@ public class Workspace {
     public  Long save(MapCatalog MC) {
         Long last = null;
         try{
-            String query = "INSERT INTO workspace (id_creator,name,isPublic) VALUES (? , ? , ? );";
+            String query = "INSERT INTO workspace (id_creator,name,isPublic,description) VALUES (? , ? , ? , ?);";
             PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
             pstmt.setString(1, id_creator);
             pstmt.setString(2, name);
             pstmt.setString(3, isPublic);
+            pstmt.setString(4, description);
             pstmt.executeUpdate();
             ResultSet rs = pstmt.getGeneratedKeys();
             if(rs.next()){
@@ -166,7 +176,8 @@ public class Workspace {
                 String id_creator = rs.getString("id_creator");
                 String name = rs.getString("name");
                 String isPublic = rs.getString("isPublic");
-                Workspace wor = new Workspace(id_workspace,id_creator,name,isPublic);
+                String description = rs.getString("description");
+                Workspace wor = new Workspace(id_workspace,id_creator,name,isPublic,description);
                 paged.add(wor);
             }
             rs.close();
@@ -190,7 +201,8 @@ public class Workspace {
                 String id_creator = rs.getString("id_creator");
                 String name = rs.getString("name");
                 String isPublic = rs.getString("isPublic");
-                Workspace wor = new Workspace(id_workspace,id_creator,name,isPublic);
+                String description = rs.getString("description");
+                Workspace wor = new Workspace(id_workspace,id_creator,name,isPublic,description);
                 paged.add(wor);
             }
             rs.close();

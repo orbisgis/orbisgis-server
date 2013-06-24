@@ -50,7 +50,7 @@ public class MapCatalogTest {
     public void workspaceCreation () throws SQLException{
 
         //Creation of the workspace
-        Workspace wor = new Workspace(null, "bbb", "0");
+        Workspace wor = new Workspace(null, "bbb", "0","description");
         Long id_workspace = wor.save(MC);
         String[] attributes = {"id_workspace"};
         String[] values = {id_workspace.toString()};
@@ -59,6 +59,7 @@ public class MapCatalogTest {
                         list.get(0).getId_creator() == null
                 &&      list.get(0).getName().equals("bbb")
                 &&      list.get(0).getPublic().equals("0")
+                &&      list.get(0).getDescription().equals("description")
         );
         //Deletion of the workspace
         Workspace.delete(MC, id_workspace);

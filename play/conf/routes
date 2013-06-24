@@ -74,7 +74,7 @@ GET /mapcatalog/myworkspaces                                controllers.MapCatal
 
 GET /mapcatalog/workspace/:id_workspace                     controllers.MapCatalogC.viewWorkspace(id_workspace : String)
 
-GET /mapcatalog/                                            controllers.MapCatalogC.viewFolder(id_folder :  String)
+GET /mapcatalog/workspace/:id_workspace/folder/:id_folder                 controllers.MapCatalogC.viewFolder(id_workspace: String, id_folder :  String)
 
 GET /createworkspace                                        controllers.MapCatalogC.createWorkspace
 
@@ -92,4 +92,10 @@ POST /signin                                                controllers.General.
 
 #API REST
 
-GET /mapcatalog/:id_context                                 controllers.MapCatalogAPI.getContext(id_context)
+GET /mapcatalogapi/:id_context                                 controllers.MapCatalogAPI.getContext(id_context)
+
+DELETE /mapcatalogapi/:id_context                              controllers.MapCatalogAPI.deleteContext(id_context)
+
+GET /mapcatalogapi/workspace/listWorkspaces                    controllers.MapCatalogAPI.listWorkspaces
+
+GET /mapcatalogapi/workspace/:id_workspace/listContexts        controllers.MapCatalogAPI.listContexts(id_workspace)

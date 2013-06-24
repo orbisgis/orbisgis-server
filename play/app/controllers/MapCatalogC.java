@@ -38,7 +38,7 @@ import java.util.List;
 
 import csp.ContentSecurityPolicy;
 
-@ContentSecurityPolicy
+
 public class MapCatalogC extends Controller{
 
     private static MapCatalog MC = Global.mc();
@@ -64,24 +64,31 @@ public class MapCatalogC extends Controller{
         return ok(mapCatalog.render(list));
     }
 
+
+
     @Security.Authenticated(Secured.class)
     public static Result viewWorkspace(String id_workspace){
         String[] attributes = {"id_root", "id_parent"};
         String[] values = {id_workspace, null};
         List<Folder> listF = Folder.page(MC,attributes,values);
         List<OWSContext> listC = OWSContext.page(MC, attributes, values);
-        return ok(workspace.render(listF,listC));
+        String[] attributes2 = {"id_workspace"};
+        String[] values2 = {id_workspace};
+        Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
+        return ok(workspace.render(listF,listC,wor));
     }
 
     @Security.Authenticated(Secured.class)
-    public static Result viewFolder(String id_folder){
+    public static Result viewFolder(String id_workspace, String id_folder){
         String[] attributes = {"id_parent"};
         String[] values = {id_folder};
         List<Folder> listF = Folder.page(MC,attributes,values);
         List<OWSContext> listC = OWSContext.page(MC, attributes, values);
         List<Folder> path = Folder.getPath(MC, id_folder);
-
-        return ok(folder.render(listF,listC,path));
+        String[] attributes2 = {"id_workspace"};
+        String[] values2 = {id_workspace};
+        Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
+        return ok(folder.render(listF,listC,path,wor));
     }
 
     @Security.Authenticated(Secured.class)
@@ -92,7 +99,7 @@ public class MapCatalogC extends Controller{
         if(form.get("public").equals("true")){
             isPublic="1";
         }else{isPublic="0";}
-        Workspace work = new Workspace(session("id_user"),name,isPublic);
+        Workspace work = new Workspace(session("id_user"),name,isPublic,"");
         Long id = work.save(MC);
         System.out.println("WORKSPACE CREATED");
         return viewWorkspace(id.toString());
