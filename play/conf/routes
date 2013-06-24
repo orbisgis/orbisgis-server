@@ -78,6 +78,10 @@ GET /mapcatalog/workspace/:id_workspace/folder/:id_folder                 contro
 
 GET /createworkspace                                        controllers.MapCatalogC.createWorkspace
 
+GET /createfolderroot                                           controllers.MapCatalogC.createFolderFromRoot
+
+GET /createfolderparent                                           controllers.MapCatalogC.createFolderFromParent
+
 # Authentification
 
 GET /login                                                  controllers.General.login

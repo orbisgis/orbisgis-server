@@ -104,4 +104,27 @@ public class MapCatalogC extends Controller{
         System.out.println("WORKSPACE CREATED");
         return viewWorkspace(id.toString());
     }
+
+    @Security.Authenticated(Secured.class)
+    public static Result createFolderFromRoot(){
+        DynamicForm form = Form.form().bindFromRequest();
+        String name = form.get("name");
+        String id_root = form.get("id_root");
+        Folder fol = new Folder(id_root,null,name);
+        Long id = fol.save(MC);
+        System.out.println("FOLDER CREATED");
+        return viewFolder(id_root, id.toString());
+    }
+
+    @Security.Authenticated(Secured.class)
+    public static Result createFolderFromParent(){
+        DynamicForm form = Form.form().bindFromRequest();
+        String name = form.get("name");
+        String id_root = form.get("id_root");
+        String id_parent = form.get("id_parent");
+        Folder fol = new Folder(id_root,id_parent,name);
+        Long id = fol.save(MC);
+        System.out.println("FOLDER CREATED");
+        return viewFolder(id_root, id.toString());
+    }
 }
