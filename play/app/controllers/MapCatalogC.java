@@ -38,7 +38,7 @@ import java.util.List;
 
 import csp.ContentSecurityPolicy;
 
-
+@ContentSecurityPolicy
 public class MapCatalogC extends Controller{
 
     private static MapCatalog MC = Global.mc();
@@ -127,4 +127,10 @@ public class MapCatalogC extends Controller{
         System.out.println("FOLDER CREATED");
         return viewFolder(id_root, id.toString());
     }
+
+    //@Security.Authenticated(Secured.class)
+    //public static Result monitor(String id_workspace){
+
+    //    return index();
+    //}
 }

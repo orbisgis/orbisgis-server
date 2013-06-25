@@ -76,11 +76,13 @@ GET /mapcatalog/workspace/:id_workspace                     controllers.MapCatal
 
 GET /mapcatalog/workspace/:id_workspace/folder/:id_folder                 controllers.MapCatalogC.viewFolder(id_workspace: String, id_folder :  String)
 
-GET /createworkspace                                        controllers.MapCatalogC.createWorkspace
+POST /createworkspace                                        controllers.MapCatalogC.createWorkspace
 
-GET /createfolderroot                                           controllers.MapCatalogC.createFolderFromRoot
+POST /createfolderroot                                           controllers.MapCatalogC.createFolderFromRoot
 
-GET /createfolderparent                                           controllers.MapCatalogC.createFolderFromParent
+POST /createfolderparent                                           controllers.MapCatalogC.createFolderFromParent
+
+#GET /monitor                                                controllers.MapCatalogC.monitor(id_workspace)
 
 # Authentification
 

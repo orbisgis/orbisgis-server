@@ -1,11 +1,26 @@
-var toToggle = document.getElementsByClassName("toToggle \d*");
-for (var i=0; i < toToggle.length; i++){
-    toToggle[i].addEventListener('onclick',toggleInfo(toToggle.className.split(' ')[1]), false);
-}
 function toggleInfo(id){
-    var list = document.getElementsByClassName("Info")
-    for (var i=0; i < list.length;i++){
-        list[i].style.display='none'
+    var list = document.getElementsByClassName("Info");
+    for (var i=0;i<list.length;i++){
+        list[i].style.display="none";
     }
-    document.getElementById(id).style.display='block'
+    document.getElementById(id).style.display="block";
+};
+
+function toggle(divtag){
+    if(document.getElementById(divtag).style.display=='none'){
+        document.getElementById(divtag).style.display='block';
+    } else {
+        document.getElementById(divtag).style.display='none';
+    }
 }
+
+var toToggle = document.getElementsByClassName("toToggle");
+var name;
+for (var j=0;j<toToggle.length;j++)
+{
+    (function(id){
+        id = toToggle[j].className.split(' ')[1];
+        toToggle[j].addEventListener("click",function(){toggleInfo(id)}, false);
+    }(name))
+}
+document.getElementById("imgtoggle").addEventListener("click",function(){toggle("addAWorkspace")},false);
