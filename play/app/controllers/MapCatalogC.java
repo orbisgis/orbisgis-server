@@ -99,7 +99,8 @@ public class MapCatalogC extends Controller{
         if(form.get("public").equals("true")){
             isPublic="1";
         }else{isPublic="0";}
-        Workspace work = new Workspace(session("id_user"),name,isPublic,"");
+        String description = form.get("description");
+        Workspace work = new Workspace(session("id_user"),name,isPublic,description);
         Long id = work.save(MC);
         System.out.println("WORKSPACE CREATED");
         return viewWorkspace(id.toString());

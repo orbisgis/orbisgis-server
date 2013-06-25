@@ -2,7 +2,7 @@
 
 @import helper.twitterBootstrap._
 
-@main("MapCatalog","OrbisGIS services") {
+@javamain("MapCatalog","OrbisGIS services") {
 <div class="container">
     <div class="page-header">
         <h1>
@@ -29,18 +29,19 @@
             <h4>Workspaces</h4>
 
             <div class="well well-small">
-                <img  id="imgtoggle" src="@routes.Assets.at("images/add.png")" alt="add"> create my own workspace</img>
-                <form id="addAWorkspace" style="margin-left:2%;padding-bottom:2px;display:none" action="@routes.MapCatalogC.createWorkspace()">
+                <img id="imgtoggle" src="@routes.Assets.at("images/add.png")" alt="add"> create my own workspace</img>
+                <form id="addtoggle" style="margin-left:2%;padding-bottom:2px;display:none" action="@routes.MapCatalogC.createWorkspace()">
                     <fieldset>
                         <label>Name</label>
-                        <input type="text" placeholder="Type the name of the workspace" name="name">
+                        <input required="required" type="text" placeholder="Type the name of the workspace" name="name">
                         <span class="help-block">Decide whether the workspace is public or not:</span>
-                        <label class="radio">
+                        <label class="radio inline">
                             <input type="radio" name="public" value="true" checked>Public
                         </label>
-                        <label class="radio">
+                        <label class="radio inline">
                             <input type="radio" name="public" value="false">Private
                         </label>
+                        <textarea wrap="hard" required="required" maxlength="999" form="addAWorkspace" name="description" rows="5" placeholder="Add the description of you workspace here."></textarea>
                         <button type="submit" class="btn">Submit</button>
                     </fieldset>
                 </form>
@@ -77,6 +78,7 @@
             <div class="Info" id="@workspace.getId_workspace()" style="display:none">
                 <div class="well well-small">
                     <p>
+                        <h3>@workspace.getName()</h3>
                         @workspace.getDescription()
                     </p>
                 </div>

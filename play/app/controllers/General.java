@@ -91,6 +91,10 @@ public class General extends Controller{
     }
 
     public static Result signin(){
+        if(session().get("email")!=null){
+            flash("error","You must log out to create another account");
+            return forbidden(home.render());
+        }
         return ok(signin.render(Form.form(Signin.class),""));
     }
 

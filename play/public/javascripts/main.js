@@ -23,4 +23,4 @@ for (var j=0;j<toToggle.length;j++)
         toToggle[j].addEventListener("click",function(){toggleInfo(id)}, false);
     }(name))
 }
-document.getElementById("imgtoggle").addEventListener("click",function(){toggle("addAWorkspace")},false);
+document.getElementById("imgtoggle").addEventListener("click",function(){toggle("addtoggle")},false);

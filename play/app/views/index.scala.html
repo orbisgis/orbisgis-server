@@ -1,8 +1,8 @@
-@(styles: Seq[java.io.File], layers: Seq[(String, java.io.File)], fileForm: play.api.data.Form[String], styleForm: play.api.data.Form[String])
+@(styles: Seq[java.io.File], layers: Seq[(String, java.io.File)], fileForm: play.api.data.Form[String], styleForm: play.api.data.Form[String])(implicit session : play.api.mvc.Session)
 
 @import helper.twitterBootstrap._
 
-@main("Data","OrbisGIS services") {
+@scalamain("Data","OrbisGIS services") {
 <div class="container">
     <div class="page-header">
         <h1>WMS manager</h1>
