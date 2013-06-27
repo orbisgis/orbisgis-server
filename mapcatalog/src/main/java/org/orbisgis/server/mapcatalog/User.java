@@ -64,7 +64,7 @@ public class User {
      * @param password
      * @param location
      */
-    public User(String id_user, String name, String email, String password, String location) throws NoSuchAlgorithmException {
+    public User(String id_user, String name, String email, String password, String location){
         this.id_user = id_user;
         this.name = name;
         this.email = email;
@@ -94,6 +94,7 @@ public class User {
 
     /**
      * Method that saves a instantiated User into database. Handles SQL injections.
+     * @param MC the mapcatalog object for the connection
      * @return The ID of the User just created (primary key)
      */
     public  Long save(MapCatalog MC) {
@@ -119,6 +120,7 @@ public class User {
 
     /**
      * Deletes a user from database
+     * @param MC the mapcatalog object for the connection
      * @param id_user The primary key of the user
      */
     public static void delete(MapCatalog MC, Long id_user) {
@@ -134,6 +136,7 @@ public class User {
 
     /**
      * Method that queries the database for users, with a where clause, be careful, as only the values in the where clause will be checked for SQL injections
+     * @param MC the mapcatalog object for the connection
      * @param attributes The attributes in the where clause, you should NEVER let the user bias this parameter, always hard code it.
      * @param values The values of the attributes, this is totally SQL injection safe
      * @return A list of User containing the result of the query
@@ -181,12 +184,12 @@ public class User {
             rs.close();
         }
         catch (SQLException e) {e.printStackTrace();}
-        catch (NoSuchAlgorithmException e) {e.printStackTrace();}
         return paged;
     }
 
     /**
      * Method that sends a query to database SELECT * FROM USER
+     * @param MC the mapcatalog object for the connection
      * @return A list of user containing the result of the query
      */
     public static List<User> page(MapCatalog MC){
@@ -206,8 +209,6 @@ public class User {
             }
             rs.close();
         } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
         return paged;

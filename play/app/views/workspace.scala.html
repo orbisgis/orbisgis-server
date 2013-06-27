@@ -12,7 +12,7 @@
 </div>
 <div class="container-fluid">
     <div class="row-fluid">
-        <div class="span4" id="navigate" style="background-color:#61a8df;padding-left: 5px">
+        <div class="span5" id="navigate" style="background-color:#61a8df;padding-left: 5px">
             <ul class="nav nav-tabs" style="margin-top:2%">
                 <li @if(root.getPublic()=="0"){class="active"}>
                 <a href="@routes.MapCatalogC.myWorkspaces()"><h4>My workspaces</h4></a>
@@ -55,7 +55,7 @@
                             </a>
                         </td>
                         <td>
-                            <a href="@routes.MapCatalogC.viewFolder(folder.getId_root(), folder.getId_folder())">View</a>
+                            <a href="@routes.MapCatalogC.viewFolder(folder.getId_root(), folder.getId_folder())">Open</a>
                         </td>
                     </tr>
                     }
@@ -71,7 +71,7 @@
                 </table>
             </div>
         </div>
-        <div class="span8" id="display" style="background-color:#70c265;">
+        <div class="span7" id="display" style="background-color:#70c265;">
             <h2>Display</h2>
         </div>
     </div>

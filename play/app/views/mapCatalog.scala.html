@@ -12,7 +12,7 @@
 </div>
 <div class="container-fluid" >
     <div class="row-fluid">
-        <div class="span4" id="navigate" style="background-color:#61a8df;padding-left: 5px">
+        <div class="span5" id="navigate" style="background-color:#61a8df;padding-left: 5px">
 
             <ul class="nav nav-tabs" style="margin-top:2%">
                 <li @if(flash.contains("section")){class="active"}>
@@ -22,12 +22,15 @@
                     <a href="@routes.MapCatalogC.index()"><h4>Public workspaces</h4></a>
                 </li>
             </ul>
+            @if(flash.contains("section")){
+                <a href="@routes.MapCatalogC.manageWorkspaces()"><button class="btn btn-danger">Manage my workspaces</button></a>
+            <br/><br/>
+            }
             <form class="form-search">
                 <input type="text" class="input-medium search-query" placeholder="Search a workspace">
                 <button type="submit" class="btn">Search</button>
             </form>
             <h4>Workspaces</h4>
-
             <div class="well well-small">
                 <img id="imgtoggle" src="@routes.Assets.at("images/add.png")" alt="add"> create my own workspace</img>
                 <form id="addtoggle" style="margin-left:2%;padding-bottom:2px;display:none" action="@routes.MapCatalogC.createWorkspace()">
@@ -41,7 +44,9 @@
                         <label class="radio inline">
                             <input type="radio" name="public" value="false">Private
                         </label>
-                        <textarea wrap="hard" required="required" maxlength="999" form="addAWorkspace" name="description" rows="5" placeholder="Add the description of you workspace here."></textarea>
+                        <br/>
+                        <textarea wrap="hard" required="required" maxlength="999" name="description" rows="5" placeholder="Add the description of you workspace here."></textarea>
+                        <br/>
                         <button type="submit" class="btn">Submit</button>
                     </fieldset>
                 </form>
@@ -52,6 +57,7 @@
                         <td>Name</td>
                         <td>Creator</td>
                         <td>Action</td>
+                        @if(flash.contains("section")){<td>Public</td>}
                     </tr>
                     @for(workspace <- workspaces){
                     <tr>
@@ -64,14 +70,20 @@
                         <td>
                             <a href="/mapcatalog/workspace/@workspace.getId_workspace()">Explore</a>
                             <a class="toToggle @workspace.getId_workspace()">Info</a>
-                            <a href="">Monitor</a>
+                            @if(flash.contains("section")){<a href="">Monitor</a>}
                         </td>
+                        @if(flash.contains("section")){
+                        <td>
+                            @if((workspace.getPublic()=="1")){Yes}
+                            @if(!(workspace.getPublic()=="1")){No}
+                        </td>
+                        }
                     </tr>
                     }
                 </table>
             </div>
         </div>
-        <div class="span8" id="display" style="background-color:#70c265;">
+        <div class="span7" id="display" style="background-color:#70c265;">
             <h2>Display</h2>
             <p class="text-info" >Click on info to get the workspace description !</p>
             @for(workspace <- workspaces){

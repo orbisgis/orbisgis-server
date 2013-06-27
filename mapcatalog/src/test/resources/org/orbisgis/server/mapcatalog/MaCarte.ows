@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns3:OWSContext xmlns:ns1="http://www.opengis.net/ows/2.0" xmlns:ns2="http://www.w3.org/1999/xlink" xmlns:ns3="http://www.opengis.net/ows-context" xmlns:ns4="http://www.opengis.net/se/2.0/core" xmlns:ns5="http://www.opengis.net/wfs/2.1" xmlns:ns6="http://www.opengis.net/fes/2.1" xmlns:ns7="http://www.opengis.net/gml" xmlns:ns8="http://www.opengis.net/kml/2.2" xmlns:ns9="http://www.w3.org/2005/Atom" xmlns:ns10="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0" xmlns:ns11="http://www.opengis.net/sld/1.2" xmlns:ns12="http://www.opengis.net/se/2.0/thematic" xmlns:ns13="http://www.w3.org/2001/SMIL20/" xmlns:ns14="http://www.opengis.net/wms" xmlns:ns15="http://www.opengis.net/se/2.0/raster" xmlns:ns16="http://www.w3.org/2001/SMIL20/Language" version="0.4.2">
+    <ns3:General>
+        <ns1:Title xml:lang="fr-FR">MaCarte</ns1:Title>
+    </ns3:General>
+    <ns3:ResourceList/>
+</ns3:OWSContext>

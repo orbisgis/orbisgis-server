@@ -29,10 +29,18 @@ package org.orbisgis.server.mapcatalog;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.XMLReader;
 
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
@@ -106,7 +114,7 @@ public class MapCatalog {
      * Executes a .sql file
      * @param file
      */
-    public void executeSQL(String file){
+    void executeSQL(String file){
         String s;
         StringBuffer sb = new StringBuffer();
         try{
@@ -124,40 +132,6 @@ public class MapCatalog {
         } catch(Exception e){
             e.printStackTrace();
         }
-    }
-
-    /**
-     * This methods enquires a SELECT query to database with a WHERE clause, SQL injection-safe
-     * @param model         The name of the table, do not let the user modify this
-     * @param whereclause   The where clause
-     * @return  The content in an array list
-     */
-    public ArrayList<ArrayList<String>> selectWhere(String model, String whereclause){
-        ArrayList<ArrayList<String>> values = new ArrayList<ArrayList<String>>();
-        String[] attributesvalue = whereclause.split("[=,]");
-        String qmark = attributesvalue[0]+" = ? ";
-        for(int i=1;2*i<attributesvalue.length;i++){
-            qmark += " AND "+attributesvalue[2*i]+" = ?";
-        }
-        String query = "SELECT * FROM "+model+" WHERE "+qmark+";";
-        try{
-            PreparedStatement pstmt = getConnection().prepareStatement(query);
-            for(int i=0;2*i<attributesvalue.length;i++){
-                pstmt.setString(i+1, attributesvalue[2*i+1].trim());
-            }
-            ResultSet rs = pstmt.executeQuery();
-            while(rs.next()){
-                int length = rs.getMetaData().getColumnCount();
-                ArrayList ar = new ArrayList();
-                for(int i=0;i<length;i++){
-                    ar.add(rs.getString(i+1));
-                }
-                values.add(ar);
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-        return values;
     }
 
     /**
@@ -256,17 +230,27 @@ public class MapCatalog {
     }
 
     /**
-     * This method's only purpose is to simplify the parsing of the content of an OWSCONTEXT to get the lang and the title
-     * @param values The string "content" of the ows context
-     * @return The lang and the title in an array if found, else returns {"default","default"}
+     * Parses a map context to get the title and the lang
+     * @param content The map context
+     * @return the title and the lang
      */
-    private String[] getTitleLang(String values){
-       int indexbegin = values.indexOf("ns1:Title xml:lang=")+20;
-       int indexend = values.indexOf("</ns1:Title>");
-       if (!values.contains("ns1:Title xml:lang=")) {
-           return (new String[] {"default", "default"});
-       }
-       return values.substring(indexbegin, indexend).split(">");
+    String[] getTitleLang(InputStream content){
+        String title = "default";
+        String lang = "default";
+        try {
+            DocumentBuilder dBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            Document doc = dBuilder.parse(content);
+            doc.getDocumentElement().normalize();
+
+            NodeList nodes = doc.getElementsByTagName("ns1:Title"); //subject to changes
+            Element titleNode = (Element) nodes.item(0);
+            title = titleNode.getTextContent();
+            lang = titleNode.getAttribute("xml:lang");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return (new String[]{title,lang});
     }
 
     /**

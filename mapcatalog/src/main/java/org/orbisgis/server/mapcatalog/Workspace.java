@@ -96,6 +96,7 @@ public class Workspace {
 
     /**
      * Method that saves a instantiated workspace into database. Handles SQL injections.
+     * @param MC the mapcatalog object for the connection
      * @return The ID of the workspace just created (primary key)
      */
     public  Long save(MapCatalog MC) {
@@ -121,6 +122,7 @@ public class Workspace {
 
     /**
      * Deletes a workspace from database
+     * @param MC the mapcatalog object for the connection
      * @param id_workspace The primary key of the workspace
      */
     public static void delete(MapCatalog MC, Long id_workspace) {
@@ -136,6 +138,7 @@ public class Workspace {
 
     /**
      * Method that queries the database for workspaces, with a where clause, be careful, as only the values in the where clause will be checked for SQL injections
+     * @param MC the mapcatalog object for the connection
      * @param attributes The attributes in the where clause, you should NEVER let the user bias this parameter, always hard code it.
      * @param values The values of the attributes, this is totally SQL injection safe
      * @return A list of Workspace containing the result of the query
@@ -188,6 +191,7 @@ public class Workspace {
 
     /**
      * Method that sends a query to database SELECT * FROM Workspace
+     * @param MC the mapcatalog object for the connection
      * @return A list of Workspace containing the result of the query
      */
     public static List<Workspace> page(MapCatalog MC){

@@ -47,6 +47,10 @@ public class MapCatalogC extends Controller{
         return MC;
     }
 
+    /**
+     * Renders the MapCatalog Public page
+     * @return
+     */
     public static Result index() {
         String[] attributes = {"isPublic"};
         String[] values = {"1"};
@@ -54,18 +58,25 @@ public class MapCatalogC extends Controller{
         return ok(mapCatalog.render(list));
     }
 
+    /**
+     * Renders the MapCatalog MyWorkspace page
+     * @return
+     */
     @Security.Authenticated(Secured.class)
     public static Result myWorkspaces(){
-        String[] attributes = {"isPublic","id_creator"};
+        String[] attributes = {"id_creator"};
         String id = session("id_user");
-        String[] values = {"0",id};
+        String[] values = {id};
         List<Workspace> list = Workspace.page(MC, attributes,values);
         flash("section","private");
         return ok(mapCatalog.render(list));
     }
 
-
-
+    /**
+     * Renders the view that represent the inside of a workspace
+     * @param id_workspace the id of the workspace
+     * @return
+     */
     @Security.Authenticated(Secured.class)
     public static Result viewWorkspace(String id_workspace){
         String[] attributes = {"id_root", "id_parent"};
@@ -78,6 +89,12 @@ public class MapCatalogC extends Controller{
         return ok(workspace.render(listF,listC,wor));
     }
 
+    /**
+     * Renders theview that represents the inside of a folder
+     * @param id_workspace the root of the folder
+     * @param id_folder the id of the folder
+     * @return
+     */
     @Security.Authenticated(Secured.class)
     public static Result viewFolder(String id_workspace, String id_folder){
         String[] attributes = {"id_parent"};
@@ -91,6 +108,10 @@ public class MapCatalogC extends Controller{
         return ok(folder.render(listF,listC,path,wor));
     }
 
+    /**
+     * Creates a workspace in the database from a form
+     * @return
+     */
     @Security.Authenticated(Secured.class)
     public static Result createWorkspace(){
         DynamicForm form = Form.form().bindFromRequest();
@@ -106,6 +127,10 @@ public class MapCatalogC extends Controller{
         return viewWorkspace(id.toString());
     }
 
+    /**
+     * Create a folder in the database from a form when inside the Workspace.html page
+     * @return
+     */
     @Security.Authenticated(Secured.class)
     public static Result createFolderFromRoot(){
         DynamicForm form = Form.form().bindFromRequest();
@@ -117,6 +142,10 @@ public class MapCatalogC extends Controller{
         return viewFolder(id_root, id.toString());
     }
 
+    /**
+     * Create a folder in the database from a form when inside the Folder.html page
+     * @return
+     */
     @Security.Authenticated(Secured.class)
     public static Result createFolderFromParent(){
         DynamicForm form = Form.form().bindFromRequest();
@@ -133,5 +162,21 @@ public class MapCatalogC extends Controller{
     //public static Result monitor(String id_workspace){
 
     //    return index();
+    //}
+
+    /**
+     * Renders the management page of workspaces
+     * @return
+     */
+    @Security.Authenticated(Secured.class)
+    public static Result manageWorkspaces(){
+        String[] attributes = {"id_creator"};
+        String[] values = {session().get("id_user")};
+        List<Workspace> list = Workspace.page(MC, attributes,values);
+        return ok(manageWorkspace.render(list));
+    }
+
+    //@Security.Authenticated(Secured.class)
+    //public static Result manageAWorkspace(String id_workspace){
     //}
 }

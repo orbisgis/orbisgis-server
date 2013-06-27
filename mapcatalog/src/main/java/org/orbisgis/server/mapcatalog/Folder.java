@@ -85,6 +85,7 @@ public class Folder {
 
     /**
      * Method that saves a instantiaCollections.reverse(list)ted folder into database. Handles SQL injections.
+     * @param MC the mapcatalog object for the connection
      * @return The ID of the folder just created (primary key)
      */
     public  Long save(MapCatalog MC) {
@@ -109,6 +110,7 @@ public class Folder {
 
     /**
      * Deletes a folder from database
+     * @param MC the mapcatalog object for the connection
      * @param id_folder The primary key of the folder
      */
     public static void delete(MapCatalog MC, Long id_folder) {
@@ -124,6 +126,7 @@ public class Folder {
 
     /**
      * Method that queries the database for folders, with a where clause, be careful, as only the values in the where clause will be checked for SQL injections
+     * @param MC the mapcatalog object for the connection
      * @param attributes The attributes in the where clause, you should NEVER let the user bias this parameter, always hard code it.
      * @param values The values of the attributes, this is totally SQL injection safe
      * @return A list of Folder containing the result of the query
@@ -174,6 +177,7 @@ public class Folder {
 
     /**
      * Method that sends a query to database SELECT * FROM FOLDER
+     * @param MC the mapcatalog object for the connection
      * @return A list of folder containing the result of the query
      */
     public static List<Folder> page(MapCatalog MC){
@@ -197,6 +201,12 @@ public class Folder {
         return paged;
     }
 
+    /**
+     * Return each sucessive parent folder begining with the one in argument
+     * @param MC the mapcatalog object for the connection
+     * @param id_folder the folder you desire to get the path from
+     * @return
+     */
     public static List<Folder> getPath(MapCatalog MC, String id_folder){
         String id = id_folder;
         List<Folder> list = new LinkedList<Folder>();

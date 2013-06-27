@@ -43,10 +43,17 @@ import csp.ContentSecurityPolicy;
 public class General extends Controller{
     private static MapCatalog MC = MapCatalogC.getMapCatalog();
 
+    /**
+     * Renders the home page
+     * @return
+     */
     public static Result home() {
         return ok(home.render());
     }
 
+    /**
+     * class that represent the login form
+     */
     public static class Login {
 
         public String email;
@@ -54,6 +61,9 @@ public class General extends Controller{
 
     }
 
+    /**
+     * class that represent the signin form
+     */
     public static class Signin {
         public String name;
         public String email;
@@ -61,10 +71,19 @@ public class General extends Controller{
         public String location;
     }
 
+    /**
+     * Renders the login page
+     * @return
+     */
     public static Result login() {
         return ok(login.render(Form.form(Login.class),""));
     }
 
+    /**
+     * Checks if the login form is correct, and logs in the user
+     * @return The home page if sucess, the login page with error if error.
+     * @throws Exception
+     */
     public static Result authenticate() throws Exception{
         Form<Login> form = Form.form(Login.class).bindFromRequest();
         Login log = form.get();
@@ -85,11 +104,19 @@ public class General extends Controller{
         return (badRequest(login.render(form,error)));
     }
 
+    /**
+     * Clear the cookie session
+     * @return The login page
+     */
     public static Result logout(){
         session().clear();
         return redirect(routes.General.login());
     }
 
+    /**
+     * Renders the sign in page only if no one is logged in
+     * @return
+     */
     public static Result signin(){
         if(session().get("email")!=null){
             flash("error","You must log out to create another account");
@@ -98,13 +125,20 @@ public class General extends Controller{
         return ok(signin.render(Form.form(Signin.class),""));
     }
 
+    /**
+     * Saves the user that just signed in
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
     public static Result signedin() throws NoSuchAlgorithmException {
         Form<Signin> form = Form.form(Signin.class).bindFromRequest();
         Signin sign = form.get();
-        ArrayList<ArrayList<String>> user = MC.selectWhere("user","email="+sign.email);
+        String[] attribute = {"email"};
+        String[] values = {sign.email};
+        List<User> user = User.page(MC, attribute, values);
         String error="";
-        if(sign.email!=null && sign.password.length()>=6){
-            if(user.isEmpty()){
+        if(sign.email!=null && sign.password.length()>=6){ //check the form
+            if(user.isEmpty()){ //check if user mail is used
                 User usr = new User(sign.name, sign.email, sign.password, sign.location);
                 usr.save(MC);
                 return ok(home.render());

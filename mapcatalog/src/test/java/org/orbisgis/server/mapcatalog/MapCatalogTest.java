@@ -29,6 +29,9 @@ package org.orbisgis.server.mapcatalog; /**
 import org.junit.*;
 import org.orbisgis.server.mapcatalog.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.List;
@@ -42,6 +45,13 @@ public class MapCatalogTest {
 
     @Before
     public void init(){
+        MC.executeSQL("down.sql");
+        //Waiting for drop database to end
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         MC.executeSQL("ups.sql");
         MC.executeSQL("populate.sql");
     }
@@ -116,9 +126,8 @@ public class MapCatalogTest {
 
     @Test
     public void owsCreation () throws SQLException{
-
         //Creation of the owscontext
-        OWSContext ows = new OWSContext("1", null, null , "acontent", "title");
+        OWSContext ows = new OWSContext("1", null, null , null, "title");
         Long id_owscontext = ows.save(MC);
         String[] attributes = {"id_owscontext"};
         String[] values = {id_owscontext.toString()};
@@ -127,7 +136,7 @@ public class MapCatalogTest {
                                 list.get(0).getId_root().equals("1")
                         &&      list.get(0).getId_parent()==null
                         &&      list.get(0).getId_uploader()==null
-                        &&      list.get(0).getContent().equals("acontent")
+                        &&      list.get(0).getContent()==null
                         &&      list.get(0).getTitle().equals("title")
         );
         //Deletion of the workspace
@@ -158,6 +167,16 @@ public class MapCatalogTest {
         list= Comment.page(MC, attributes,values);
         Assert.assertTrue(
                 list.isEmpty()
+        );
+    }
+
+    @Test
+    public void getTitle(){
+        InputStream is = getClass().getResourceAsStream("MaCarte.ows");
+        String[] title = MC.getTitleLang(is);
+        Assert.assertTrue(
+                                title[0].equals("MaCarte")
+                        &&      title[1].equals("fr-FR")
         );
     }
 

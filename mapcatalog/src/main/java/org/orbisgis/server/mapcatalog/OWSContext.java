@@ -25,6 +25,7 @@ package org.orbisgis.server.mapcatalog; /**
  * For more information, please consult: <http://www.orbisgis.org/> or contact
  * directly: info_at_ orbisgis.org
  */
+import java.io.InputStream;
 import java.sql.*;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -39,7 +40,7 @@ public class OWSContext {
     private String id_root = null;
     private String id_parent = null;
     private String id_uploader = null;
-    private String content = "";
+    private InputStream content;
     private String title = "default";
     private Date date = null;
 
@@ -51,7 +52,7 @@ public class OWSContext {
      * @param content
      * @param title
      */
-    public OWSContext(String id_root, String id_parent, String id_uploader, String content, String title) {
+    public OWSContext(String id_root, String id_parent, String id_uploader, InputStream content, String title) {
         this.id_root = id_root;
         this.id_parent = id_parent;
         this.id_uploader = id_uploader;
@@ -69,7 +70,7 @@ public class OWSContext {
      * @param title
      * @param date
      */
-    public OWSContext(String id_owscontext, String id_root, String id_parent, String id_uploader, String content, String title, Date date) {
+    public OWSContext(String id_owscontext, String id_root, String id_parent, String id_uploader, InputStream content, String title, Date date) {
         this.id_owscontext = id_owscontext;
         this.id_root = id_root;
         this.id_parent = id_parent;
@@ -95,7 +96,7 @@ public class OWSContext {
         return id_uploader;
     }
 
-    public String getContent() {
+    public InputStream getContent() {
         return content;
     }
 
@@ -109,6 +110,7 @@ public class OWSContext {
 
     /**
      * Method that saves a instantiated OWSContext into database. Handles SQL injections.
+     * @param MC the mapcatalog object for the connection
      * @return The ID of the OWSContext just created (primary key)
      */
     public  Long save(MapCatalog MC) {
@@ -120,7 +122,7 @@ public class OWSContext {
             pstmt.setString(1, id_root);
             pstmt.setString(2, id_parent);
             pstmt.setString(3, id_uploader);
-            pstmt.setString(4, content);
+            pstmt.setAsciiStream(4, content);
             pstmt.setString(5, title);
             pstmt.executeUpdate();
             ResultSet rs = pstmt.getGeneratedKeys();
@@ -136,6 +138,7 @@ public class OWSContext {
 
     /**
      * Deletes a owscontext from database
+     * @param MC the mapcatalog object for the connection
      * @param id_owscontext The primary key of the owscontext
      */
     public static void delete(MapCatalog MC, Long id_owscontext) {
@@ -151,6 +154,7 @@ public class OWSContext {
 
     /**
      * Method that queries the database for owscontext, with a where clause, be careful, as only the values in the where clause will be checked for SQL injections
+     * @param MC the mapcatalog object for the connection
      * @param attributes The attributes in the where clause, you should NEVER let the user bias this parameter, always hard code it.
      * @param values The values of the attributes, this is totally SQL injection safe
      * @return A list of owscontext containing the result of the query
@@ -191,7 +195,7 @@ public class OWSContext {
                 String id_root = rs.getString("id_root");
                 String id_parent = rs.getString("id_parent");
                 String id_uploader = rs.getString("id_uploader");
-                String content = rs.getString("content");
+                InputStream content = rs.getAsciiStream("content");
                 String title = rs.getString("title");
                 Date date = rs.getDate("date");
                 OWSContext ows = new OWSContext(id_owscontext,id_root,id_parent,id_uploader,content,title,date);
@@ -204,6 +208,7 @@ public class OWSContext {
 
     /**
      * Method that sends a query to database SELECT * FROM OWSCONTEXT
+     * @param MC the mapcatalog object for the connection
      * @return A list of owscontext containing the result of the query
      */
     public static List<OWSContext> page(MapCatalog MC){
@@ -217,7 +222,7 @@ public class OWSContext {
                 String id_root = rs.getString("id_root");
                 String id_parent = rs.getString("id_parent");
                 String id_uploader = rs.getString("id_uploader");
-                String content = rs.getString("content");
+                InputStream content = rs.getAsciiStream("content");
                 String title = rs.getString("title");
                 Date date = rs.getDate("date");
                 OWSContext ows = new OWSContext(id_owscontext,id_root,id_parent,id_uploader,content,title,date);
@@ -228,24 +233,5 @@ public class OWSContext {
             e.printStackTrace();
         }
         return paged;
-    }
-
-    public static List<String> getPath(MapCatalog MC, String id_owscontext){
-        String id = id_owscontext;
-        List<String> list = new LinkedList<String>();
-        String id_root=null;
-        while(id!=null){
-            String[] attributes={"id_owscontext"};
-            String[] values={id};
-            List<OWSContext> temp = OWSContext.page(MC, attributes, values);
-            id = temp.get(0).getId_parent();
-            list.add(temp.get(0).getTitle());
-            id_root = temp.get(0).getId_root();
-        }
-        String[] attributes={"id_workspace"};
-        String[] values={id_root};
-        list.add(Workspace.page(MC,attributes,values).get(0).getName());
-        Collections.reverse(list);
-        return list;
     }
 }

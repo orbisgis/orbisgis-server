@@ -31,7 +31,9 @@ import play.*;
 import play.mvc.*;
 import play.mvc.Http.*;
 
-
+/**
+ * Overrides the security class of play to match authentication
+ */
 public class Secured extends Security.Authenticator {
     @Override
     public String getUsername(Context ctx) {

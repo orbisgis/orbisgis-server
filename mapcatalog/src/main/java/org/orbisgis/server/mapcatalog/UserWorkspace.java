@@ -25,15 +25,18 @@ package org.orbisgis.server.mapcatalog; /**
  * For more information, please consult: <http://www.orbisgis.org/> or contact
  * directly: info_at_ orbisgis.org
  */
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Java model of the table UserWorkspace
  */
 public class UserWorkspace {
-    private static MapCatalog MC = new MapCatalog();
     private String id_user;
     private String id_workspace;
     private String read = "0";
@@ -56,11 +59,32 @@ public class UserWorkspace {
         this.manageUser = manageUser;
     }
 
+    public String getId_user() {
+        return id_user;
+    }
+
+    public String getId_workspace() {
+        return id_workspace;
+    }
+
+    public String getRead() {
+        return read;
+    }
+
+    public String getWrite() {
+        return write;
+    }
+
+    public String getManageUser() {
+        return manageUser;
+    }
+
     /**
      * Method that saves a instantiated User_Workspace relation into database. Handles SQL injections.
+     * @param MC the mapcatalog object for the connection
      * @return The ID of the User just created (primary key)
      */
-    public  Long save() {
+    public  Long save(MapCatalog MC) {
         Long last = null;
         try{
             String query = "INSERT INTO user_workspace (id_user,id_workspace,read,write,manage_user) VALUES (? , ? , ? , ? , ?);";
@@ -84,10 +108,11 @@ public class UserWorkspace {
 
     /**
      * Deletes a user_workspace relation from database
+     * @param MC the mapcatalog object for the connection
      * @param id_user The primary key of the user
      * @param id_workspace The primary key of the workspace
      */
-    public static void delete(Long id_user, Long id_workspace) {
+    public static void delete(MapCatalog MC, Long id_user, Long id_workspace) {
         String query = "DELETE FROM user_workspace WHERE id_user = ? AND id_workspace = ?;";
         try{
             PreparedStatement stmt = MC.getConnection().prepareStatement(query);
@@ -97,5 +122,91 @@ public class UserWorkspace {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Method that queries the database for UserWorkspace relations, with a where clause, be careful, as only the values in the where clause will be checked for SQL injections
+     * @param MC the mapcatalog object for the connection
+     * @param attributes The attributes in the where clause, you should NEVER let the user bias this parameter, always hard code it.
+     * @param values The values of the attributes, this is totally SQL injection safe
+     * @return A list of UserWorkspace containing the result of the query
+     */
+    public static List<UserWorkspace> page(MapCatalog MC, String[] attributes, String[] values){
+        String query = "SELECT * FROM user_workspace WHERE ";
+        List<UserWorkspace> paged = new LinkedList<UserWorkspace>();
+        try {
+            //case argument invalid
+            if(attributes == null || values == null){
+                throw new IllegalArgumentException("Arguments cannot be null");
+            }
+            if(attributes.length != values.length){
+                throw new IllegalArgumentException("String arrays have to be of the same length");
+            }
+            //preparation of the query
+            query+=attributes[0]+" = ?";
+            for(int i=1; i<attributes.length; i++){
+                if(values[i]==null){
+                    query += "AND "+attributes[i]+" IS NULL";
+                }else{
+                    query += " AND "+attributes[i]+" = ?";
+                }
+            }
+            //preparation of the statement
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+            int j=1;
+            for(int i=0; i<values.length; i++){
+                if(values[i]!=null){
+                    stmt.setString(j, values[i]);
+                    j++;
+                }
+            }
+            //Retrieving values
+            ResultSet rs = stmt.executeQuery();
+            while(rs.next()){
+                String id_user = rs.getString("id_user");
+                String id_workspace = rs.getString("id_workspace");
+                String read = rs.getString("read");
+                String write = rs.getString("write");
+                String manageUser = rs.getString("manageUser");
+                UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
+                paged.add(usewor);
+            }
+            rs.close();
+        } catch (SQLException e) {e.printStackTrace();}
+        return paged;
+    }
+
+    /**
+     * Querys for a join from user_workspace and User, to get the information about each user linked to a workspace
+     * @param MC the mapcatalog object for the connection
+     * @param id
+     * @return
+     */
+    public static HashMap<UserWorkspace, User> pageWithUser(MapCatalog MC, String id){
+        String query = "SELECT * FROM USER_WORKSPACE JOIN USER ON USER.ID_USER=USER_WORKSPACE.ID_USER WHERE USER_WORKSPACE.ID_WORKSPACE = ?";
+        HashMap<UserWorkspace, User> paged = new HashMap<UserWorkspace, User>();
+        try {
+            //preparation of the statement
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+            stmt.setString(1, id);
+            //Retrieving values
+            ResultSet rs = stmt.executeQuery();
+            while(rs.next()){
+                String id_user = rs.getString("id_user");
+                String id_workspace = rs.getString("id_workspace");
+                String read = rs.getString("read");
+                String write = rs.getString("write");
+                String manageUser = rs.getString("manageUser");
+                UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
+                String name = rs.getString("name");
+                String email = rs.getString("email");
+                String password = rs.getString("password");
+                String location = rs.getString("location");
+                User use = new User(id_user, name, email, password, location);
+                paged.put(usewor,use);
+            }
+            rs.close();
+        } catch (SQLException e) {e.printStackTrace();}
+        return paged;
     }
 }

@@ -35,10 +35,18 @@ import java.util.List;
 
 import csp.ContentSecurityPolicy;
 
+/**
+ * Class for REST APi, this will changes when the API will be rewritten with database
+ */
 @ContentSecurityPolicy
 public class MapCatalogAPI extends Controller {
     private static MapCatalog MC = MapCatalogC.getMapCatalog();
 
+    /**
+     * Returns a context
+     * @param id the id of the context
+     * @return
+     */
     public static Result getContext(String id){
         String[] attributes = {"id_owscontext"};
         String[] values = {id};
@@ -46,18 +54,30 @@ public class MapCatalogAPI extends Controller {
         return ok(list.get(0).getContent());
     }
 
+    /**
+     * Deletes a context
+     * @param id the id of the context
+     * @return
+     */
     public static Result deleteContext(String id){
         OWSContext.delete(MC, Long.valueOf(id));
         return noContent();
     }
 
+    /**
+     * Get the list of workspaces
+     * @return
+     */
     public static Result listWorkspaces(){
         return ok(MC.getWorkspaceList());
     }
 
+    /**
+     * Get the context list of a workspace
+     * @param id_workspace the id of the workspace
+     * @return
+     */
     public static Result listContexts(String id_workspace){
         return ok(MC.getContextList(id_workspace));
     }
-
-
 }

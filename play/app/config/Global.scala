@@ -32,6 +32,8 @@ package config
 import java.util
 import org.orbisgis.server.mapcatalog.{MapCatalog, MapCatalogProperties}
 import play.api._
+import play.api.mvc._
+import play.api.mvc.Results._
 import controllers._
 import org.orbisgis.core.workspace.CoreWorkspace
 import scala.collection.JavaConversions._

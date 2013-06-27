@@ -92,6 +92,7 @@ public class Comment {
 
     /**
      * Method that saves a instantiated comment into database. Handles SQL injections.
+     * @param MC the mapcatalog object for the connection
      * @return The ID of the comment just created (primary key)
      */
     public Long save(MapCatalog MC) {
@@ -117,6 +118,7 @@ public class Comment {
 
     /**
      * Deletes a comment from database
+     * @param MC the mapcatalog object for the connection
      * @param id_comment The primary key of the comment
      */
     public static void delete(MapCatalog MC, Long id_comment) {
@@ -132,6 +134,7 @@ public class Comment {
 
     /**
      * Method that queries the database for comments, with a where clause, be careful, as only the values in the where clause will be checked for SQL injections
+     * @param MC the mapcatalog object for the connection
      * @param attributes The attributes in the where clause, you should NEVER let the user bias this parameter, always hard code it.
      * @param values The values of the attributes, this is totally SQL injection safe
      * @return A list of Comment containing the result of the query
@@ -183,6 +186,7 @@ public class Comment {
 
     /**
      * Method that sends a query to database SELECT * FROM COMMENT
+     * @param MC the mapcatalog object for the connection
      * @return A list of comment containing the result of the query
      */
     public static List<Comment> page(MapCatalog MC){
