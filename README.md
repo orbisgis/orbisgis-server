@@ -34,3 +34,9 @@ You'll find the available keys in the file stored in the sources. In particular,
 configure some things included in the GetCapabilities document answered by the WMS Server. Moreoever, log
 verbosity can be set here too. If you change the configuration file, you have to restart the whole
 application.
+
+About the use of internal styles
+====================================
+
+The wms server implementation lets you define which style you want to use. When sepcifying such a style
+in the URL, you must not give the extension (.se) of the file.
