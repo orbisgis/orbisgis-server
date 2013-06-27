@@ -39,6 +39,7 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Entry point for the WMS Service : we get requests here, we decide which handler we'll use to process them.
@@ -139,14 +140,18 @@ public final class WMS {
          * Handles the URL request and reads the request type to start
          * processing of either a getMap or getCapabilities request
          *
-         * @param queryParameters The parameters that have been put in the GET query.
+         * @param qp The parameters that have been put in the GET query.
          * @param output The output stream we will write in.
          * @param wmsResponse The object used by play in HTTP when our processing is finished.
          * @throws WMSException
          * @throws UnsupportedEncodingException
-         */
-        public void processRequests(Map<String, String[]> queryParameters, 
-                    OutputStream output, WMSResponse wmsResponse) throws WMSException, UnsupportedEncodingException {
+         */ public void processRequests(Map<String, String[]> qp,
+                                        OutputStream output, WMSResponse wmsResponse) throws WMSException, UnsupportedEncodingException {
+                Set<Map.Entry<String, String[]>> entries = qp.entrySet();
+                Map<String, String[]> queryParameters = new HashMap<String,String[]>();
+                for(Map.Entry<String, String[]> e : entries){
+                    queryParameters.put(e.getKey().toUpperCase(), e.getValue());
+                }
                 LOGGER.info("Received request with following parameters: "+parametersForLogging(queryParameters));
                 //Splitting request parameters to determine the requestType to execute
                 String service = "undefined";
