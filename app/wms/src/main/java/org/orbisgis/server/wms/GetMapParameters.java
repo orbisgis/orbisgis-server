@@ -85,44 +85,50 @@ public class GetMapParameters {
      * @throws WMSException If some mandatory argument is missing or if an argument is invalid.
      */
     public GetMapParameters(Map<String, String[]> queryParameters) throws WMSException {
+        Set<Map.Entry<String, String[]>> entries = queryParameters.entrySet();
+        Map<String, String[]> qp = new HashMap<String,String[]>();
+        for(Map.Entry<String, String[]> e : entries){
+            qp.put(e.getKey().toUpperCase(), e.getValue());
+        }
         for(String s : MANDATORY_PARAMETERS){
             //The following test should work even for STYLES as we should have an empty string as the value for the
             //key STYLES if there is nothing after the "=" in the HTTP request.
-            if(!queryParameters.containsKey(s) || queryParameters.get(s) == null || queryParameters.get(s).length == 0){
+            if(!qp.containsKey(s) || qp.get(s) == null || qp.get(s).length == 0){
                 throw new WMSException("The following parameter is mandatory: "+s);
             }
         }
-        crs = queryParameters.get(CRS)[0];
-        bBox = parseBBox(queryParameters.get(BBOX)[0]);
-        width = parseInteger(queryParameters.get(WIDTH)[0]);
-        height = parseInteger(queryParameters.get(HEIGHT)[0]);
-        layerList = parseLayers(queryParameters.get(LAYERS)[0]);
-        if (!queryParameters.get(STYLES)[0].isEmpty()) {
-            styleList = queryParameters.get(STYLES)[0].split(",");
+
+        crs = qp.get(CRS)[0];
+        bBox = parseBBox(qp.get(BBOX)[0]);
+        width = parseInteger(qp.get(WIDTH)[0]);
+        height = parseInteger(qp.get(HEIGHT)[0]);
+        layerList = parseLayers(qp.get(LAYERS)[0]);
+        if (!qp.get(STYLES)[0].isEmpty()) {
+            styleList = qp.get(STYLES)[0].split(",");
         } else {
             styleList = new String[0];
         }
 
-        if (queryParameters.containsKey("PIXELSIZE")) {
-            pixelSize = Double.valueOf(queryParameters.get("PIXELSIZE")[0]);
+        if (qp.containsKey("PIXELSIZE")) {
+            pixelSize = Double.valueOf(qp.get("PIXELSIZE")[0]);
         }
 
-        imageFormat = queryParameters.get(FORMAT)[0];
+        imageFormat = qp.get(FORMAT)[0];
 
-        if (queryParameters.containsKey(TRANSPARENT)) {
-            transparent = Boolean.valueOf(queryParameters.get(TRANSPARENT)[0]);
+        if (qp.containsKey(TRANSPARENT)) {
+            transparent = Boolean.valueOf(qp.get(TRANSPARENT)[0]);
         }
 
-        if (queryParameters.containsKey(BGCOLOR)) {
-            bgColor = queryParameters.get(BGCOLOR)[0];
+        if (qp.containsKey(BGCOLOR)) {
+            bgColor = qp.get(BGCOLOR)[0];
         }
 
-        if (queryParameters.containsKey(SLD)) {
-            sld = queryParameters.get(SLD)[0];
+        if (qp.containsKey(SLD)) {
+            sld = qp.get(SLD)[0];
         }
 
-        if (queryParameters.containsKey(EXCEPTIONS)) {
-            exceptionsFormat = queryParameters.get(EXCEPTIONS)[0];
+        if (qp.containsKey(EXCEPTIONS)) {
+            exceptionsFormat = qp.get(EXCEPTIONS)[0];
         }
     }
 
