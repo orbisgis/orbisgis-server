@@ -32,6 +32,7 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
 import net.opengis.wms.*;
+import org.cts.registry.RegistryException;
 import org.gdms.data.DataSource;
 import org.gdms.data.DataSourceCreationException;
 import org.gdms.data.DataSourceFactory;
@@ -253,12 +254,17 @@ public final class GetCapabilitiesHandler {
         } catch (JAXBException ex) {
             throw new RuntimeException("Failed to build the JAXB Context, can't build the associated XML.", ex);
         }
-        Set<String> codes = DataSourceFactory.getCRSFactory().getSupportedCodes("EPSG");
-        LinkedList<String> ll = new LinkedList<String>();
-        for (String s : codes) {
-            ll.add("EPSG:" + s);
+        try{
+            Set<String> codes = DataSourceFactory.getCRSFactory().getSupportedCodes("EPSG");
+            LinkedList<String> ll = new LinkedList<String>();
+            for (String s : codes) {
+                ll.add("EPSG:" + s);
+            }
+            authCRS = ll;
+        } catch(RegistryException re){
+            LOGGER.error("Unable to retrieve the EPSG registry ! We won't have available CRS.");
+
         }
-        authCRS = ll;
 
         final DataSourceFactory dsf = Services.getService(DataManager.class).getDataSourceFactory();
         final SourceManager sm = dsf.getSourceManager();
