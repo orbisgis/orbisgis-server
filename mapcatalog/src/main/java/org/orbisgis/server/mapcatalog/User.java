@@ -39,8 +39,9 @@ public class User {
     private String name = "";
     private String email = "";
     private String password = "";
-    private String avatar; //todo reminder
     private String location = "";
+    private String profession = "";
+    private String additional = "";
 
     /**
      * Constructor that hashes the password of the user
@@ -57,19 +58,23 @@ public class User {
     }
 
     /**
-     * Constructor with primary key
+     * Constructor with primarykey
      * @param id_user
      * @param name
      * @param email
      * @param password
      * @param location
+     * @param profession
+     * @param additional
      */
-    public User(String id_user, String name, String email, String password, String location){
+    public User(String id_user, String name, String email, String password, String location, String profession, String additional) {
         this.id_user = id_user;
         this.name = name;
         this.email = email;
         this.password = password;
         this.location = location;
+        this.profession = profession;
+        this.additional = additional;
     }
 
     public String getId_user() {
@@ -92,6 +97,14 @@ public class User {
         return location;
     }
 
+    public String getAdditional() {
+        return additional;
+    }
+
+    public String getProfession() {
+        return profession;
+    }
+
     /**
      * Method that saves a instantiated User into database. Handles SQL injections.
      * @param MC the mapcatalog object for the connection
@@ -100,12 +113,14 @@ public class User {
     public  Long save(MapCatalog MC) {
         Long last = null;
         try{
-            String query = "INSERT INTO user (name,email,password,location) VALUES (? , ? , ? , ?);";
+            String query = "INSERT INTO user (name,email,password,location,profession,additional) VALUES (? , ? , ? , ? , ? , ?);";
             PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
             pstmt.setString(1, name);
             pstmt.setString(2, email);
             pstmt.setString(3, password);
             pstmt.setString(4, location);
+            pstmt.setString(5, profession);
+            pstmt.setString(6, additional);
             pstmt.executeUpdate();
             ResultSet rs = pstmt.getGeneratedKeys();
             if(rs.next()){
@@ -178,7 +193,9 @@ public class User {
                 String email = rs.getString("email");
                 String password = rs.getString("password");
                 String location = rs.getString("location");
-                User use = new User(id_user,name,email,password,location);
+                String profession = rs.getString("profession");
+                String additional =rs.getString("additional");
+                User use = new User(id_user,name,email,password,location,profession,additional);
                 paged.add(use);
             }
             rs.close();
@@ -204,7 +221,9 @@ public class User {
                 String email = rs.getString("email");
                 String password = rs.getString("password");
                 String location = rs.getString("location");
-                User use = new User(id_user,name,email,password,location);
+                String profession = rs.getString("profession");
+                String additional =rs.getString("additional");
+                User use = new User(id_user,name,email,password,location,profession,additional);
                 paged.add(use);
             }
             rs.close();
@@ -212,5 +231,26 @@ public class User {
             e.printStackTrace();
         }
         return paged;
+    }
+
+    /**
+     * Execute a query "UPDATE" in the database
+     * @param MC the mapcatalog used for database connection
+     */
+    public void update(MapCatalog MC){
+        String query = "UPDATE user SET name = ? , email = ? , location = ? , password = ? , profession = ? , additional = ? WHERE id_user = ?;";
+        try {
+            //preparation of the statement
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+            stmt.setString(1, name);
+            stmt.setString(2, email);
+            stmt.setString(3, location);
+            stmt.setString(4, password);
+            stmt.setString(5, profession);
+            stmt.setString(6, additional);
+            stmt.setString(7, id_user);
+            stmt.executeUpdate();
+            stmt.close();
+        } catch (SQLException e) {e.printStackTrace();}
     }
 }

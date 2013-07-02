@@ -1,0 +1,93 @@
+@(users : HashMap[org.orbisgis.server.mapcatalog.UserWorkspace,org.orbisgis.server.mapcatalog.User], wor : org.orbisgis.server.mapcatalog.Workspace)
+
+@import helper.twitterBootstrap._
+
+@javamain("MapCatalog","OrbisGIS services") {
+<div class="container" xmlns="http://www.w3.org/1999/html">
+    <div class="page-header">
+        <h1>
+            <img src="@routes.Assets.at("images/OrbisMapCatalog.png")" alt="Map Catalog"></img>
+        </h1>
+    </div>
+</div>
+<div class="container-fluid" >
+    <div class="row-fluid">
+        <div class="span7" id="navigate" style="background-color:#61a8df;padding-left: 5px">
+            <h2>Manage users of @wor.getName()</h2>
+            <div class="CSSworktable" style="width:98%;margin-bottom:1%">
+                <table>
+                    <tr>
+                        <td>Name</td>
+                        <td>Email</td>
+                        <td>Read</td>
+                        <td>Write</td>
+                        <td>Manage</td>
+                        <td>Change rights</td>
+                        <td>Remove</td>
+                    </tr>
+                    @for(user <- users.keySet()){
+                    <tr>
+                        <td>
+                            <a href="">@users.get(user).getName()</a>
+                        </td>
+                        <td>@users.get(user).getEmail()</td>
+                        <form action="@routes.MapCatalogC.changeRights(user.getId_workspace(), user.getId_user())">
+                            <td>
+                                <select name="Read" style="width:50px">
+                                    <option value="1"@if(user.getRead().equals("1")){ selected}>Yes</option>
+                                    <option value="0"@if(user.getRead().equals("0")){ selected}>No</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="Write" style="width:50px">
+                                    <option value="1"@if((user.getWrite().equals("1"))){ selected}>Yes</option>
+                                    <option value="0"@if((user.getWrite().equals("0"))){ selected}>No</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="Manage" style="width:50px">
+                                    <option value="1"@if((user.getManageUser().equals("1"))){ selected}>Yes</option>
+                                    <option value="0"@if((user.getManageUser().equals("0"))){ selected}>No</option>
+                                </select>
+                            </td>
+                            <td>
+                                <button type="submit" class="btn">Submit</button>
+                            </td>
+                        </form>
+                        <td>
+                            <a href="@routes.MapCatalogC.castOut(wor.getId_workspace, user.getId_user())"><button class="btn btn-danger">Cast Out</button></a>
+                        </td>
+                    </tr>
+                    }
+                </table>
+            </div>
+            @if(users.keySet().isEmpty()){There is no information to display}
+        </div>
+        <div class="span5" id="display" style="background-color:#70c265;">
+            <h2>Workspace info</h2>
+            <div style="margin-left:2%">
+                <a href="@routes.MapCatalogC.deleteWorkspace(wor.getId_workspace())"><button class="btn btn-danger">Delete</button></a>
+                <form action="@routes.MapCatalogC.updateWorkspace(wor.getId_workspace())">
+                    <fieldset>
+                        <legend><h3>Modify information about the workspace :</h3></legend>
+                        <label>Name</label>
+                        <input type="text" name="name" value="@wor.getName()">
+                        <span class="help-block">Decide whether the workspace is public or not:</span>
+                        <label class="radio inline">
+                            <input type="radio" name="public" value="1"@if(wor.getPublic()=="1"){ checked}>Public
+                        </label>
+                        <label class="radio inline">
+                            <input type="radio" name="public" value="0"@if(wor.getPublic()=="0"){ checked}>Private
+                        </label>
+                        <br/><br/>
+                        <textarea style="width:90%" maxlength="999" name="description" rows="5">@wor.getDescription()</textarea>
+                        <br/>
+                        <input type="hidden" name="id_creator" value="@wor.getId_creator()">
+                        <button type="submit" class="btn">Submit</button>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+}

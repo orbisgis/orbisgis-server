@@ -84,7 +84,7 @@ public class UserWorkspace {
      * @param MC the mapcatalog object for the connection
      * @return The ID of the User just created (primary key)
      */
-    public  Long save(MapCatalog MC) {
+    public Long save(MapCatalog MC) {
         Long last = null;
         try{
             String query = "INSERT INTO user_workspace (id_user,id_workspace,read,write,manage_user) VALUES (? , ? , ? , ? , ?);";
@@ -93,13 +93,14 @@ public class UserWorkspace {
             pstmt.setString(2, id_workspace);
             pstmt.setString(3, read);
             pstmt.setString(4, write);
-            pstmt.setString(4, manageUser);
+            pstmt.setString(5, manageUser);
             pstmt.executeUpdate();
             ResultSet rs = pstmt.getGeneratedKeys();
             if(rs.next()){
                 last = rs.getLong(1);
             }
             rs.close();
+            pstmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -117,8 +118,9 @@ public class UserWorkspace {
         try{
             PreparedStatement stmt = MC.getConnection().prepareStatement(query);
             stmt.setLong(1, id_user);
-            stmt.setLong(1, id_workspace);
+            stmt.setLong(2, id_workspace);
             stmt.executeUpdate();
+            stmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -167,11 +169,12 @@ public class UserWorkspace {
                 String id_workspace = rs.getString("id_workspace");
                 String read = rs.getString("read");
                 String write = rs.getString("write");
-                String manageUser = rs.getString("manageUser");
+                String manageUser = rs.getString("manage_user");
                 UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
                 paged.add(usewor);
             }
             rs.close();
+            stmt.close();
         } catch (SQLException e) {e.printStackTrace();}
         return paged;
     }
@@ -196,17 +199,39 @@ public class UserWorkspace {
                 String id_workspace = rs.getString("id_workspace");
                 String read = rs.getString("read");
                 String write = rs.getString("write");
-                String manageUser = rs.getString("manageUser");
+                String manageUser = rs.getString("manage_user");
                 UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
                 String name = rs.getString("name");
                 String email = rs.getString("email");
                 String password = rs.getString("password");
                 String location = rs.getString("location");
-                User use = new User(id_user, name, email, password, location);
+                String profession = rs.getString("profession");
+                String additional = rs.getString("additional");
+                User use = new User(id_user, name, email, password, location,profession,additional);
                 paged.put(usewor,use);
             }
             rs.close();
+            stmt.close();
         } catch (SQLException e) {e.printStackTrace();}
         return paged;
+    }
+
+    /**
+     * Execute a query "UPDATE" in the database
+     * @param MC the mapcatalog used for database connection
+     */
+    public void update(MapCatalog MC){
+        String query = "UPDATE user_workspace SET read = ? , write = ? , manage_user = ? WHERE id_user = ? AND id_workspace = ?;";
+        try {
+            //preparation of the statement
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+            stmt.setString(1, read);
+            stmt.setString(2, write);
+            stmt.setString(3, manageUser);
+            stmt.setString(4, id_user);
+            stmt.setString(5, id_workspace);
+            stmt.executeUpdate();
+            stmt.close();
+        } catch (SQLException e) {e.printStackTrace();}
     }
 }

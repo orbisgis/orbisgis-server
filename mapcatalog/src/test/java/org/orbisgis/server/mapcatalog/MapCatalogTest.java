@@ -45,13 +45,7 @@ public class MapCatalogTest {
 
     @Before
     public void init(){
-        MC.executeSQL("down.sql");
-        //Waiting for drop database to end
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        //MC.executeSQL("down.sql");
         MC.executeSQL("ups.sql");
         MC.executeSQL("populate.sql");
     }

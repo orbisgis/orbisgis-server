@@ -10,6 +10,20 @@
         </h1>
     </div>
 </div>
+@if(flash.get("error")!=null){
+<div class="alert alert-error" style="width:30%;margin-left:30%">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    <h4>Error :</h4>
+    @flash.get("error")
+</div>
+}
+@if(flash.get("info")!=null){
+<div class="alert alert-info" style="width:30%;margin-left:30%">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    <h4>Info :</h4>
+    @flash.get("info")
+</div>
+}
 <div class="container-fluid">
     <div class="row-fluid">
         <div class="span5" id="navigate" style="background-color:#61a8df;padding-left: 5px">
@@ -56,6 +70,7 @@
                         </td>
                         <td>
                             <a href="@routes.MapCatalogC.viewFolder(folder.getId_root(), folder.getId_folder())">Open</a>
+                            <a href="@routes.MapCatalogC.deleteFolder(folder.getId_root(), folder.getId_folder())">Delete</a>
                         </td>
                     </tr>
                     }
@@ -70,6 +85,7 @@
                     }
                 </table>
             </div>
+            @if(folders.isEmpty()){There is no information to display}
         </div>
         <div class="span7" id="display" style="background-color:#70c265;">
             <h2>Display</h2>

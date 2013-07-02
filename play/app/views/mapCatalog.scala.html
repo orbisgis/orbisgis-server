@@ -10,6 +10,13 @@
         </h1>
     </div>
 </div>
+@if(flash.get("error")!=null){
+<div class="alert alert-error" style="width:30%;margin-left:30%">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    <h4>Error :</h4>
+    @flash.get("error")
+</div>
+}
 <div class="container-fluid" >
     <div class="row-fluid">
         <div class="span5" id="navigate" style="background-color:#61a8df;padding-left: 5px">
@@ -23,6 +30,11 @@
                 </li>
             </ul>
             @if(flash.contains("section")){
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    <h4>Info :</h4>
+                    You can delete your workspace and manage its users by clicking on this button :
+                </div>
                 <a href="@routes.MapCatalogC.manageWorkspaces()"><button class="btn btn-danger">Manage my workspaces</button></a>
             <br/><br/>
             }
@@ -30,7 +42,7 @@
                 <input type="text" class="input-medium search-query" placeholder="Search a workspace">
                 <button type="submit" class="btn">Search</button>
             </form>
-            <h4>Workspaces</h4>
+            <h3>Workspaces</h3>
             <div class="well well-small">
                 <img id="imgtoggle" src="@routes.Assets.at("images/add.png")" alt="add"> create my own workspace</img>
                 <form id="addtoggle" style="margin-left:2%;padding-bottom:2px;display:none" action="@routes.MapCatalogC.createWorkspace()">
@@ -39,20 +51,21 @@
                         <input required="required" type="text" placeholder="Type the name of the workspace" name="name">
                         <span class="help-block">Decide whether the workspace is public or not:</span>
                         <label class="radio inline">
-                            <input type="radio" name="public" value="true" checked>Public
+                            <input type="radio" name="public" value="1" checked>Public
                         </label>
                         <label class="radio inline">
-                            <input type="radio" name="public" value="false">Private
+                            <input type="radio" name="public" value="0">Private
                         </label>
-                        <br/>
-                        <textarea wrap="hard" required="required" maxlength="999" name="description" rows="5" placeholder="Add the description of you workspace here."></textarea>
+                        <br/><br/>
+                        <textarea style="width:90%" required="required" maxlength="999" name="description" rows="5" placeholder="Add the description of you workspace here."></textarea>
                         <br/>
                         <button type="submit" class="btn">Submit</button>
                     </fieldset>
                 </form>
             </div>
             <div class="CSSworktable" style="width:98%;margin-bottom:1%">
-                <table >
+
+                <table>
                     <tr>
                         <td>Name</td>
                         <td>Creator</td>
@@ -70,18 +83,19 @@
                         <td>
                             <a href="/mapcatalog/workspace/@workspace.getId_workspace()">Explore</a>
                             <a class="toToggle @workspace.getId_workspace()">Info</a>
-                            @if(flash.contains("section")){<a href="">Monitor</a>}
+                            @if(!flash.contains("section")){<a href="@routes.MapCatalogC.monitor(workspace.getId_workspace())">Monitor</a>}
                         </td>
                         @if(flash.contains("section")){
                         <td>
-                            @if((workspace.getPublic()=="1")){Yes}
-                            @if(!(workspace.getPublic()=="1")){No}
+                            @if(workspace.getPublic().equals("1")){Yes}
+                            @if(workspace.getPublic().equals("0")){No}
                         </td>
                         }
                     </tr>
                     }
                 </table>
             </div>
+            @if(workspaces.isEmpty()){There is no information to display}
         </div>
         <div class="span7" id="display" style="background-color:#70c265;">
             <h2>Display</h2>

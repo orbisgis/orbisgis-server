@@ -146,4 +146,30 @@ public class General extends Controller{
         }else{error="Error: Email or password invalid";}
         return (badRequest(signin.render(form,error)));
     }
+
+    @Security.Authenticated(Secured.class)
+    public static Result profilePage() {
+        String id_user = session("id_user");
+        String[] attributes = {"id_user"};
+        String[] values = {id_user};
+        User use = User.page(MC, attributes, values).get(0);
+        return ok(profile.render(use));
+    }
+
+    @Security.Authenticated(Secured.class)
+    public static Result changeProfile() {
+        String id_user = session("id_user");
+        String[] attributes = {"id_user"};
+        String[] values = {id_user};
+        User temp = User.page(MC, attributes, values).get(0);
+        DynamicForm form = Form.form().bindFromRequest();
+        String name = form.get("name");
+        String email = form.get("email");
+        String location = form.get("location");
+        String profession = form.get("profession");
+        String additional = form.get("additional");
+        User use = new User(id_user,name,email,temp.getPassword(),location,profession,additional);
+        use.update(MC);
+        return profilePage();
+    }
 }

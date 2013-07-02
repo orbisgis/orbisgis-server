@@ -114,6 +114,7 @@ public class Workspace {
                 last = rs.getLong(1);
             }
             rs.close();
+            pstmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -131,6 +132,7 @@ public class Workspace {
             PreparedStatement stmt = MC.getConnection().prepareStatement(query);
             stmt.setLong(1, id_workspace);
             stmt.executeUpdate();
+            stmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -184,6 +186,7 @@ public class Workspace {
                 paged.add(wor);
             }
             rs.close();
+            stmt.close();
         }
         catch (SQLException e) {e.printStackTrace();}
         return paged;
@@ -210,9 +213,29 @@ public class Workspace {
                 paged.add(wor);
             }
             rs.close();
+            stmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return paged;
+    }
+
+    /**
+     * Execute a query "UPDATE" in the database
+     * @param MC the mapcatalog used for database connection
+     */
+    public void update(MapCatalog MC){
+        String query = "UPDATE workspace SET name = ? , isPublic = ? , description = ? , id_creator = ? WHERE id_workspace = ?;";
+        try {
+            //preparation of the statement
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+            stmt.setString(1, name);
+            stmt.setString(2, isPublic);
+            stmt.setString(3, description);
+            stmt.setString(4, id_creator);
+            stmt.setString(5, id_workspace);
+            stmt.executeUpdate();
+            stmt.close();
+        } catch (SQLException e) {e.printStackTrace();}
     }
 }

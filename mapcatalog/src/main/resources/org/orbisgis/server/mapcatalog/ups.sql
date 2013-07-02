@@ -3,8 +3,9 @@ create table IF NOT EXISTS user (
   name				varchar(255),
   email				varchar(255) not null,
   password			varchar(255) not null,
-  avatar			varchar(255),
   location			varchar(255),
+  profession        varchar(255),
+  additional        varchar(1000),
   constraint pk_user primary key (id_user)
 );
 
