@@ -28,6 +28,7 @@
  */
 package org.orbisgis.server.wms;
 
+import com.vividsolutions.jts.geom.Envelope;
 import java.util.*;
 
 /**
@@ -102,6 +103,9 @@ public class GetMapParameters {
         bBox = parseBBox(qp.get(BBOX)[0]);
         width = parseInteger(qp.get(WIDTH)[0]);
         height = parseInteger(qp.get(HEIGHT)[0]);
+        if(width<=0 || height<=0){
+             throw new WMSException("The width and height must be greater than 0.");
+        }
         layerList = parseLayers(qp.get(LAYERS)[0]);
         if (!qp.get(STYLES)[0].isEmpty()) {
             styleList = qp.get(STYLES)[0].split(",");
@@ -110,13 +114,24 @@ public class GetMapParameters {
         }
 
         if (qp.containsKey("PIXELSIZE")) {
-            pixelSize = Double.valueOf(qp.get("PIXELSIZE")[0]);
+            try{                
+                pixelSize = Double.valueOf(qp.get("PIXELSIZE")[0]);
+            } catch(NumberFormatException nfe){
+                throw new WMSException("The pixel size must be a double value.", nfe);
+            }
+        }
+        if (pixelSize<=0){
+            throw new WMSException("The pixel siz must be greater than 0.");
         }
 
         imageFormat = qp.get(FORMAT)[0];
 
         if (qp.containsKey(TRANSPARENT)) {
-            transparent = Boolean.valueOf(qp.get(TRANSPARENT)[0]);
+            try {
+                transparent = Boolean.valueOf(qp.get(TRANSPARENT)[0]);
+            } catch (NumberFormatException nfe) {
+                throw new WMSException("The transparent parameter must be expressed with true or false terms.", nfe);
+            }
         }
 
         if (qp.containsKey(BGCOLOR)) {
@@ -169,7 +184,7 @@ public class GetMapParameters {
 
     /**
      * Parses s as an array of comma separated doubles, transforming the potential NumberFormatException in a WMSException
-     * We want a BBOx, so there shall be exactly four double values.
+     * We want a BBox, so there shall be exactly four double values.
      * @param s The input String
      * @return The parsed array of double values
      * @throws WMSException

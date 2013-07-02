@@ -55,10 +55,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.cts.crs.CRSException;
 import org.cts.crs.CoordinateReferenceSystem;
+import org.cts.registry.RegistryException;
 
 /**
  * Creates the answer to a getCapabilities request and writes it into the output
@@ -253,7 +252,13 @@ public final class GetCapabilitiesHandler {
         } catch (JAXBException ex) {
             throw new RuntimeException("Failed to build the JAXB Context, can't build the associated XML.", ex);
         }
-        Set<String> codes = DataSourceFactory.getCRSFactory().getSupportedCodes("EPSG");
+        Set<String>  codes = null;
+        try {
+            codes = DataSourceFactory.getCRSFactory().getSupportedCodes("EPSG");
+        } catch (RegistryException ex) {
+            throw new RuntimeException("Cannot build the list of supported CRS codes.", ex);
+        }
+
         LinkedList<String> ll = new LinkedList<String>();
         for (String s : codes) {
             ll.add("EPSG:" + s);
@@ -358,8 +363,11 @@ public final class GetCapabilitiesHandler {
                     }
                     layerMap.put(name, layer);
                 } catch (NoSuchTableException ex) {
+                    LOGGER.error("Cannot find the data "+ name, ex);
                 } catch (DataSourceCreationException ex) {
+                    LOGGER.error("Cannot find the data "+ name, ex);
                 } catch (DriverException ex) {
+                    LOGGER.error("Cannot acces to the data "+ name, ex);
                 }
             }
         }

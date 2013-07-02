@@ -181,11 +181,25 @@ public class ParametersTest {
         map.put("WIDTH", new String[]{"potato"});
         mapBuildFail(map);
     }
+    
+    @Test
+    public void testInvalidWidth2() throws Exception {
+        Map<String, String[]> map= getMapMap();
+        map.put("WIDTH", new String[]{"0"});
+        mapBuildFail(map);
+    }
 
     @Test
     public void testInvalidHeight() throws Exception {
         Map<String, String[]> map= getMapMap();
         map.put("HEIGHT", new String[]{"potato"});
+        mapBuildFail(map);
+    }
+    
+    @Test
+    public void testInvalidHeight2() throws Exception {
+        Map<String, String[]> map= getMapMap();
+        map.put("HEIGHT", new String[]{"0"});
         mapBuildFail(map);
     }
 

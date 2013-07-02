@@ -117,7 +117,7 @@ public class WMSTest {
             h.put("LAYERS", new String[]{"cantons"});
             h.put("STYLES", new String[]{""});
             h.put("CRS", new String[]{toCRS});
-            h.put("BBOX", new String[]{"-5.372757617915,9.326100042301633,41.3630420705024,51.089386147807105"});
+            h.put("BBOX", new String[]{"-6.022502267873058,10.239619617329726,46.52667702045907,56.28550253867566"});
             h.put("WIDTH", new String[]{"874"});
             h.put("HEIGHT", new String[]{"593"});
             h.put("FORMAT", new String[]{"image/png"});
@@ -238,12 +238,16 @@ public class WMSTest {
                 h.put("LAYERS", new String[]{"cantons"});
                 h.put("STYLES", new String[]{""});
                 h.put("CRS", new String[]{"EPSG:27582"});
-                h.put("BBOX", new String[]{"2677441.0,1197822.0,1620431.0,47680.0"});
+                h.put("BBOX", new String[]{"47680,1197822, 1620431,2677441"});
                 h.put("WIDTH", new String[]{"874"});
                 h.put("HEIGHT", new String[]{"593"});
                 h.put("FORMAT", new String[]{"image/png"});
+                
+                //h.put("BBOX", new String[]{"47680,1620431,1197822,2677441"});
+                //POLYGON ((47680 1620431, 47680 2677441, 1197822 2677441, 1197822 1620431, 47680 1620431))
 
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                FileOutputStream out = new FileOutputStream(new File("target/testwms.png"));
+                //ByteArrayOutputStream out = new ByteArrayOutputStream();
 
                 wms.processRequests(h, out, r);
                 assertEquals(200, r.responseCode);
