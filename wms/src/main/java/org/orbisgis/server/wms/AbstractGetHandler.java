@@ -31,7 +31,6 @@ package org.orbisgis.server.wms;
 import com.vividsolutions.jts.geom.Envelope;
 import net.opengis.wms.Layer;
 import org.apache.log4j.Logger;
-import org.cts.crs.CRSException;
 import org.gdms.data.DataSource;
 import org.gdms.data.DataSourceFactory;
 import org.gdms.data.schema.DefaultMetadata;
@@ -60,11 +59,11 @@ import java.awt.image.BufferedImage;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.util.Map;
+import org.cts.crs.CRSException;
 
 /**
  * Abstract class used to store method shared between GetMapHandler and GetFeatureInfoHandler.
  * @author Alexis Guéganno
- * @author Erwan Bocher
  */
 public abstract class AbstractGetHandler {
 
@@ -97,8 +96,8 @@ public abstract class AbstractGetHandler {
      * @throws WMSException If something wrong happen
      */
     protected LayerCollection prepareLayers(String[] layerList, String[] styleList, String crs, String stringSLD,
-                                          String exceptionsFormat, OutputStream output, WMSResponse wmsResponse,
-                                          Map<String, Style> serverStyles)throws WMSException{
+                                            String exceptionsFormat, OutputStream output, WMSResponse wmsResponse,
+                                            Map<String, Style> serverStyles)throws WMSException{
 
         LayerCollection layers = new LayerCollection("Map");
         try {
@@ -114,7 +113,7 @@ public abstract class AbstractGetHandler {
                     WMS.exceptionDescription(wmsResponse, output,
                             "The SLD URI is invalid. Please enter a valid SLD file URI path.");
                     return new LayerCollection("Map");
-                }  catch (SeExceptions.InvalidStyle ex) {
+                } catch (SeExceptions.InvalidStyle ex) {
                     WMS.exceptionDescription(wmsResponse, output,
                             "The se style is invalid. Please give a SE valid style in the SLD file..");
                     return new LayerCollection("Map");
@@ -225,7 +224,7 @@ public abstract class AbstractGetHandler {
      * @param bBox The requested bounding box.
      * @param layers The input layers
      * @param imageFormat The format of the image
-     * @param width  The width of the requested image
+     * @param width The width of the requested image
      * @param height The height of the requested image
      * @param pixelSize The pixel size
      * @return The MapTransform where we will draw our map.

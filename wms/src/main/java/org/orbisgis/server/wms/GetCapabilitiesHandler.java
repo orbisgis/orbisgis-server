@@ -32,6 +32,7 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
 import net.opengis.wms.*;
+import org.cts.registry.RegistryException;
 import org.gdms.data.DataSource;
 import org.gdms.data.DataSourceCreationException;
 import org.gdms.data.DataSourceFactory;
@@ -55,7 +56,8 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
-import org.apache.log4j.Logger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.cts.crs.CRSException;
 import org.cts.crs.CoordinateReferenceSystem;
 
@@ -69,7 +71,7 @@ import org.cts.crs.CoordinateReferenceSystem;
  */
 public final class GetCapabilitiesHandler {
 
-    private static final Logger LOGGER = Logger.getLogger(GetCapabilitiesHandler.class);
+    private static final org.apache.log4j.Logger LOGGER = org.apache.log4j.Logger.getLogger(GetCapabilitiesHandler.class);
     private final WMSProperties properties;
     private Map<String, Layer> layerMap = new HashMap<String, Layer>();
     private Map<String, String[]> layerStyles;
@@ -252,19 +254,20 @@ public final class GetCapabilitiesHandler {
         } catch (JAXBException ex) {
             throw new RuntimeException("Failed to build the JAXB Context, can't build the associated XML.", ex);
         }
+        try{
+            Set<String> codes = DataSourceFactory.getCRSFactory().getSupportedCodes("EPSG");
+            LinkedList<String> ll = new LinkedList<String>();
+            for (String s : codes) {
+                ll.add("EPSG:" + s);
+            }
+            authCRS = ll;
+        } catch(RegistryException re){
+            LOGGER.error("Unable to retrieve the EPSG registry ! We won't have available CRS.");
+
+        }
 
         final DataSourceFactory dsf = Services.getService(DataManager.class).getDataSourceFactory();
         final SourceManager sm = dsf.getSourceManager();
-
-
-        Set<String> codes = DataSourceFactory.getCRSFactory().getSupportedCodes("EPSG");
-        LinkedList<String> ll = new LinkedList<String>();
-        for (String s : codes) {
-            ll.add("EPSG:" + s);
-        }
-        authCRS = ll;
-
-
         SourceListener sourceListener = new CapListener(dsf);
         String[] layerNames = sm.getSourceNames();
         for (int i = 0; i < layerNames.length; i++) {
@@ -290,7 +293,6 @@ public final class GetCapabilitiesHandler {
             newEnvelope = env;
         } else {
             try {
-                DataSourceFactory dsf = Services.getService(DataManager.class).getDataSourceFactory();
                 GeometryFactory gf = new GeometryFactory();
                 Polygon poly = (Polygon) gf.toGeometry(env);
                 ST_Transform transformFunction = new ST_Transform();
@@ -375,7 +377,7 @@ public final class GetCapabilitiesHandler {
                 try {
                     code = Integer.valueOf(crs.getAuthorityKey());
                 } catch (NumberFormatException ex) {
-                    LOGGER.error("Cannot find a unique authority key from the crs "+ crs.getName(), ex);
+                    LOGGER.error("Cannot find a unique authority key from the crs " + crs.getName(), ex);
                 }
                 if (code != null) {
                     bBox.setCRS("EPSG:" + code);

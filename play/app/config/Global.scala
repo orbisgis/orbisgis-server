@@ -69,6 +69,10 @@ object Global extends GlobalSettings {
     FU.cleanDirectory(WPS.wpsMain.scriptFolder)
   }
 
+  override def onHandlerNotFound(request: RequestHeader): Result ={
+    NotFound(views.html.notFound())
+  }
+
   private def wMSProperties() : WMSProperties = {
     val wp: WMSProperties = new WMSProperties
     val keys: util.HashSet[String] = WMSProperties.getDefaultKeys

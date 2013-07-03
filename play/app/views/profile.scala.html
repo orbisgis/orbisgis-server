@@ -17,7 +17,7 @@
         <div class="span6" id="navigate" style="padding-left:5px;padding-bottom:5px;padding-top:5px;padding-right:5px">
             <h2>Personal information</h2>
             @defining(MD5Util.md5Hex(session.get("email"))){icon =>
-                <img src="https://www.gravatar.com/avatar/@icon?s=80&amp;d=identicon">
+                <a href="http://www.gravatar.com"><img src="https://www.gravatar.com/avatar/@icon?s=80&amp;d=identicon"></a>
             }
             <br/><br/>
             <form action="@routes.General.changeProfile()">
@@ -35,7 +35,7 @@
                     <input type="text" name="profession" value="@user.getProfession()" style="min-width:70%">
 
                     <h3>Additional info</h3>
-                    <input type="text" name="additional" value="@user.getAdditional()" style="min-width:70%">
+                    <textarea style="width:70%" maxlength="999" name="additional">@user.getAdditional()</textarea>
                 </div>
                 <a href=""><button class="btn btn-primary">Submit your changes</button></a>
             </form>

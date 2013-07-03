@@ -63,13 +63,30 @@ public class MapCatalogC extends Controller{
     }
 
     /**
-     * Verify if a user is admin of the workspace
+     * Verify if a user is following the workspace
      * @param id_workspace the workspace to test
      * @param id_user the user to test
      * @return
      */
-    public static boolean isAdminOfWorkspace(String id_workspace, String id_user){
-        String[] attributes = {"id_user","id_workspace","MANAGE_USER"};
+    public static boolean isMonitoring(String id_workspace, String id_user){
+        String[] attributes = {"id_user","id_workspace"};
+        String[] values = {id_user, id_workspace};
+        List<UserWorkspace> useworList = UserWorkspace.page(MC, attributes, values);
+        if(!useworList.isEmpty()){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    /**
+     * Verify if a user has read right
+     * @param id_workspace the workspace to test
+     * @param id_user the user to test
+     * @return
+     */
+    public static boolean hasReadRight(String id_workspace, String id_user){
+        String[] attributes = {"id_user","id_workspace","READ"};
         String[] values = {id_user, id_workspace,"1"};
         List<UserWorkspace> useworList = UserWorkspace.page(MC, attributes, values);
         if(!useworList.isEmpty()){
@@ -80,14 +97,31 @@ public class MapCatalogC extends Controller{
     }
 
     /**
-     * Verify if a user is following the workspace
+     * Verify if a user has read right
      * @param id_workspace the workspace to test
      * @param id_user the user to test
      * @return
      */
-    public static boolean isMonitoring(String id_workspace, String id_user){
-        String[] attributes = {"id_user","id_workspace"};
-        String[] values = {id_user, id_workspace};
+    public static boolean hasWriteRight(String id_workspace, String id_user){
+        String[] attributes = {"id_user","id_workspace","WRITE"};
+        String[] values = {id_user, id_workspace,"1"};
+        List<UserWorkspace> useworList = UserWorkspace.page(MC, attributes, values);
+        if(!useworList.isEmpty()){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    /**
+     * Verify if a user has management right
+     * @param id_workspace the workspace to test
+     * @param id_user the user to test
+     * @return
+     */
+    public static boolean hasManageRight(String id_workspace, String id_user){
+        String[] attributes = {"id_user","id_workspace","MANAGE_USER"};
+        String[] values = {id_user, id_workspace,"1"};
         List<UserWorkspace> useworList = UserWorkspace.page(MC, attributes, values);
         if(!useworList.isEmpty()){
             return true;
@@ -244,7 +278,7 @@ public class MapCatalogC extends Controller{
     public static Result manageAWorkspace(String id_workspace){
         //verification of rights
         String id_user = session().get("id_user");
-        if(isAdminOfWorkspace(id_workspace,id_user) || isCreator(id_workspace,id_user)){
+        if(hasManageRight(id_workspace,id_user) || isCreator(id_workspace,id_user)){
             HashMap list = UserWorkspace.pageWithUser(MC,id_workspace);
             String[] attributes = {"id_workspace"};
             String[] values = {id_workspace};
@@ -266,7 +300,7 @@ public class MapCatalogC extends Controller{
     public static Result changeRights(String id_workspace, String id_user){
         //verification of rights
         String id_logged = session().get("id_user");
-        if(isAdminOfWorkspace(id_workspace,id_logged) || isCreator(id_workspace,id_logged)){
+        if(hasManageRight(id_workspace,id_logged) || isCreator(id_workspace,id_logged)){
             DynamicForm form = Form.form().bindFromRequest();
             String read = form.get("Read");
             String write = form.get("Write");
@@ -307,7 +341,7 @@ public class MapCatalogC extends Controller{
     public static Result updateWorkspace(String id_workspace){
         //verification of rights
         String id_logged = session().get("id_user");
-        if(isAdminOfWorkspace(id_workspace,id_logged) || isCreator(id_workspace,id_logged)){
+        if(hasManageRight(id_workspace,id_logged) || isCreator(id_workspace,id_logged)){
             DynamicForm form = Form.form().bindFromRequest();
             String name = form.get("name");
             String isPublic = form.get("public");
@@ -332,7 +366,7 @@ public class MapCatalogC extends Controller{
     public static Result castOut(String id_workspace, String id_user){
         //verification of rights
         String id_logged = session().get("id_user");
-        if(isAdminOfWorkspace(id_workspace,id_logged) || isCreator(id_workspace,id_logged)){
+        if(hasManageRight(id_workspace,id_logged) || isCreator(id_workspace,id_logged)){
             UserWorkspace.delete(MC, Long.valueOf(id_user), Long.valueOf(id_workspace));
             return manageAWorkspace(id_workspace);
         }else{
@@ -345,7 +379,7 @@ public class MapCatalogC extends Controller{
     public static Result deleteFolder(String id_root, String id_folder){
         //verification of rights
         String id_logged = session().get("id_user");
-        if(isAdminOfWorkspace(id_root,id_logged) || isCreator(id_root,id_logged)){
+        if(hasManageRight(id_root,id_logged) || isCreator(id_root,id_logged)){
             Folder.delete(MC, Long.valueOf(id_folder));
             flash("info", "you successfully deleted the folder.");
             return viewWorkspace(id_root);

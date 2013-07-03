@@ -82,13 +82,13 @@ GET /createfolderroot                                       controllers.MapCatal
 
 GET /createfolderparent                                     controllers.MapCatalogC.createFolderFromParent
 
-GET /mapcatalog/workspace/:id_workspace/monitor       controllers.MapCatalogC.monitor(id_workspace : String)
+GET /mapcatalog/workspace/:id_workspace/monitor             controllers.MapCatalogC.monitor(id_workspace : String)
 
-GET /mapcatalog/manageWorkspaces                            controllers.MapCatalogC.manageWorkspaces()
+GET /mapcatalog/manageWorkspaces                                            controllers.MapCatalogC.manageWorkspaces()
 
-GET /mapcatalog/manageWorkspace/workspace/:id_workspace               controllers.MapCatalogC.manageAWorkspace(id_workspace : String)
+GET /mapcatalog/manageWorkspace/workspace/:id_workspace                     controllers.MapCatalogC.manageAWorkspace(id_workspace : String)
 
-GET /mapcatalog/manageWorkspace/workspace/:id_workspace/user/:id_user    controllers.MapCatalogC.changeRights(id_workspace : String, id_user : String)
+GET /mapcatalog/manageWorkspace/workspace/:id_workspace/user/:id_user       controllers.MapCatalogC.changeRights(id_workspace : String, id_user : String)
 
 GET /mapcatalog/manageWorkspace/workspace/:id_workspace/delete              controllers.MapCatalogC.deleteWorkspace(id_workspace : String)
 
@@ -98,9 +98,9 @@ GET /mapcatalog/manageWorkspace/workspace/:id_workspace/castOut/:id_user    cont
 
 GET /mapcatalog/workspace/:id_workspace/deleteFolder/:id_folder             controllers.MapCatalogC.deleteFolder(id_workspace : String , id_folder : String)
 
-GET /profile                                                       controllers.General.profilePage()
+GET /profile                                                                controllers.General.profilePage()
 
-GET /changeprofile                                                  controllers.General.changeProfile()
+GET /changeprofile                                                          controllers.General.changeProfile()
 
 # Authentification
 
@@ -123,3 +123,7 @@ DELETE /mapcatalogapi/:id_context                              controllers.MapCa
 GET /mapcatalogapi/workspace/listWorkspaces                    controllers.MapCatalogAPI.listWorkspaces
 
 GET /mapcatalogapi/workspace/:id_workspace/listContexts        controllers.MapCatalogAPI.listContexts(id_workspace)
+
+#404 not found
+
+GET /notFound                                                  controllers.General.PageNotFound()

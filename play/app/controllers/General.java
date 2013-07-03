@@ -147,6 +147,10 @@ public class General extends Controller{
         return (badRequest(signin.render(form,error)));
     }
 
+    /**
+     * Generates the profile page
+     * @return
+     */
     @Security.Authenticated(Secured.class)
     public static Result profilePage() {
         String id_user = session("id_user");
@@ -156,6 +160,10 @@ public class General extends Controller{
         return ok(profile.render(use));
     }
 
+    /**
+     * Update the profile of a user
+     * @return
+     */
     @Security.Authenticated(Secured.class)
     public static Result changeProfile() {
         String id_user = session("id_user");
@@ -171,5 +179,13 @@ public class General extends Controller{
         User use = new User(id_user,name,email,temp.getPassword(),location,profession,additional);
         use.update(MC);
         return profilePage();
+    }
+
+    /**
+     * Generates the page not found
+     * @return
+     */
+    public static Result PageNotFound(){
+        return notFound(notFound.render());
     }
 }
