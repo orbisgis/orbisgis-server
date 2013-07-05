@@ -329,6 +329,7 @@ public class WMSTest {
         h.put("J", new String[]{"12"});
         FileOutputStream out = new FileOutputStream(new File("target/featureinfo.txt"));
         wms.processRequests(h, out, r);
+        assertTrue(r.getResponseCode() == 200);
     }
 
     @Test
@@ -347,9 +348,13 @@ public class WMSTest {
         h.put("FORMAT", new String[]{"image/png"});
         h.put("WIDTH", new String[]{"874"});
         h.put("HEIGHT", new String[]{"593"});
-        h.put("SLD", new String[]{"/src/test/resources/org/orbisgis/server/wms/polygons.sld"});
+        String location = "file://"+System.getProperty("user.dir")+"/src/test/resources/org/orbisgis/server/wms/polygons.sld";
+        System.out.println("Location is"+location);
+        h.put("SLD", new String[]{location});
         FileOutputStream out = new FileOutputStream(new File("target/sld.png"));
         wms.processRequests(h, out, r);
+        System.out.println("Response code is "+r.getResponseCode());
+        assertTrue(r.getResponseCode() == 200);
 
     }
 
@@ -376,6 +381,10 @@ public class WMSTest {
         @Override
         public void setResponseCode(int code) {
             responseCode = code;
+        }
+
+        public int getResponseCode(){
+            return responseCode;
         }
     }
 }

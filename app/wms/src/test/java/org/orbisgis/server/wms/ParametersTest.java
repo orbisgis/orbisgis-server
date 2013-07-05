@@ -213,6 +213,23 @@ public class ParametersTest {
         mapBuildFail(map);
     }
 
+    @Test
+    public void testMapSLDAndStyles(){
+        Map<String, String[]> map= getMapMap();
+        map.put(GetMapParameters.SLD,new String[]{"sld"});
+        mapBuildFail(map);
+    }
+
+    @Test
+    public void testMapSLDAlone() throws Exception {
+        Map<String, String[]> map= getMapMap();
+        map.put(GetMapParameters.SLD,new String[]{"sld"});
+        map.remove(GetMapParameters.LAYERS);
+        map.remove(GetMapParameters.STYLES);
+        GetMapParameters params = new GetMapParameters(map);
+        assertTrue(params.getSld().equals("sld"));
+    }
+
     private void missingMapParameter(String param){
         Map<String, String[]> map= getMapMap();
         map.remove(param);

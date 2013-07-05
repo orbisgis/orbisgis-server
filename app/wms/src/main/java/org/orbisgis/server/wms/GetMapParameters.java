@@ -35,33 +35,76 @@ import java.util.*;
  * @author Alexis Guéganno.
  */
 public class GetMapParameters {
+    /**
+     * Mandatory
+     */
     public static final String VERSION = "VERSION";
+    /**
+     * Mandatory
+     */
     public static final String REQUEST = "REQUEST";
+    /**
+     * Shall be present if SLD is absent, and absent if SLD is present
+     */
     public static final String LAYERS = "LAYERS";
+    /**
+     * Shall be present if SLD is absent, and absent if SLD is present
+     */
     public static final String STYLES = "STYLES";
+    /**
+     * Shall be present if STYLES and LAYERS are absent, and absent if STYLES and LAYERS are present
+     */
     public static final String SLD = "SLD";
+    /**
+     * Mandatory
+     */
     public static final String CRS = "CRS";
+    /**
+     * Mandatory
+     */
     public static final String BBOX = "BBOX";
+    /**
+     * Mandatory
+     */
     public static final String WIDTH = "WIDTH";
+    /**
+     * Mandatory
+     */
     public static final String HEIGHT = "HEIGHT";
+    /**
+     * Mandatory
+     */
     public static final String FORMAT = "FORMAT";
+    /**
+     * Optional
+     */
     public static final String TRANSPARENT = "TRANSPARENT";
+    /**
+     * Optional
+     */
     public static final String BGCOLOR = "BGCOLOR";
+    /**
+     * Optional
+     */
     public static final String EXCEPTIONS = "EXCEPTIONS";
+    /**
+     * Optional
+     */
     public static final String TIME = "TIME";
     public static final String ELEVATION = "ELEVATION";
     public static final Set<String> MANDATORY_PARAMETERS;
 
     static {
         Set<String> temp = new HashSet<String>();
-        temp.add(LAYERS);
-        temp.add(STYLES);
         temp.add(BBOX);
         temp.add(WIDTH);
         temp.add(HEIGHT);
         temp.add(FORMAT);
         temp.add(CRS);
         MANDATORY_PARAMETERS = Collections.unmodifiableSet(temp);
+        for(String s : MANDATORY_PARAMETERS){
+            System.out.println("Mandatory : "+s);
+        }
     }
 
 
@@ -97,6 +140,15 @@ public class GetMapParameters {
                 throw new WMSException("The following parameter is mandatory: "+s);
             }
         }
+        if(!qp.containsKey(SLD)){
+            if(!qp.containsKey(LAYERS) || !qp.containsKey(STYLES)){
+                throw new WMSException("Both layers and styles must be defined when SLD is absent");
+            }
+        } else {
+            if(qp.containsKey(LAYERS) || qp.containsKey(STYLES)){
+                throw new WMSException("Both layers and styles must not be defined when SLD is present");
+            }
+        }
 
         crs = qp.get(CRS)[0];
         bBox = parseBBox(qp.get(BBOX)[0]);
@@ -105,12 +157,15 @@ public class GetMapParameters {
         if(width<=0 || height<=0){
              throw new WMSException("The width and the height must be greater than 0.");
         }
-        layerList = parseLayers(qp.get(LAYERS)[0]);       
-        
-        if (!qp.get(STYLES)[0].isEmpty()) {
-            styleList = qp.get(STYLES)[0].split(",");
-        } else {
-            styleList = new String[0];
+        if(qp.containsKey(LAYERS)){
+            layerList = parseLayers(qp.get(LAYERS)[0]);
+        }
+        if(qp.containsKey(STYLES)){
+            if (!qp.get(STYLES)[0].isEmpty()) {
+                styleList = qp.get(STYLES)[0].split(",");
+            } else {
+                styleList = new String[0];
+            }
         }
 
         if (qp.containsKey("PIXELSIZE")) {
@@ -213,7 +268,7 @@ public class GetMapParameters {
      * @return A copy of the array of layers that must be queried
      */
     public String[] getLayerList() {
-        return Arrays.copyOf(layerList, layerList.length);
+        return layerList != null ? Arrays.copyOf(layerList, layerList.length) : new String[0];
     }
 
     /**
@@ -221,7 +276,7 @@ public class GetMapParameters {
      * @return A copy of the array of style used to draw the layers that must be queried
      */
     public String[] getStyleList() {
-        return Arrays.copyOf(styleList, styleList.length);
+        return styleList!= null ? Arrays.copyOf(styleList, styleList.length) : new String[0];
     }
 
     /**

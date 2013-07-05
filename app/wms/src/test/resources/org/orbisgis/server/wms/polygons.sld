@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <StyledLayerDescriptor xmlns="http://www.opengis.net/sld/1.2" xmlns:se="http://www.opengis.net/se/2.0/core">
-    <Layer>
+    <NamedLayer>
         <se:Name>cantons</se:Name>
         <UserStyle>
             <se:Style version="2.0.0">
@@ -22,5 +22,5 @@
                 </se:Rule>
             </se:Style>
         </UserStyle>
-    </Layer>
+    </NamedLayer>
 </StyledLayerDescriptor>
