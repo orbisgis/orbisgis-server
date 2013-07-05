@@ -8,7 +8,7 @@ object ApplicationBuild extends Build {
     val appVersion      = "1.0-SNAPSHOT"
 
     val appDependencies = Seq(
-      "org.orbisgis.server" % "orbiswms-lib" % "1.0-SNAPSHOT" changing(),
+      "org.orbisgis.server" % "orbiswms-lib" % "1.0.1-SNAPSHOT" changing(),
       "com.sun.xml.bind" % "jaxb-impl" % "2.2.2",
       "com.kitfox.svg" % "svg-salamander" % "1.0" from "http://repo.orbisgis.org/com/kitfox/svg/svg-salamander/1.0/svg-salamander-1.0.jar",
       "javax.media" % "jai_core" % "1.1.3" from "http://repo.orbisgis.org/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar",
