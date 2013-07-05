@@ -35,33 +35,76 @@ import java.util.*;
  * @author Alexis Guéganno.
  */
 public class GetMapParameters {
+    /**
+     * Mandatory
+     */
     public static final String VERSION = "VERSION";
+    /**
+     * Mandatory
+     */
     public static final String REQUEST = "REQUEST";
+    /**
+     * Shall be present if SLD is absent, and absent if SLD is present
+     */
     public static final String LAYERS = "LAYERS";
+    /**
+     * Shall be present if SLD is absent, and absent if SLD is present
+     */
     public static final String STYLES = "STYLES";
+    /**
+     * Shall be present if STYLES and LAYERS are absent, and absent if STYLES and LAYERS are present
+     */
     public static final String SLD = "SLD";
+    /**
+     * Mandatory
+     */
     public static final String CRS = "CRS";
+    /**
+     * Mandatory
+     */
     public static final String BBOX = "BBOX";
+    /**
+     * Mandatory
+     */
     public static final String WIDTH = "WIDTH";
+    /**
+     * Mandatory
+     */
     public static final String HEIGHT = "HEIGHT";
+    /**
+     * Mandatory
+     */
     public static final String FORMAT = "FORMAT";
+    /**
+     * Optional
+     */
     public static final String TRANSPARENT = "TRANSPARENT";
+    /**
+     * Optional
+     */
     public static final String BGCOLOR = "BGCOLOR";
+    /**
+     * Optional
+     */
     public static final String EXCEPTIONS = "EXCEPTIONS";
+    /**
+     * Optional
+     */
     public static final String TIME = "TIME";
     public static final String ELEVATION = "ELEVATION";
     public static final Set<String> MANDATORY_PARAMETERS;
 
     static {
         Set<String> temp = new HashSet<String>();
-        temp.add(LAYERS);
-        temp.add(STYLES);
         temp.add(BBOX);
         temp.add(WIDTH);
         temp.add(HEIGHT);
         temp.add(FORMAT);
         temp.add(CRS);
         MANDATORY_PARAMETERS = Collections.unmodifiableSet(temp);
+        for(String s : MANDATORY_PARAMETERS){
+            System.out.println("Mandatory : "+s);
+        }
     }
 
 
@@ -97,26 +140,53 @@ public class GetMapParameters {
                 throw new WMSException("The following parameter is mandatory: "+s);
             }
         }
+        if(!qp.containsKey(SLD)){
+            if(!qp.containsKey(LAYERS) || !qp.containsKey(STYLES)){
+                throw new WMSException("Both layers and styles must be defined when SLD is absent");
+            }
+        } else {
+            if(qp.containsKey(LAYERS) || qp.containsKey(STYLES)){
+                throw new WMSException("Both layers and styles must not be defined when SLD is present");
+            }
+        }
 
         crs = qp.get(CRS)[0];
         bBox = parseBBox(qp.get(BBOX)[0]);
         width = parseInteger(qp.get(WIDTH)[0]);
         height = parseInteger(qp.get(HEIGHT)[0]);
-        layerList = parseLayers(qp.get(LAYERS)[0]);
-        if (!qp.get(STYLES)[0].isEmpty()) {
-            styleList = qp.get(STYLES)[0].split(",");
-        } else {
-            styleList = new String[0];
+        if(width<=0 || height<=0){
+             throw new WMSException("The width and the height must be greater than 0.");
+        }
+        if(qp.containsKey(LAYERS)){
+            layerList = parseLayers(qp.get(LAYERS)[0]);
+        }
+        if(qp.containsKey(STYLES)){
+            if (!qp.get(STYLES)[0].isEmpty()) {
+                styleList = qp.get(STYLES)[0].split(",");
+            } else {
+                styleList = new String[0];
+            }
         }
 
         if (qp.containsKey("PIXELSIZE")) {
-            pixelSize = Double.valueOf(qp.get("PIXELSIZE")[0]);
+            try{                
+                pixelSize = Double.valueOf(qp.get("PIXELSIZE")[0]);
+            } catch(NumberFormatException nfe){
+                throw new WMSException("The pixel size must be a double value.", nfe);
+            }
+        }
+        if (pixelSize<=0){
+            throw new WMSException("The pixel siz must be greater than 0.");
         }
 
         imageFormat = qp.get(FORMAT)[0];
 
         if (qp.containsKey(TRANSPARENT)) {
-            transparent = Boolean.valueOf(qp.get(TRANSPARENT)[0]);
+            try {
+                transparent = Boolean.valueOf(qp.get(TRANSPARENT)[0]);
+            } catch (NumberFormatException nfe) {
+                throw new WMSException("The transparent parameter must be expressed with true or false terms.", nfe);
+            }
         }
 
         if (qp.containsKey(BGCOLOR)) {
@@ -164,12 +234,15 @@ public class GetMapParameters {
         } catch (NumberFormatException nfe){
             throw new WMSException("The given int value is not valid: "+s, nfe);
         }
-    }
+    }  
 
 
     /**
-     * Parses s as an array of comma separated doubles, transforming the potential NumberFormatException in a WMSException
-     * We want a BBOx, so there shall be exactly four double values.
+     * Parses s as an array of comma separated doubles, transforming the potential 
+     * NumberFormatException in a WMSException
+     * We want a BBox, so there shall be exactly four double values 
+     * that represent  minx, miny, maxx, maxy.
+     * 
      * @param s The input String
      * @return The parsed array of double values
      * @throws WMSException
@@ -195,7 +268,7 @@ public class GetMapParameters {
      * @return A copy of the array of layers that must be queried
      */
     public String[] getLayerList() {
-        return Arrays.copyOf(layerList, layerList.length);
+        return layerList != null ? Arrays.copyOf(layerList, layerList.length) : new String[0];
     }
 
     /**
@@ -203,7 +276,7 @@ public class GetMapParameters {
      * @return A copy of the array of style used to draw the layers that must be queried
      */
     public String[] getStyleList() {
-        return Arrays.copyOf(styleList, styleList.length);
+        return styleList!= null ? Arrays.copyOf(styleList, styleList.length) : new String[0];
     }
 
     /**

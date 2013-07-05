@@ -48,5 +48,6 @@ public class GetFeatureInfoHandlerTest {
         //Upper left corner as geographic coordinate (20,50)
         System.out.println(envelope);
         assertTrue(envelope.equals(new Envelope(27,28,43,42)));
-    }
+    }    
+   
 }

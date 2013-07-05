@@ -181,11 +181,25 @@ public class ParametersTest {
         map.put("WIDTH", new String[]{"potato"});
         mapBuildFail(map);
     }
+    
+    @Test
+    public void testInvalidWidth2() throws Exception {
+        Map<String, String[]> map= getMapMap();
+        map.put("WIDTH", new String[]{"0"});
+        mapBuildFail(map);
+    }
 
     @Test
     public void testInvalidHeight() throws Exception {
         Map<String, String[]> map= getMapMap();
         map.put("HEIGHT", new String[]{"potato"});
+        mapBuildFail(map);
+    }
+    
+    @Test
+    public void testInvalidHeight2() throws Exception {
+        Map<String, String[]> map= getMapMap();
+        map.put("HEIGHT", new String[]{"0"});
         mapBuildFail(map);
     }
 
@@ -197,6 +211,23 @@ public class ParametersTest {
         map= getMapMap();
         map.put("LAYERS", new String[]{""});
         mapBuildFail(map);
+    }
+
+    @Test
+    public void testMapSLDAndStyles(){
+        Map<String, String[]> map= getMapMap();
+        map.put(GetMapParameters.SLD,new String[]{"sld"});
+        mapBuildFail(map);
+    }
+
+    @Test
+    public void testMapSLDAlone() throws Exception {
+        Map<String, String[]> map= getMapMap();
+        map.put(GetMapParameters.SLD,new String[]{"sld"});
+        map.remove(GetMapParameters.LAYERS);
+        map.remove(GetMapParameters.STYLES);
+        GetMapParameters params = new GetMapParameters(map);
+        assertTrue(params.getSld().equals("sld"));
     }
 
     private void missingMapParameter(String param){
