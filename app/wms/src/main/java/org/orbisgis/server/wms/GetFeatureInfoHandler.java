@@ -84,9 +84,20 @@ public class GetFeatureInfoHandler extends AbstractGetHandler {
                 params.getSld(), params.getExceptionsFormat(), output, wmsResponse, serverStyles);
         int width = params.getWidth();
         int height = params.getHeight();
+        int i = params.getI();
+        int j = params.getJ();
+        
+        if(i<=0 || i>=width){
+            throw new WMSException("GetFeatureInfo request contains invalid I value. ");
+        }
+        
+        if(j<=0 || j>=height){
+            throw new WMSException("GetFeatureInfo request contains invalid J value. ");
+        }
+        
         double[] bBox = params.getbBox();
         DataSourceFactory dsf = Services.getService(DataManager.class).getDataSourceFactory();
-        Envelope env = getEnvelopeRequest(bBox,width, height, params.getI(), params.getJ());
+        Envelope env = getEnvelopeRequest(bBox,width, height, i, j);
         ILayer[] children = layers.getChildren();
         IndexManager im = dsf.getIndexManager();
         for(ILayer c : children){

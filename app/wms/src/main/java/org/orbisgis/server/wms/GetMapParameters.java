@@ -28,7 +28,6 @@
  */
 package org.orbisgis.server.wms;
 
-import com.vividsolutions.jts.geom.Envelope;
 import java.util.*;
 
 /**
@@ -104,9 +103,10 @@ public class GetMapParameters {
         width = parseInteger(qp.get(WIDTH)[0]);
         height = parseInteger(qp.get(HEIGHT)[0]);
         if(width<=0 || height<=0){
-             throw new WMSException("The width and height must be greater than 0.");
+             throw new WMSException("The width and the height must be greater than 0.");
         }
-        layerList = parseLayers(qp.get(LAYERS)[0]);
+        layerList = parseLayers(qp.get(LAYERS)[0]);       
+        
         if (!qp.get(STYLES)[0].isEmpty()) {
             styleList = qp.get(STYLES)[0].split(",");
         } else {
@@ -179,12 +179,15 @@ public class GetMapParameters {
         } catch (NumberFormatException nfe){
             throw new WMSException("The given int value is not valid: "+s, nfe);
         }
-    }
+    }  
 
 
     /**
-     * Parses s as an array of comma separated doubles, transforming the potential NumberFormatException in a WMSException
-     * We want a BBox, so there shall be exactly four double values.
+     * Parses s as an array of comma separated doubles, transforming the potential 
+     * NumberFormatException in a WMSException
+     * We want a BBox, so there shall be exactly four double values 
+     * that represent  minx, miny, maxx, maxy.
+     * 
      * @param s The input String
      * @return The parsed array of double values
      * @throws WMSException
