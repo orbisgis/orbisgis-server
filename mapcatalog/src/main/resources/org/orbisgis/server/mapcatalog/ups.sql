@@ -13,7 +13,9 @@ create table IF NOT EXISTS workspace (
   id_workspace			bigint auto_increment not null,
   id_creator			bigint ,
   name				    varchar(255),
-  isPublic              tinyint(1) default 0,
+  all_read              tinyint(1) default 0,
+  all_write             tinyint(1) default 0,
+  all_manage            tinyint(1) default 0,
   description           varchar(1000),
   constraint pk_workspace primary key (id_workspace)
 );
@@ -50,9 +52,9 @@ create table IF NOT EXISTS owscontext (
 create table IF NOT EXISTS user_workspace (
   id_user			    bigint,
   id_workspace			bigint,
-  READ                  tinyint(1) default 0,
-  WRITE			    	tinyint(1) default 0,
-  MANAGE_USER			tinyint(1) default 0,
+  read                  tinyint(1) default 0,
+  write			    	tinyint(1) default 0,
+  manage_user			tinyint(1) default 0,
   constraint pk_user_workspace primary key (id_user, id_workspace)
 );
 

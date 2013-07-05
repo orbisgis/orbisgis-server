@@ -39,40 +39,48 @@ public class Workspace {
     private String id_workspace = null;
     private String id_creator = null;
     private String name = "default";
-    private String isPublic = "0"; // 0 or 1
+    private String all_read = "0"; // 0 or 1
+    private String all_write = "0"; // 0 or 1
+    private String all_manage = "0"; // 0 or 1
     private String description = "";
 
     /**
-     * Constructor of the workspace
+     * Constructor of workspace for an insert (without PK)
      * @param id_creator
      * @param name
-     * @param aPublic
+     * @param all_read
+     * @param all_write
+     * @param all_manage
      * @param description
      */
-    public Workspace(String id_creator, String name, String aPublic, String description) {
+    public Workspace(String id_creator, String name, String all_read, String all_write, String all_manage, String description) {
         this.id_creator = id_creator;
         this.name = name;
-        this.isPublic = aPublic;
+        this.all_read = all_read;
+        this.all_write = all_write;
+        this.all_manage = all_manage;
         this.description = description;
     }
 
     /**
-     * Constructor with primary key
+     * Constructor of workspace for a select (with PK)
      * @param id_workspace
      * @param id_creator
      * @param name
-     * @param aPublic
+     * @param all_read
+     * @param all_write
+     * @param all_manage
      * @param description
      */
-    public Workspace(String id_workspace, String id_creator, String name, String aPublic, String description) {
+    public Workspace(String id_workspace, String id_creator, String name, String all_read, String all_write, String all_manage, String description) {
         this.id_workspace = id_workspace;
         this.id_creator = id_creator;
         this.name = name;
-        this.isPublic = aPublic;
+        this.all_read = all_read;
+        this.all_write = all_write;
+        this.all_manage = all_manage;
         this.description = description;
     }
-
-
 
     public String getId_workspace() {
         return id_workspace;
@@ -86,8 +94,16 @@ public class Workspace {
         return name;
     }
 
-    public String getPublic() {
-        return isPublic;
+    public String getAll_read() {
+        return all_read;
+    }
+
+    public String getAll_write() {
+        return all_write;
+    }
+
+    public String getAll_manage() {
+        return all_manage;
     }
 
     public String getDescription() {
@@ -102,12 +118,14 @@ public class Workspace {
     public  Long save(MapCatalog MC) {
         Long last = null;
         try{
-            String query = "INSERT INTO workspace (id_creator,name,isPublic,description) VALUES (? , ? , ? , ?);";
+            String query = "INSERT INTO workspace (id_creator,name,all_read,all_write,all_manage,description) VALUES (?,?,?,?,?,?);";
             PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
             pstmt.setString(1, id_creator);
             pstmt.setString(2, name);
-            pstmt.setString(3, isPublic);
-            pstmt.setString(4, description);
+            pstmt.setString(3, all_read);
+            pstmt.setString(4, all_write);
+            pstmt.setString(5, all_manage);
+            pstmt.setString(6, description);
             pstmt.executeUpdate();
             ResultSet rs = pstmt.getGeneratedKeys();
             if(rs.next()){
@@ -180,9 +198,11 @@ public class Workspace {
                 String id_workspace = rs.getString("id_workspace");
                 String id_creator = rs.getString("id_creator");
                 String name = rs.getString("name");
-                String isPublic = rs.getString("isPublic");
+                String all_read = rs.getString("all_read");
+                String all_write = rs.getString("all_write");
+                String all_manage = rs.getString("all_manage");
                 String description = rs.getString("description");
-                Workspace wor = new Workspace(id_workspace,id_creator,name,isPublic,description);
+                Workspace wor = new Workspace(id_workspace,id_creator,name,all_read,all_write,all_manage,description);
                 paged.add(wor);
             }
             rs.close();
@@ -207,9 +227,11 @@ public class Workspace {
                 String id_workspace = rs.getString("id_workspace");
                 String id_creator = rs.getString("id_creator");
                 String name = rs.getString("name");
-                String isPublic = rs.getString("isPublic");
+                String all_read = rs.getString("all_read");
+                String all_write = rs.getString("all_write");
+                String all_manage = rs.getString("all_manage");
                 String description = rs.getString("description");
-                Workspace wor = new Workspace(id_workspace,id_creator,name,isPublic,description);
+                Workspace wor = new Workspace(id_workspace,id_creator,name,all_read,all_write,all_manage,description);
                 paged.add(wor);
             }
             rs.close();
@@ -225,17 +247,36 @@ public class Workspace {
      * @param MC the mapcatalog used for database connection
      */
     public void update(MapCatalog MC){
-        String query = "UPDATE workspace SET name = ? , isPublic = ? , description = ? , id_creator = ? WHERE id_workspace = ?;";
+        String query = "UPDATE workspace SET name = ? , all_read = ? , all_write = ? , all_manage = ? , description = ? , id_creator = ? WHERE id_workspace = ?;";
         try {
             //preparation of the statement
             PreparedStatement stmt = MC.getConnection().prepareStatement(query);
             stmt.setString(1, name);
-            stmt.setString(2, isPublic);
-            stmt.setString(3, description);
-            stmt.setString(4, id_creator);
-            stmt.setString(5, id_workspace);
+            stmt.setString(2, all_read);
+            stmt.setString(3, all_write);
+            stmt.setString(4, all_manage);
+            stmt.setString(5, description);
+            stmt.setString(6, id_creator);
+            stmt.setString(7, id_workspace);
             stmt.executeUpdate();
             stmt.close();
         } catch (SQLException e) {e.printStackTrace();}
+    }
+
+    /**
+     * Verify if a user is creator of the workspace
+     * @param id_workspace the workspace to test
+     * @param id_user the user to test
+     * @return
+     */
+    public static boolean isCreator(MapCatalog MC, String id_workspace, String id_user){
+        String[] attributes = {"id_creator","id_workspace"};
+        String[] values = {id_user, id_workspace};
+        List<Workspace> workspaceList = Workspace.page(MC, attributes, values);
+        if(!workspaceList.isEmpty()){
+            return true;
+        }else{
+            return false;
+        }
     }
 }

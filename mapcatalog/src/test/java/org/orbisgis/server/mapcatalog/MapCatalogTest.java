@@ -50,7 +50,7 @@ public class MapCatalogTest {
         MC.executeSQL("populate.sql");
     }
 
-    @Test
+/*    @Test
     public void workspaceCreation () throws SQLException{
 
         //Creation of the workspace
@@ -71,7 +71,7 @@ public class MapCatalogTest {
         Assert.assertTrue(
                         list.isEmpty()
         );
-    }
+    }*/
 
     @Test
     public void folderCreation () throws SQLException{

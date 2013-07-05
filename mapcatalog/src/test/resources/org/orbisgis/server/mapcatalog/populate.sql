@@ -1,1 +1,1 @@
-INSERT INTO WORKSPACE (id_creator, name, isPublic) VALUES (null, 'name', 1);
+INSERT INTO WORKSPACE (id_creator, name, all_read, all_write, all_manage, description) VALUES (null, 'name', 1, 1, 1, 'description');

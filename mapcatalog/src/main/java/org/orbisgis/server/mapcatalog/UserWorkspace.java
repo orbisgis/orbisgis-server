@@ -217,6 +217,79 @@ public class UserWorkspace {
     }
 
     /**
+     * Querys for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
+     * @param MC the mapcatalog object for the connection
+     * @param id
+     * @return
+     */
+    public static HashMap<UserWorkspace, Workspace> pageWithWorkspaceManage(MapCatalog MC, String id){
+        String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ? AND( ALL_MANAGE = 1 OR MANAGE_USER = 1)";
+        HashMap<UserWorkspace, Workspace> paged = new HashMap<UserWorkspace, Workspace>();
+        try {
+            //preparation of the statement
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+            stmt.setString(1, id);
+            //Retrieving values
+            ResultSet rs = stmt.executeQuery();
+            while(rs.next()){
+                String id_user = rs.getString("id_user");
+                String id_workspace = rs.getString("id_workspace");
+                String read = rs.getString("read");
+                String write = rs.getString("write");
+                String manageUser = rs.getString("manage_user");
+                UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
+                String name = rs.getString("name");
+                String all_read = rs.getString("all_read");
+                String all_write = rs.getString("all_write");
+                String all_manage = rs.getString("all_manage");
+                String description = rs.getString("description");
+                Workspace wor = new Workspace(id_user, name, all_read, all_write, all_manage, description);
+                paged.put(usewor,wor);
+            }
+            rs.close();
+            stmt.close();
+        } catch (SQLException e) {e.printStackTrace();}
+        return paged;
+    }
+
+    /**
+     * Querys for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
+     * @param MC the mapcatalog object for the connection
+     * @param id
+     * @return
+     */
+    public static HashMap<UserWorkspace, Workspace> pageWithWorkspace(MapCatalog MC, String id){
+        String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ?";
+        HashMap<UserWorkspace, Workspace> paged = new HashMap<UserWorkspace, Workspace>();
+        try {
+            //preparation of the statement
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+            stmt.setString(1, id);
+            //Retrieving values
+            ResultSet rs = stmt.executeQuery();
+            while(rs.next()){
+                String id_user = rs.getString("id_user");
+                String id_workspace = rs.getString("id_workspace");
+                String read = rs.getString("read");
+                String write = rs.getString("write");
+                String manageUser = rs.getString("manage_user");
+                UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
+                String id_creator = rs.getString("id_creator");
+                String name = rs.getString("name");
+                String all_read = rs.getString("all_read");
+                String all_write = rs.getString("all_write");
+                String all_manage = rs.getString("all_manage");
+                String description = rs.getString("description");
+                Workspace wor = new Workspace(id_workspace, id_creator, name, all_read, all_write, all_manage, description);
+                paged.put(usewor,wor);
+            }
+            rs.close();
+            stmt.close();
+        } catch (SQLException e) {e.printStackTrace();}
+        return paged;
+    }
+
+    /**
      * Execute a query "UPDATE" in the database
      * @param MC the mapcatalog used for database connection
      */
@@ -233,5 +306,73 @@ public class UserWorkspace {
             stmt.executeUpdate();
             stmt.close();
         } catch (SQLException e) {e.printStackTrace();}
+    }
+
+    /**
+     * Verify if a user is following the workspace
+     * @param id_workspace the workspace to test
+     * @param id_user the user to test
+     * @return
+     */
+    public static boolean isMonitoring(MapCatalog MC, String id_workspace, String id_user){
+        String[] attributes = {"id_user","id_workspace"};
+        String[] values = {id_user, id_workspace};
+        List<UserWorkspace> useworList = UserWorkspace.page(MC, attributes, values);
+        if(!useworList.isEmpty()){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    /**
+     * Verify if a user has read right
+     * @param id_workspace the workspace to test
+     * @param id_user the user to test
+     * @return
+     */
+    public static boolean hasReadRight(MapCatalog MC, String id_workspace, String id_user){
+        String[] attributes = {"id_user","id_workspace","READ"};
+        String[] values = {id_user, id_workspace,"1"};
+        List<UserWorkspace> useworList = UserWorkspace.page(MC, attributes, values);
+        if(!useworList.isEmpty()){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    /**
+     * Verify if a user has read right
+     * @param id_workspace the workspace to test
+     * @param id_user the user to test
+     * @return
+     */
+    public static boolean hasWriteRight(MapCatalog MC, String id_workspace, String id_user){
+        String[] attributes = {"id_user","id_workspace","WRITE"};
+        String[] values = {id_user, id_workspace,"1"};
+        List<UserWorkspace> useworList = UserWorkspace.page(MC, attributes, values);
+        if(!useworList.isEmpty()){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    /**
+     * Verify if a user has management right
+     * @param id_workspace the workspace to test
+     * @param id_user the user to test
+     * @return
+     */
+    public static boolean hasManageRight(MapCatalog MC, String id_workspace, String id_user){
+        String[] attributes = {"id_user","id_workspace","MANAGE_USER"};
+        String[] values = {id_user, id_workspace,"1"};
+        List<UserWorkspace> useworList = UserWorkspace.page(MC, attributes, values);
+        if(!useworList.isEmpty()){
+            return true;
+        }else{
+            return false;
+        }
     }
 }
