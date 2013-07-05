@@ -76,7 +76,7 @@ public final class GetMapHandler extends AbstractGetHandler {
          * @throws WMSException
          * @throws UnsupportedEncodingException  
          */
-        public void getMap(GetMapParameters params, OutputStream output,
+        public synchronized void getMap(GetMapParameters params, OutputStream output,
                 WMSResponse wmsResponse, Map<String, Style> serverStyles) throws WMSException, UnsupportedEncodingException {
 
                 LayerCollection layers = prepareLayers(params.getLayerList(),params.getStyleList(),params.getCrs(),
