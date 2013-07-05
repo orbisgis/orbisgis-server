@@ -100,7 +100,7 @@ GET /mapcatalog/workspace/:id_workspace/deleteFolder/:id_folder             cont
 
 POST /mapcatalog/workspace/:id_workspace/addcontext                          controllers.MapCatalogC.addMapContextFromRoot(id_workspace : String)
 
-POST /mapcatalog/workspace/:id_workspace/folder/:id_folder/addcontext        controllers.MapCatalogC.addContextFromParent(id_workspace : String, id_folder : String)
+POST /mapcatalog/workspace/:id_workspace/folder/:id_folder/addcontext        controllers.MapCatalogC.addMapContextFromParent(id_workspace : String, id_folder : String)
 
 GET /profile                                                                controllers.General.profilePage()
 
