@@ -67,17 +67,25 @@
             <h2>Workspace info</h2>
             <div style="margin-left:2%">
                 <a href="@routes.MapCatalogC.deleteWorkspace(wor.getId_workspace())"><button class="btn btn-danger">Delete</button></a>
+                <br/><br/>
+                <div class="alert alert-info">
+                    <h4>Info :</h4>
+                    You can set your workspace to be visible or editable for all connected users by setting the default acesses.
+                </div>
                 <form action="@routes.MapCatalogC.updateWorkspace(wor.getId_workspace())">
                     <fieldset>
                         <legend><h3>Modify information about the workspace :</h3></legend>
                         <label>Name</label>
                         <input type="text" name="name" value="@wor.getName()">
-                        <span class="help-block">Decide whether the workspace is public or not:</span>
-                        <label class="radio inline">
-                            <input type="radio" name="public" value="1"@if(wor.getPublic()=="1"){ checked}>Public
+                        <span class="help-block">Decide whether the workspace has default accesses or not :</span>
+                        <label class="checkbox inline">
+                            <input type="checkbox" name="all_read" value="1"@if(wor.getAll_read().equals("1")){ checked}>Read access
                         </label>
-                        <label class="radio inline">
-                            <input type="radio" name="public" value="0"@if(wor.getPublic()=="0"){ checked}>Private
+                        <label class="checkbox inline">
+                            <input type="checkbox" name="all_write" value="1"@if(wor.getAll_write().equals("1")){ checked}>Write access
+                        </label>
+                        <label class="checkbox inline">
+                            <input type="checkbox" name="all_manage" value="1"@if(wor.getAll_manage().equals("1")){ checked}>Management access
                         </label>
                         <br/><br/>
                         <textarea style="width:90%" maxlength="999" name="description" rows="5">@wor.getDescription()</textarea>

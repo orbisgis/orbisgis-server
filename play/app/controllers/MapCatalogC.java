@@ -34,7 +34,13 @@ import play.data.*;
 import play.mvc.*;
 import views.html.*;
 import org.orbisgis.server.mapcatalog.*;
+import play.mvc.Http.MultipartFormData;
+import play.mvc.Http.MultipartFormData.FilePart;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 
@@ -45,91 +51,6 @@ public class MapCatalogC extends Controller{
 
     private static MapCatalog MC = Global.mc();
 
-    /**
-     * Verify if a user is creator of the workspace
-     * @param id_workspace the workspace to test
-     * @param id_user the user to test
-     * @return
-     */
-    public static boolean isCreator(String id_workspace, String id_user){
-        String[] attributes = {"id_creator","id_workspace"};
-        String[] values = {id_user, id_workspace};
-        List<Workspace> workspaceList = Workspace.page(MC, attributes, values);
-        if(!workspaceList.isEmpty()){
-            return true;
-        }else{
-            return false;
-        }
-    }
-
-    /**
-     * Verify if a user is following the workspace
-     * @param id_workspace the workspace to test
-     * @param id_user the user to test
-     * @return
-     */
-    public static boolean isMonitoring(String id_workspace, String id_user){
-        String[] attributes = {"id_user","id_workspace"};
-        String[] values = {id_user, id_workspace};
-        List<UserWorkspace> useworList = UserWorkspace.page(MC, attributes, values);
-        if(!useworList.isEmpty()){
-            return true;
-        }else{
-            return false;
-        }
-    }
-
-    /**
-     * Verify if a user has read right
-     * @param id_workspace the workspace to test
-     * @param id_user the user to test
-     * @return
-     */
-    public static boolean hasReadRight(String id_workspace, String id_user){
-        String[] attributes = {"id_user","id_workspace","READ"};
-        String[] values = {id_user, id_workspace,"1"};
-        List<UserWorkspace> useworList = UserWorkspace.page(MC, attributes, values);
-        if(!useworList.isEmpty()){
-            return true;
-        }else{
-            return false;
-        }
-    }
-
-    /**
-     * Verify if a user has read right
-     * @param id_workspace the workspace to test
-     * @param id_user the user to test
-     * @return
-     */
-    public static boolean hasWriteRight(String id_workspace, String id_user){
-        String[] attributes = {"id_user","id_workspace","WRITE"};
-        String[] values = {id_user, id_workspace,"1"};
-        List<UserWorkspace> useworList = UserWorkspace.page(MC, attributes, values);
-        if(!useworList.isEmpty()){
-            return true;
-        }else{
-            return false;
-        }
-    }
-
-    /**
-     * Verify if a user has management right
-     * @param id_workspace the workspace to test
-     * @param id_user the user to test
-     * @return
-     */
-    public static boolean hasManageRight(String id_workspace, String id_user){
-        String[] attributes = {"id_user","id_workspace","MANAGE_USER"};
-        String[] values = {id_user, id_workspace,"1"};
-        List<UserWorkspace> useworList = UserWorkspace.page(MC, attributes, values);
-        if(!useworList.isEmpty()){
-            return true;
-        }else{
-            return false;
-        }
-    }
-
     public static MapCatalog getMapCatalog(){
         return MC;
     }
@@ -139,9 +60,7 @@ public class MapCatalogC extends Controller{
      * @return
      */
     public static Result index() {
-        String[] attributes = {"isPublic"};
-        String[] values = {"1"};
-        List<Workspace> list = Workspace.page(MC, attributes,values);
+        List<Workspace> list = Workspace.page(MC);
         return ok(mapCatalog.render(list));
     }
 
@@ -155,8 +74,7 @@ public class MapCatalogC extends Controller{
         String id = session("id_user");
         String[] values = {id};
         List<Workspace> list = Workspace.page(MC, attributes,values);
-        flash("section","private");
-        return ok(mapCatalog.render(list));
+        return ok(myWorkspaces.render(list, UserWorkspace.pageWithWorkspace(MC,id)));
     }
 
     /**
@@ -166,33 +84,45 @@ public class MapCatalogC extends Controller{
      */
     @Security.Authenticated(Secured.class)
     public static Result viewWorkspace(String id_workspace){
-        String[] attributes = {"id_root", "id_parent"};
-        String[] values = {id_workspace, null};
-        List<Folder> listF = Folder.page(MC,attributes,values);
-        List<OWSContext> listC = OWSContext.page(MC, attributes, values);
         String[] attributes2 = {"id_workspace"};
         String[] values2 = {id_workspace};
         Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
-        return ok(workspace.render(listF,listC,wor));
+        String id_user = session().get("id_user");
+        if(wor.getAll_read()=="1" || Workspace.isCreator(MC,id_workspace,id_user) || UserWorkspace.hasReadRight(MC,id_workspace,id_user)){
+            String[] attributes = {"id_root", "id_parent"};
+            String[] values = {id_workspace, null};
+            List<Folder> listF = Folder.page(MC,attributes,values);
+            List<OWSContext> listC = OWSContext.page(MC, attributes, values);
+            return ok(workspace.render(listF,listC,wor));
+        }else{
+            flash("error","You don't have the right to explore this workspace, monitor it to demand the rights");
+            return index();
+        }
     }
 
     /**
-     * Renders theview that represents the inside of a folder
+     * Renders the view that represents the inside of a folder
      * @param id_workspace the root of the folder
      * @param id_folder the id of the folder
      * @return
      */
     @Security.Authenticated(Secured.class)
     public static Result viewFolder(String id_workspace, String id_folder){
-        String[] attributes = {"id_parent"};
-        String[] values = {id_folder};
-        List<Folder> listF = Folder.page(MC,attributes,values);
-        List<OWSContext> listC = OWSContext.page(MC, attributes, values);
-        List<Folder> path = Folder.getPath(MC, id_folder);
         String[] attributes2 = {"id_workspace"};
         String[] values2 = {id_workspace};
         Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
-        return ok(folder.render(listF,listC,path,wor));
+        String id_user = session().get("id_user");
+        if(wor.getAll_read()=="1" || Workspace.isCreator(MC,id_workspace,id_user) || UserWorkspace.hasReadRight(MC,id_workspace,id_user)){
+            String[] attributes = {"id_parent"};
+            String[] values = {id_folder};
+            List<Folder> listF = Folder.page(MC,attributes,values);
+            List<OWSContext> listC = OWSContext.page(MC, attributes, values);
+            List<Folder> path = Folder.getPath(MC, id_folder);
+            return ok(folder.render(listF,listC,path,wor));
+        }else{
+            flash("error","You don't have the right to explore this workspace, monitor it to demand the rights");
+            return index();
+        }
     }
 
     /**
@@ -203,9 +133,12 @@ public class MapCatalogC extends Controller{
     public static Result createWorkspace(){
         DynamicForm form = Form.form().bindFromRequest();
         String name = form.get("name");
-        String isPublic  =form.get("public");
+        String all_read = (form.get("all_read")!=null) ? "1":"0";
+        String all_write  = (form.get("all_write")!=null) ? "1":"0";
+        String all_manage  = (form.get("all_manage")!=null) ? "1":"0";
         String description = form.get("description");
-        Workspace work = new Workspace(session("id_user"),name,isPublic,description);
+        System.out.println(name+all_read+all_write+form.get("all_read"));
+        Workspace work = new Workspace(session("id_user"),name,all_read,all_write,all_manage,description);
         Long id = work.save(MC);
         return viewWorkspace(id.toString());
     }
@@ -215,13 +148,21 @@ public class MapCatalogC extends Controller{
      * @return
      */
     @Security.Authenticated(Secured.class)
-    public static Result createFolderFromRoot(){
-        DynamicForm form = Form.form().bindFromRequest();
-        String name = form.get("name");
-        String id_root = form.get("id_root");
-        Folder fol = new Folder(id_root,null,name);
-        Long id = fol.save(MC);
-        return viewFolder(id_root, id.toString());
+    public static Result createFolderFromRoot(String id_root){
+        String[] attributes2 = {"id_workspace"};
+        String[] values2 = {id_root};
+        Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
+        String id_user = session().get("id_user");
+        if(wor.getAll_write()=="1" || Workspace.isCreator(MC,id_root,id_user) || UserWorkspace.hasWriteRight(MC, id_root, id_user)){
+            DynamicForm form = Form.form().bindFromRequest();
+            String name = form.get("name");
+            Folder fol = new Folder(id_root,null,name);
+            Long id = fol.save(MC);
+            return viewFolder(id_root, id.toString());
+        }else{
+            flash("error", "You don't have writing access in this workspace, monitor it to demand the rights");
+            return index();
+        }
     }
 
     /**
@@ -229,14 +170,21 @@ public class MapCatalogC extends Controller{
      * @return
      */
     @Security.Authenticated(Secured.class)
-    public static Result createFolderFromParent(){
-        DynamicForm form = Form.form().bindFromRequest();
-        String name = form.get("name");
-        String id_root = form.get("id_root");
-        String id_parent = form.get("id_parent");
-        Folder fol = new Folder(id_root,id_parent,name);
-        Long id = fol.save(MC);
-        return viewFolder(id_root, id.toString());
+    public static Result createFolderFromParent(String id_root, String id_parent){
+        String[] attributes2 = {"id_workspace"};
+        String[] values2 = {id_root};
+        Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
+        String id_user = session().get("id_user");
+        if(wor.getAll_write()=="1" || Workspace.isCreator(MC,id_root,id_user) || UserWorkspace.hasWriteRight(MC, id_root, id_user)){
+            DynamicForm form = Form.form().bindFromRequest();
+            String name = form.get("name");
+            Folder fol = new Folder(id_root,id_parent,name);
+            Long id = fol.save(MC);
+            return viewFolder(id_root, id.toString());
+        }else{
+            flash("error", "You don't have writing access in this workspace, monitor it to demand the rights");
+            return index();
+        }
     }
 
     /**
@@ -247,7 +195,7 @@ public class MapCatalogC extends Controller{
     @Security.Authenticated(Secured.class)
     public static Result monitor(String id_workspace){
         String id_user = session().get("id_user");
-        if(isMonitoring(id_workspace,id_user) || isCreator(id_workspace,id_user)){
+        if(UserWorkspace.isMonitoring(MC, id_workspace,id_user) || Workspace.isCreator(MC, id_workspace,id_user)){
             flash("error", "You are already monitoring this workspace!");
             return index();
         }else{
@@ -263,10 +211,13 @@ public class MapCatalogC extends Controller{
      */
     @Security.Authenticated(Secured.class)
     public static Result manageWorkspaces(){
+        //List of workspaces created by the user
         String[] attributes = {"id_creator"};
         String[] values = {session().get("id_user")};
-        List<Workspace> list = Workspace.page(MC, attributes,values);
-        return ok(manageWorkspace.render(list));
+        List<Workspace> listCreated = Workspace.page(MC, attributes,values);
+        //List of workspaces monitored and with right access
+        //todo
+        return ok(manageWorkspace.render(listCreated));
     }
 
     /**
@@ -277,12 +228,12 @@ public class MapCatalogC extends Controller{
     @Security.Authenticated(Secured.class)
     public static Result manageAWorkspace(String id_workspace){
         //verification of rights
+        String[] attributes2 = {"id_workspace"};
+        String[] values2 = {id_workspace};
+        Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
         String id_user = session().get("id_user");
-        if(hasManageRight(id_workspace,id_user) || isCreator(id_workspace,id_user)){
+        if(wor.getAll_manage()=="1" || UserWorkspace.hasManageRight(MC, id_workspace,id_user) || Workspace.isCreator(MC, id_workspace,id_user)){
             HashMap list = UserWorkspace.pageWithUser(MC,id_workspace);
-            String[] attributes = {"id_workspace"};
-            String[] values = {id_workspace};
-            Workspace wor = Workspace.page(MC, attributes, values).get(0);
             return ok(userManagement.render(list,wor));
         }else{
             flash("error","You don't have the rights to do that");
@@ -299,8 +250,11 @@ public class MapCatalogC extends Controller{
     @Security.Authenticated(Secured.class)
     public static Result changeRights(String id_workspace, String id_user){
         //verification of rights
+        String[] attributes2 = {"id_workspace"};
+        String[] values2 = {id_workspace};
+        Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
         String id_logged = session().get("id_user");
-        if(hasManageRight(id_workspace,id_logged) || isCreator(id_workspace,id_logged)){
+        if(wor.getAll_manage()=="1" || UserWorkspace.hasManageRight(MC, id_workspace,id_logged) || Workspace.isCreator(MC, id_workspace,id_logged)){
             DynamicForm form = Form.form().bindFromRequest();
             String read = form.get("Read");
             String write = form.get("Write");
@@ -323,7 +277,7 @@ public class MapCatalogC extends Controller{
     public static Result deleteWorkspace(String id_workspace){
         //verification of rights
         String id_logged = session().get("id_user");
-        if(isCreator(id_workspace, id_logged)){
+        if(Workspace.isCreator(MC, id_workspace, id_logged)){
             Workspace.delete(MC, Long.valueOf(id_workspace));
             return index();
         }else{
@@ -340,14 +294,19 @@ public class MapCatalogC extends Controller{
     @Security.Authenticated(Secured.class)
     public static Result updateWorkspace(String id_workspace){
         //verification of rights
+        String[] attributes2 = {"id_workspace"};
+        String[] values2 = {id_workspace};
+        Workspace wor2 = Workspace.page(MC, attributes2, values2).get(0);
         String id_logged = session().get("id_user");
-        if(hasManageRight(id_workspace,id_logged) || isCreator(id_workspace,id_logged)){
+        if(wor2.getAll_manage()=="0" || UserWorkspace.hasManageRight(MC, id_workspace,id_logged) || Workspace.isCreator(MC, id_workspace,id_logged)){
             DynamicForm form = Form.form().bindFromRequest();
             String name = form.get("name");
-            String isPublic = form.get("public");
+            String all_read = (form.get("all_read")!=null) ? "1":"0";
+            String all_write  = (form.get("all_write")!=null) ? "1":"0";
+            String all_manage  = (form.get("all_manage")!=null) ? "1":"0";
             String description = form.get("description");
             String id_creator = form.get("id_creator");
-            Workspace wor = new Workspace(id_workspace,id_creator,name,isPublic,description);
+            Workspace wor = new Workspace(id_workspace,id_creator,name,all_read,all_write,all_manage,description);
             wor.update(MC);
             return manageAWorkspace(id_workspace);
         }else{
@@ -357,7 +316,7 @@ public class MapCatalogC extends Controller{
     }
 
     /**
-     * Casts out a user from a workspace
+     * Casts out a user from a workspace, all_manage parameter is not taken into account here for access rights
      * @param id_workspace
      * @param id_user
      * @return
@@ -366,7 +325,7 @@ public class MapCatalogC extends Controller{
     public static Result castOut(String id_workspace, String id_user){
         //verification of rights
         String id_logged = session().get("id_user");
-        if(hasManageRight(id_workspace,id_logged) || isCreator(id_workspace,id_logged)){
+        if(UserWorkspace.hasManageRight(MC, id_workspace,id_logged) || Workspace.isCreator(MC, id_workspace,id_logged)){
             UserWorkspace.delete(MC, Long.valueOf(id_user), Long.valueOf(id_workspace));
             return manageAWorkspace(id_workspace);
         }else{
@@ -375,11 +334,20 @@ public class MapCatalogC extends Controller{
         }
     }
 
+    /**
+     * Deletes a folder from a workspace
+     * @param id_root   The workspace parent
+     * @param id_folder The folder to delete
+     * @return
+     */
     @Security.Authenticated(Secured.class)
     public static Result deleteFolder(String id_root, String id_folder){
         //verification of rights
+        String[] attributes2 = {"id_workspace"};
+        String[] values2 = {id_root};
+        Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
         String id_logged = session().get("id_user");
-        if(hasManageRight(id_root,id_logged) || isCreator(id_root,id_logged)){
+        if(wor.getAll_manage()=="1" || UserWorkspace.hasManageRight(MC, id_root,id_logged) || Workspace.isCreator(MC, id_root,id_logged)){
             Folder.delete(MC, Long.valueOf(id_folder));
             flash("info", "you successfully deleted the folder.");
             return viewWorkspace(id_root);
@@ -388,4 +356,67 @@ public class MapCatalogC extends Controller{
             return forbidden(home.render());
         }
     }
+
+    @Security.Authenticated(Secured.class)
+    public static Result addMapContextFromRoot(String id_root){
+        //verification of rights
+        String[] attributes2 = {"id_workspace"};
+        String[] values2 = {id_root};
+        Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
+        String id_logged = session().get("id_user");
+        if(wor.getAll_write()=="1" || UserWorkspace.hasWriteRight(MC, id_root, id_logged) || Workspace.isCreator(MC, id_root,id_logged)){
+            MultipartFormData body = request().body().asMultipartFormData();
+            FilePart file = body.getFile("mapcontext");
+            if(file!=null){
+                String title = file.getFilename();
+                try{
+                    FileInputStream context = new FileInputStream(file.getFile());
+                    OWSContext ows = new OWSContext(id_root,null,id_logged,context,title);
+                    ows.save(MC);
+                }catch(FileNotFoundException e){
+                    e.printStackTrace(); //unreachable code
+                }
+                flash("info", "you successfully added a context");
+                return viewWorkspace(id_root);
+            }else{
+                flash("error","The file is missing");
+                return viewWorkspace(id_root);
+            }
+        }else{
+            flash("error","You don't have the rights to do that");
+            return forbidden(home.render());
+        }
+    }
+
+    @Security.Authenticated(Secured.class)
+    public static Result addMapContextFromParent(String id_root, String id_parent){
+        //verification of rights
+        String[] attributes2 = {"id_workspace"};
+        String[] values2 = {id_root};
+        Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
+        String id_logged = session().get("id_user");
+        if(wor.getAll_write()=="1" || UserWorkspace.hasWriteRight(MC, id_root, id_logged) || Workspace.isCreator(MC, id_root,id_logged)){
+            MultipartFormData body = request().body().asMultipartFormData();
+            FilePart file = body.getFile("mapcontext");
+            if(file!=null){
+                String title = file.getFilename();
+                try{
+                    FileInputStream context = new FileInputStream(file.getFile());
+                    OWSContext ows = new OWSContext(id_root,id_parent,id_logged,context,title);
+                    ows.save(MC);
+                }catch(FileNotFoundException e){
+                    e.printStackTrace(); //unreachable code
+                }
+                flash("info", "you successfully added a context");
+                return viewWorkspace(id_root);
+            }else{
+                flash("error","The file is missing");
+                return viewWorkspace(id_root);
+            }
+        }else{
+            flash("error","You don't have the rights to do that");
+            return forbidden(home.render());
+        }
+    }
+
 }

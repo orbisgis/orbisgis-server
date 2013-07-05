@@ -1,4 +1,4 @@
-@(form: Form[General.Signin], error: String)
+@(error: String)
 
 @import helper.twitterBootstrap._
 
@@ -12,29 +12,30 @@
         @error
     </div>
     }
-    @helper.form(routes.General.signedin) {
-    <div class="control-group">
-        <label class="control-label" for="inputName">Name</label>
-        <div class="controls">
-            <input required="required" type="text" id="inputName" name="name" placeholder="Name" value="@form("name").value">
+    <form action="@routes.General.signedin()" method="post">
+        <div class="control-group">
+            <label class="control-label" for="inputName">Name</label>
+            <div class="controls">
+                <input required="required" type="text" id="inputName" name="name" placeholder="Name">
+            </div>
+            <label class="control-label" for="inputEmail">Email</label>
+            <div class="controls">
+                <input required="required" type="email"  id="inputEmail" name="email" placeholder="Email">
+            </div>
+            <label class="control-label" for="inputPassword">Password</label>
+            <div class="controls">
+                <input required="required" type="password" id="inputPassword" name="password" placeholder="Password">
+            </div>
+            <label class="control-label" for="inputLocation">Location</label>
+            <div class="controls">
+                <input required="required" type="text" id="inputLocation" name="location" placeholder="Location">
+            </div>
+            <div class="controls">
+                <button type="submit" class="btn">Sign In</button>
+            </div>
         </div>
-        <label class="control-label" for="inputEmail">Email</label>
-        <div class="controls">
-            <input required="required" type="email"  id="inputEmail" name="email" placeholder="Email" value="@form("email").value">
-        </div>
-        <label class="control-label" for="inputPassword">Password</label>
-        <div class="controls">
-            <input required="required" type="password" id="inputPassword" name="password" placeholder="Password">
-        </div>
-        <label class="control-label" for="inputLocation">Location</label>
-        <div class="controls">
-            <input required="required" type="text" id="inputLocation" name="location" placeholder="Location" value="@form("location").value">
-        </div>
-        <div class="controls">
-            <button type="submit" class="btn">Sign In</button>
-        </div>
-    </div>
-    }
+    </form>
+
     <div class="alert alert-info">
         Info: Your password must contain more than 6 characters
     </div>

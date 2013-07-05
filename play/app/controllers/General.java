@@ -76,19 +76,18 @@ public class General extends Controller{
      * @return
      */
     public static Result login() {
-        return ok(login.render(Form.form(Login.class),""));
+        return ok(login.render(""));
     }
 
     /**
      * Checks if the login form is correct, and logs in the user
-     * @return The home page if sucess, the login page with error if error.
+     * @return The home page if success, the login page with error if error.
      * @throws Exception
      */
     public static Result authenticate() throws Exception{
-        Form<Login> form = Form.form(Login.class).bindFromRequest();
-        Login log = form.get();
-        String email = log.email;
-        String password = log.password;
+        DynamicForm form = Form.form().bindFromRequest();
+        String email = form.get("email");
+        String password = form.get("password");
         String error ="";
         if(email != null && password != null){
             String[] attributes = {"email","password"};
@@ -101,7 +100,8 @@ public class General extends Controller{
                 return ok(home.render());
             }else{error="Error: Email or password invalid";}
         }
-        return (badRequest(login.render(form,error)));
+        System.out.println(email +"++++"+ password);
+        return badRequest(login.render(error));
     }
 
     /**
@@ -122,7 +122,7 @@ public class General extends Controller{
             flash("error","You must log out to create another account");
             return forbidden(home.render());
         }
-        return ok(signin.render(Form.form(Signin.class),""));
+        return ok(signin.render(""));
     }
 
     /**
@@ -131,20 +131,24 @@ public class General extends Controller{
      * @throws NoSuchAlgorithmException
      */
     public static Result signedin() throws NoSuchAlgorithmException {
-        Form<Signin> form = Form.form(Signin.class).bindFromRequest();
-        Signin sign = form.get();
+        DynamicForm form = Form.form().bindFromRequest();
+        String email = form.get("email");
+        String location = form.get("location");
+        String name = form.get("name");
+        String password = form.get("password");
         String[] attribute = {"email"};
-        String[] values = {sign.email};
+        String[] values = {email};
+        System.out.println(email + "+++++" + location + "+++++" + name + "+++++" + password + "++++");
         List<User> user = User.page(MC, attribute, values);
         String error="";
-        if(sign.email!=null && sign.password.length()>=6){ //check the form
+        if(email!=null && password.length()>=6){ //check the form
             if(user.isEmpty()){ //check if user mail is used
-                User usr = new User(sign.name, sign.email, sign.password, sign.location);
+                User usr = new User(name, email, password, location);
                 usr.save(MC);
                 return ok(home.render());
             }else{error="Error: Email already used";}
         }else{error="Error: Email or password invalid";}
-        return (badRequest(signin.render(form,error)));
+        return (badRequest(signin.render(error)));
     }
 
     /**

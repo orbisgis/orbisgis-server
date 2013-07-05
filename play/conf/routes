@@ -66,23 +66,23 @@ DELETE /map/workspaces/:name/contexts/:id               controllers.CatalogAPI.r
 
 # MapCatalog website
 
-GET /home                                                   controllers.General.home
+GET /home                                                                   controllers.General.home
 
-GET /mapcatalog/public                                      controllers.MapCatalogC.index
+GET /mapcatalog/public                                                      controllers.MapCatalogC.index
 
-GET /mapcatalog/myworkspaces                                controllers.MapCatalogC.myWorkspaces
+GET /mapcatalog/myworkspaces                                                controllers.MapCatalogC.myWorkspaces
 
-GET /mapcatalog/workspace/:id_workspace                     controllers.MapCatalogC.viewWorkspace(id_workspace : String)
+GET /mapcatalog/workspace/:id_workspace                                     controllers.MapCatalogC.viewWorkspace(id_workspace : String)
 
-GET /mapcatalog/workspace/:id_workspace/folder/:id_folder   controllers.MapCatalogC.viewFolder(id_workspace: String, id_folder :  String)
+GET /mapcatalog/workspace/:id_workspace/folder/:id_folder                   controllers.MapCatalogC.viewFolder(id_workspace: String, id_folder :  String)
 
-GET /createworkspace                                        controllers.MapCatalogC.createWorkspace
+GET /createworkspace                                                        controllers.MapCatalogC.createWorkspace
 
-GET /createfolderroot                                       controllers.MapCatalogC.createFolderFromRoot
+GET /mapcatalog/workspace/:id_workspace/folder/:id_folder/createFolder      controllers.MapCatalogC.createFolderFromParent(id_workspace : String, id_folder : String)
 
-GET /createfolderparent                                     controllers.MapCatalogC.createFolderFromParent
+GET /mapcatalog/workspace/:id_workspace/createFolder                        controllers.MapCatalogC.createFolderFromRoot(id_workspace : String)
 
-GET /mapcatalog/workspace/:id_workspace/monitor             controllers.MapCatalogC.monitor(id_workspace : String)
+GET /mapcatalog/workspace/:id_workspace/monitor                             controllers.MapCatalogC.monitor(id_workspace : String)
 
 GET /mapcatalog/manageWorkspaces                                            controllers.MapCatalogC.manageWorkspaces()
 
@@ -97,6 +97,10 @@ GET /mapcatalog/manageWorkspace/workspace/:id_workspace/update              cont
 GET /mapcatalog/manageWorkspace/workspace/:id_workspace/castOut/:id_user    controllers.MapCatalogC.castOut(id_workspace : String, id_user : String)
 
 GET /mapcatalog/workspace/:id_workspace/deleteFolder/:id_folder             controllers.MapCatalogC.deleteFolder(id_workspace : String , id_folder : String)
+
+POST /mapcatalog/workspace/:id_workspace/addcontext                          controllers.MapCatalogC.addMapContextFromRoot(id_workspace : String)
+
+POST /mapcatalog/workspace/:id_workspace/folder/:id_folder/addcontext        controllers.MapCatalogC.addContextFromParent(id_workspace : String, id_folder : String)
 
 GET /profile                                                                controllers.General.profilePage()
 

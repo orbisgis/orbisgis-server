@@ -36,8 +36,8 @@
                         </td>
                         <td>@workspace.getId_creator()</td>
                         <td>
-                            @if((workspace.getPublic().equals("1"))){Yes}
-                            @if(!(workspace.getPublic().equals("1"))){No}
+                            @if((workspace.getAll_read().equals("1"))){Yes}
+                            @if(!(workspace.getAll_read().equals("1"))){No}
                         </td>
                         <td>
                             <a href="@routes.MapCatalogC.manageAWorkspace(workspace.getId_workspace)">Manage</a>

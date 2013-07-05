@@ -1,4 +1,4 @@
-@(workspaces : List[org.orbisgis.server.mapcatalog.Workspace])
+@(workspaceCreated : List[org.orbisgis.server.mapcatalog.Workspace], workspacesMonitored : HashMap[org.orbisgis.server.mapcatalog.UserWorkspace,org.orbisgis.server.mapcatalog.Workspace])
 
 @import helper.twitterBootstrap._
 
@@ -22,22 +22,22 @@
         <div class="span5" id="navigate" style="background-color:#61a8df;padding-left: 5px">
 
             <ul class="nav nav-tabs" style="margin-top:2%">
-                <li @if(flash.contains("section")){class="active"}>
-                    <a href="@routes.MapCatalogC.myWorkspaces()"><h4>My workspaces</h4></a>
+                <li class="active">
+                <a href="@routes.MapCatalogC.myWorkspaces()"><h4>My workspaces</h4></a>
                 </li>
-                <li @if(!flash.contains("section")){class="active"}>
-                    <a href="@routes.MapCatalogC.index()"><h4>All workspaces</h4></a>
+                <li>
+                <a href="@routes.MapCatalogC.index()"><h4>All workspaces</h4></a>
                 </li>
             </ul>
-            @if(flash.contains("section")){
-                <div class="alert alert-info">
-                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                    <h4>Info :</h4>
-                    You can delete your workspace and manage its users by clicking on this button :
-                </div>
-                <a href="@routes.MapCatalogC.manageWorkspaces()"><button class="btn btn-danger">Manage my workspaces</button></a>
+
+            <div class="alert alert-info">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <h4>Info :</h4>
+                You can delete your workspace and manage its users by clicking on this button :
+            </div>
+            <a href="@routes.MapCatalogC.manageWorkspaces()"><button class="btn btn-danger">Manage my workspaces</button></a>
             <br/><br/>
-            }
+
             <form class="form-search">
                 <input type="text" class="input-medium search-query" placeholder="Search a workspace">
                 <button type="submit" class="btn">Search</button>
@@ -66,27 +66,24 @@
                     </fieldset>
                 </form>
             </div>
+            <h3>Workspaces you created</h3>
             <div class="CSSworktable" style="width:98%;margin-bottom:1%">
-
                 <table>
                     <tr>
                         <td>Name</td>
-                        <td>Creator</td>
                         <td>Action</td>
                         <td>Default access</td>
                     </tr>
-                    @for(workspace <- workspaces){
+                    @for(workspace <- workspaceCreated){
                     <tr>
                         <td >
                             <a href="/mapcatalog/workspace/@workspace.getId_workspace()">
                                 <img src="@routes.Assets.at("images/workspace.png")" alt="Map">@workspace.getName()
                             </a>
                         </td>
-                        <td>@workspace.getId_creator()</td>
                         <td>
                             <a href="/mapcatalog/workspace/@workspace.getId_workspace()">Explore</a>
                             <a class="toToggle @workspace.getId_workspace()">Info</a>
-                            @if(!flash.contains("section")){<a href="@routes.MapCatalogC.monitor(workspace.getId_workspace())">Monitor</a>}
                         </td>
                         <td>
                             @if(workspace.getAll_read().equals("1")){Read}
@@ -97,12 +94,50 @@
                     }
                 </table>
             </div>
-            @if(workspaces.isEmpty()){There is no information to display}
+            @if(workspaceCreated.isEmpty()){There is no information to display}
+            <br/><br/>
+            <h3>Workspaces you monitored</h3>
+            <div class="CSSworktable" style="width:98%;margin-bottom:1%">
+                <table>
+                    <tr>
+                        <td>Name</td>
+                        <td>Action</td>
+                        <td>My accesses</td>
+                        <td>Default access</td>
+                    </tr>
+                    @for(userworkspace <- workspacesMonitored.keySet()){
+                        @defining(workspacesMonitored.get(userworkspace)){ workspace =>
+                        <tr>
+                            <td >
+                                <a href="/mapcatalog/workspace/@workspace.getId_workspace()">
+                                    <img src="@routes.Assets.at("images/workspace.png")" alt="Map">@workspace.getName()
+                                </a>
+                            </td>
+                            <td>
+                                <a href="/mapcatalog/workspace/@workspace.getId_workspace()">Explore</a>
+                                <a class="toToggle @workspace.getId_workspace()">Info</a>
+                            </td>
+                            <td>
+                                @if(userworkspace.getRead().equals("1")){Read}
+                                @if(userworkspace.getWrite().equals("1")){Write}
+                                @if(userworkspace.getManageUser().equals("1")){Manage}
+                            </td>
+                            <td>
+                                @if(workspace.getAll_read().equals("1")){Read}
+                                @if(workspace.getAll_write().equals("1")){Write}
+                                @if(workspace.getAll_manage().equals("1")){Manage}
+                            </td>
+                        </tr>
+                        }
+                    }
+                </table>
+            </div>
+            @if(workspacesMonitored.isEmpty()){There is no information to display}
         </div>
         <div class="span7" id="display" style="background-color:#70c265;">
             <h2>Display</h2>
             <p class="text-info" >Click on info to get the workspace description !</p>
-            @for(workspace <- workspaces){
+            @for(workspace <- workspaceCreated){
             <div class="Info" id="@workspace.getId_workspace()" style="display:none">
                 <div class="well well-small">
                     <p>
@@ -111,6 +146,18 @@
                     </p>
                 </div>
             </div>
+            }
+            @for(userworkspace <- workspacesMonitored.keySet()){
+                @defining(workspacesMonitored.get(userworkspace)){ workspace =>
+                <div class="Info" id="@workspace.getId_workspace()" style="display:none">
+                    <div class="well well-small">
+                        <p>
+                        <h3>@workspace.getName()</h3>
+                        @workspace.getDescription()
+                        </p>
+                    </div>
+                </div>
+                }
             }
         </div>
     </div>

@@ -90,3 +90,11 @@
 .CSSworktable tr:first-child td:last-child{
 	border-width:0px 0px 1px 1px;
 }
+
+@keyframes notFoundAnimation {
+0%      {left:-50px;top:0px}
+25%     {left:-25px;top:0px}
+50%     {left:-10px;top:0px}
+75%     {left:-5px;top:0px}
+100%    {left:0px;top:0px}
+}

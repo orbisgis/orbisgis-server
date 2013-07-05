@@ -14,11 +14,11 @@
     <div class="row-fluid">
         <div class="span5" id="navigate" style="background-color:#61a8df;padding-left: 5px">
             <ul class="nav nav-tabs" style="margin-top:2%">
-                <li @if(root.getPublic()=="0"){class="active"}>
+                <li @if(root.getAll_read()=="0"){class="active"}>
                 <a href="@routes.MapCatalogC.myWorkspaces()"><h4>My workspaces</h4></a>
                 </li>
-                <li @if(root.getPublic()=="1"){class="active"}>
-                <a href="@routes.MapCatalogC.index()"><h4>Public workspaces</h4></a>
+                <li @if(root.getAll_read()=="1"){class="active"}>
+                <a href="@routes.MapCatalogC.index()"><h4>All workspaces</h4></a>
                 </li>
             </ul>
             <form class="form-search">
@@ -27,12 +27,10 @@
             </form>
             <div class="well well-small">
                 <img id="imgtoggle" src="@routes.Assets.at("images/add.png")"alt="add"> create a folder here</img>
-                <form id="addtoggle" style="margin-left:2%;padding-bottom:2px;display:none" action="@routes.MapCatalogC.createFolderFromParent()">
+                <form id="addtoggle" style="margin-left:2%;padding-bottom:2px;display:none" action="@routes.MapCatalogC.createFolderFromParent(root.getId_workspace(), path.get(path.size()-1).getId_folder())">
                     <fieldset>
                         <label>Name</label>
                         <input type="text" placeholder="Type the name of the folder" name="name">
-                        <input type="text" name="id_root" value="@root.getId_workspace()" style="display:none">
-                        <input type="text" name="id_parent" value="@path.get(path.size()-1).getId_folder()" style="display:none">
                         <button type="submit" class="btn">Submit</button>
                     </fieldset>
                 </form>
@@ -75,6 +73,15 @@
                 </table>
             </div>
             @if(folders.isEmpty()){There is no information to display}
+            <br>
+            <div class="well well-small" style="margin-right:2%">
+                <img src="@routes.Assets.at("images/add.png")" alt="add"> Add a mapcontext</img>
+                <form style="margin-left:2%" action="@routes.MapCatalogC.addMapContextFromParent(root.getId_workspace(), path.get(path.size()-1).getId_folder())" enctype="multipart/form-data" method="post">
+                    <input type="file" name="mapcontext">
+                    <br>
+                    <button type="submit" class="btn">Submit</button>
+                </form>
+            </div>
         </div>
         <div class="span7" id="display" style="background-color:#70c265;">
             <h2>Display</h2>
