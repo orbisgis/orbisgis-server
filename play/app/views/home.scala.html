@@ -1,41 +1,48 @@
 @import helper.twitterBootstrap._
 
 @javamain("Home","OrbisGIS services") {
-<div class="container">
-    <div class="page-header">
-        <h1>
-            <img src="@routes.Assets.at("images/OrbisServices.png")" alt="Orbis Services Home" width=50% style="margin-left:25%"></img>
-        </h1>
+
+<div class="row-fluid" style="padding-left:2px">
+    <div class="container" style="width:50%">
+        <div class="page-header">
+            <img src="@routes.Assets.at("images/OrbisServices.png")" alt="Orbis Services Home"></img>
+        </div>
     </div>
+    @if(!(flash.get("error")==null)){
+        <div class="alert alert-error" style="width:30%;margin-left:30%">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <h4>Error :</h4>
+            @flash.get("error")
+        </div>
+    }
+    <ul class="thumbnails">
+        <li class="span4">
+            <div class="thumbnail">
+                <img src="@routes.Assets.at("images/OrbisData.png")" alt="Orbis Data">
+                <h2>Orbis Data</h2>
+                <p>Description here</p>
+                <a href="@controllers.routes.Application.index()"><button class="btn btn-primary" type="button">Try it !</button></a>
+                <a href="@controllers.routes.General.signin"><button class="btn" type="button">Sign in</button></a>
+            </div>
+        </li>
+        <li class="span4">
+            <div class="thumbnail">
+                <img src="@routes.Assets.at("images/OrbisMapCatalog.png")" alt="Orbis Map Catalog">
+                <h2>Orbis Map Catalog</h2>
+                <p>Description here</p>
+                <a href="@controllers.routes.MapCatalogC.index()"><button class="btn btn-primary" type="button">Try it !</button></a>
+                <a href="@controllers.routes.General.signin"><button class="btn" type="button">Sign in</button></a>
+            </div>
+        </li>
+        <li class="span4">
+            <div class="thumbnail">
+                <img src="@routes.Assets.at("images/OrbisProcessing.png")" alt="Orbis Processing">
+                <h2>Orbis Processing</h2>
+                <p>Description here</p>
+                <a href="@controllers.routes.WPS.manage"><button class="btn btn-primary" type="button">Try it!</button></a>
+                <a href="@controllers.routes.General.signin"><button class="btn" type="button">Sign in</button></a>
+            </div>
+        </li>
+    </ul>
 </div>
-@if(!(flash.get("error")==null)){
-    <div class="alert alert-error" style="width:30%;margin-left:30%">
-        <button type="button" class="close" data-dismiss="alert">&times;</button>
-        <h4>Error :</h4>
-        @flash.get("error")
-    </div>
-}
-<ul class="thumbnails" style="position:relative;left:3%">
-        <div class="thumbnail" style="position:absolute;width:30%">
-            <img src="@routes.Assets.at("images/OrbisData.png")" alt="Orbis Data">
-            <h2>Orbis Data</h2>
-            <p>Description here</p>
-            <a href="@controllers.routes.Application.index()"><button class="btn btn-primary" type="button">Try it !</button></a>
-            <a href="@controllers.routes.General.signin"><button class="btn" type="button">Sign in</button></a>
-        </div>
-        <div class="thumbnail" style="position:absolute;margin-left:32%;width:30%">
-            <img src="@routes.Assets.at("images/OrbisMapCatalog.png")" alt="Orbis Map Catalog">
-            <h2>Orbis Map Catalog</h2>
-            <p>Description here</p>
-            <a href="@controllers.routes.MapCatalogC.index()"><button class="btn btn-primary" type="button">Try it !</button></a>
-            <a href="@controllers.routes.General.signin"><button class="btn" type="button">Sign in</button></a>
-        </div>
-        <div class="thumbnail"style="position:absolute;margin-left:64%;width:30%">
-            <img src="@routes.Assets.at("images/OrbisProcessing.png")" alt="Orbis Processing">
-            <h2>Orbis Processing</h2>
-            <p>Description here</p>
-            <a href="@controllers.routes.WPS.manage"><button class="btn btn-primary" type="button">Try it!</button></a>
-            <a href="@controllers.routes.General.signin"><button class="btn" type="button">Sign in</button></a>
-        </div>
-</ul>
 }

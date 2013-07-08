@@ -43,6 +43,7 @@
                 <button type="submit" class="btn">Search</button>
             </form>
             <h3>Workspaces</h3>
+            @if(session.get("email")!=null){
             <div class="well well-small">
                 <img id="imgtoggle" src="@routes.Assets.at("images/add.png")" alt="add"> create my own workspace</img>
                 <form id="addtoggle" style="margin-left:2%;padding-bottom:2px;display:none" action="@routes.MapCatalogC.createWorkspace()">
@@ -66,6 +67,7 @@
                     </fieldset>
                 </form>
             </div>
+            }
             <div class="CSSworktable" style="width:98%;margin-bottom:1%">
 
                 <table>
