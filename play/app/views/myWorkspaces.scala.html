@@ -57,7 +57,7 @@
                             <input type="checkbox" name="all_write" value="1">Write access
                         </label>
                         <label class="checkbox inline">
-                            <input type="checkbox" name="all_read" value="1">Management access
+                            <input type="checkbox" name="all_manage" value="1">Management access
                         </label>
                         <br/><br/>
                         <textarea style="width:90%" required="required" maxlength="999" name="description" rows="5" placeholder="Add the description of you workspace here."></textarea>
@@ -89,6 +89,7 @@
                             @if(workspace.getAll_read().equals("1")){Read}
                             @if(workspace.getAll_write().equals("1")){Write}
                             @if(workspace.getAll_manage().equals("1")){Manage}
+                            @if(workspace.getAll_read().equals("0")&&workspace.getAll_write().equals("0")&&workspace.getAll_manage().equals("0")){None}
                         </td>
                     </tr>
                     }
@@ -126,6 +127,7 @@
                                 @if(workspace.getAll_read().equals("1")){Read}
                                 @if(workspace.getAll_write().equals("1")){Write}
                                 @if(workspace.getAll_manage().equals("1")){Manage}
+                                @if(workspace.getAll_read().equals("0")&&workspace.getAll_write().equals("0")&&workspace.getAll_manage().equals("0")){None}
                             </td>
                         </tr>
                         }

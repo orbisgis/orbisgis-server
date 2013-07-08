@@ -279,4 +279,37 @@ public class Workspace {
             return false;
         }
     }
+
+    /**
+     *Queries database to search for a workspace containing a certain expression in his name, or his description
+     * @param expression the String to run the search on, case insensitive
+     * @return The list of workspaces corresponding to the search
+     */
+    public static List<Workspace> search(MapCatalog MC, String expression){
+        String query = "SELECT * FROM WORKSPACE WHERE (LOWER(name) LIKE ?) OR (LOWER(description) LIKE ?)";
+        List<Workspace> searched = new LinkedList<Workspace>();
+        expression = "%" + expression.toLowerCase() + "%";
+        try {
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+            stmt.setString(1, expression);
+            stmt.setString(2, expression);
+            ResultSet rs = stmt.executeQuery();
+            while(rs.next()){
+                String id_workspace = rs.getString("id_workspace");
+                String id_creator = rs.getString("id_creator");
+                String name = rs.getString("name");
+                String all_read = rs.getString("all_read");
+                String all_write = rs.getString("all_write");
+                String all_manage = rs.getString("all_manage");
+                String description = rs.getString("description");
+                Workspace wor = new Workspace(id_workspace,id_creator,name,all_read,all_write,all_manage,description);
+                searched.add(wor);
+            }
+            rs.close();
+            stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return searched;
+    }
 }

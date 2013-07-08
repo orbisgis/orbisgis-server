@@ -35,8 +35,8 @@
                 <a href="@routes.MapCatalogC.index()"><h4>All workspaces</h4></a>
                 </li>
             </ul>
-            <form class="form-search">
-                <input type="text" class="input-medium search-query" placeholder="Search a workspace">
+            <form class="form-search" action="@routes.MapCatalogC.searchFromRoot(root.getId_workspace())">
+                <input type="text" class="input-medium search-query" placeholder="Search in this workspace">
                 <button type="submit" class="btn">Search</button>
             </form>
             <div class="well well-small" style="margin-right:2%">

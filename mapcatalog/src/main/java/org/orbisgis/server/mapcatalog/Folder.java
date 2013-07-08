@@ -221,4 +221,33 @@ public class Folder {
         Collections.reverse(list);
         return list;
     }
+
+    /**
+     *Queries database to search for a folder containing a certain expression in his name
+     * @param expression the String to run the search on, case insensitive
+     * @return The list of workspaces corresponding to the search
+     */
+    public static List<Folder> search(MapCatalog MC, String id_root, String expression){
+        String query = "SELECT * FROM FOLDER WHERE (LOWER(name) LIKE ?) AND (id_root = ?)";
+        List<Folder> searched = new LinkedList<Folder>();
+        expression = "%" + expression.toLowerCase() + "%";
+        try {
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+            stmt.setString(1, expression);
+            stmt.setString(2, id_root);
+            ResultSet rs = stmt.executeQuery();
+            while(rs.next()){
+                String id_folder = rs.getString("id_folder");
+                String id_parent = rs.getString("id_parent");
+                String name = rs.getString("name");
+                Folder fol = new Folder(id_folder,id_root,id_parent,name);
+                searched.add(fol);
+            }
+            rs.close();
+            stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return searched;
+    }
 }

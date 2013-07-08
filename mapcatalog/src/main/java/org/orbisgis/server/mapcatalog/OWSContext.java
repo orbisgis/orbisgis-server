@@ -234,4 +234,37 @@ public class OWSContext {
         }
         return paged;
     }
+
+    /**
+     *Queries database to search for a owscontext containing a certain expression in his name
+     * @param expression the String to run the search on, case insensitive
+     * @return The list of workspaces corresponding to the search
+     */
+    public static List<OWSContext> search(MapCatalog MC, String id_root, String expression){
+        String query = "SELECT * FROM FOLDER WHERE (LOWER(title) LIKE ?) AND (id_root = ?)";
+        List<OWSContext> searched = new LinkedList<OWSContext>();
+        expression = "%" + expression.toLowerCase() + "%";
+        try {
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+            stmt.setString(1, expression);
+            stmt.setString(2, id_root);
+            ResultSet rs = stmt.executeQuery();
+            while(rs.next()){
+                String id_owscontext = rs.getString("id_owscontext");
+                id_root = rs.getString("id_root");
+                String id_parent = rs.getString("id_parent");
+                String id_uploader = rs.getString("id_uploader");
+                InputStream content = rs.getBinaryStream("content");
+                String title = rs.getString("title");
+                Date date = rs.getDate("date");
+                OWSContext ows = new OWSContext(id_owscontext,id_root,id_parent,id_uploader,content,title,date);
+                searched.add(ows);
+            }
+            rs.close();
+            stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return searched;
+    }
 }

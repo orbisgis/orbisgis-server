@@ -137,7 +137,6 @@ public class MapCatalogC extends Controller{
         String all_write  = (form.get("all_write")!=null) ? "1":"0";
         String all_manage  = (form.get("all_manage")!=null) ? "1":"0";
         String description = form.get("description");
-        System.out.println(name+all_read+all_write+form.get("all_read"));
         Workspace work = new Workspace(session("id_user"),name,all_read,all_write,all_manage,description);
         Long id = work.save(MC);
         return viewWorkspace(id.toString());
@@ -357,6 +356,11 @@ public class MapCatalogC extends Controller{
         }
     }
 
+    /**
+     * Adds a map context in database with current workspace as root
+     * @param id_root
+     * @return
+     */
     @Security.Authenticated(Secured.class)
     public static Result addMapContextFromRoot(String id_root){
         //verification of rights
@@ -388,6 +392,12 @@ public class MapCatalogC extends Controller{
         }
     }
 
+    /**
+     * Adds a map context with current folder as parent
+     * @param id_root
+     * @param id_parent
+     * @return
+     */
     @Security.Authenticated(Secured.class)
     public static Result addMapContextFromParent(String id_root, String id_parent){
         //verification of rights
@@ -419,4 +429,60 @@ public class MapCatalogC extends Controller{
         }
     }
 
+    /**
+     * Search and return a specific list of workspaces
+     * @return
+     */
+    public static Result searchPublicWorkspaces(){
+        DynamicForm form = Form.form().bindFromRequest();
+        String search = form.get("search");
+        List<Workspace> list = Workspace.search(MC,search);
+        return ok(mapCatalog.render(list));
+    }
+
+    /**
+     * Search and return a specific list of folders and ows from the root of the worksapce
+     * @param id_root
+     * @return
+     */
+    public static Result searchFromRoot(String id_root){
+        String[] attributes2 = {"id_workspace"};
+        String[] values2 = {id_root};
+        Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
+        String id_user = session().get("id_user");
+        if(wor.getAll_read()=="1" || Workspace.isCreator(MC,id_root,id_user) || UserWorkspace.hasReadRight(MC,id_root,id_user)){
+            DynamicForm form = Form.form().bindFromRequest();
+            String search = form.get("search");
+            List<Folder> listF = Folder.search(MC,id_root,search);
+            List<OWSContext> listC = OWSContext.search(MC,id_root,search);
+            return ok(workspace.render(listF,listC,wor));
+        }else{
+            flash("error","You don't have the right to explore this workspace, monitor it to demand the rights");
+            return index();
+        }
+    }
+
+    /**
+     * Search and return a specific list of folders and ows from the root of the worksapce
+     * @param id_root
+     * @param id_folder
+     * @return
+     */
+    public static Result searchFromParent(String id_root, String id_folder){
+        String[] attributes2 = {"id_workspace"};
+        String[] values2 = {id_root};
+        Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
+        String id_user = session().get("id_user");
+        if(wor.getAll_read()=="1" || Workspace.isCreator(MC,id_root,id_user) || UserWorkspace.hasReadRight(MC,id_root,id_user)){
+            DynamicForm form = Form.form().bindFromRequest();
+            String search = form.get("search");
+            List<Folder> listF = Folder.search(MC,id_root,search);
+            List<OWSContext> listC = OWSContext.search(MC,id_root,search);
+            List<Folder> path = Folder.getPath(MC, id_folder);
+            return ok(folder.render(listF,listC,path,wor));
+        }else{
+            flash("error","You don't have the right to explore this workspace, monitor it to demand the rights");
+            return index();
+        }
+    }
 }
