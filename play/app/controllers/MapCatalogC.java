@@ -88,7 +88,7 @@ public class MapCatalogC extends Controller{
         String[] values2 = {id_workspace};
         Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
         String id_user = session().get("id_user");
-        if(wor.getAll_read()=="1" || Workspace.isCreator(MC,id_workspace,id_user) || UserWorkspace.hasReadRight(MC,id_workspace,id_user)){
+        if(wor.getAll_read().equals("1") || Workspace.isCreator(MC,id_workspace,id_user) || UserWorkspace.hasReadRight(MC,id_workspace,id_user)){
             String[] attributes = {"id_root", "id_parent"};
             String[] values = {id_workspace, null};
             List<Folder> listF = Folder.page(MC,attributes,values);
@@ -112,7 +112,7 @@ public class MapCatalogC extends Controller{
         String[] values2 = {id_workspace};
         Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
         String id_user = session().get("id_user");
-        if(wor.getAll_read()=="1" || Workspace.isCreator(MC,id_workspace,id_user) || UserWorkspace.hasReadRight(MC,id_workspace,id_user)){
+        if(wor.getAll_read().equals("1") || Workspace.isCreator(MC,id_workspace,id_user) || UserWorkspace.hasReadRight(MC,id_workspace,id_user)){
             String[] attributes = {"id_parent"};
             String[] values = {id_folder};
             List<Folder> listF = Folder.page(MC,attributes,values);
@@ -152,7 +152,7 @@ public class MapCatalogC extends Controller{
         String[] values2 = {id_root};
         Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
         String id_user = session().get("id_user");
-        if(wor.getAll_write()=="1" || Workspace.isCreator(MC,id_root,id_user) || UserWorkspace.hasWriteRight(MC, id_root, id_user)){
+        if(wor.getAll_write().equals("1") || Workspace.isCreator(MC,id_root,id_user) || UserWorkspace.hasWriteRight(MC, id_root, id_user)){
             DynamicForm form = Form.form().bindFromRequest();
             String name = form.get("name");
             Folder fol = new Folder(id_root,null,name);
@@ -174,7 +174,7 @@ public class MapCatalogC extends Controller{
         String[] values2 = {id_root};
         Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
         String id_user = session().get("id_user");
-        if(wor.getAll_write()=="1" || Workspace.isCreator(MC,id_root,id_user) || UserWorkspace.hasWriteRight(MC, id_root, id_user)){
+        if(wor.getAll_write().equals("1") || Workspace.isCreator(MC,id_root,id_user) || UserWorkspace.hasWriteRight(MC, id_root, id_user)){
             DynamicForm form = Form.form().bindFromRequest();
             String name = form.get("name");
             Folder fol = new Folder(id_root,id_parent,name);
@@ -210,13 +210,14 @@ public class MapCatalogC extends Controller{
      */
     @Security.Authenticated(Secured.class)
     public static Result manageWorkspaces(){
+        String id_user = session().get("id_user");
         //List of workspaces created by the user
         String[] attributes = {"id_creator"};
-        String[] values = {session().get("id_user")};
+        String[] values = {id_user};
         List<Workspace> listCreated = Workspace.page(MC, attributes,values);
         //List of workspaces monitored and with right access
-        //todo
-        return ok(manageWorkspace.render(listCreated));
+        HashMap<UserWorkspace,Workspace> listMonitored = UserWorkspace.pageWithWorkspaceManage(MC, id_user);
+        return ok(manageWorkspace.render(listCreated, listMonitored));
     }
 
     /**
@@ -231,7 +232,8 @@ public class MapCatalogC extends Controller{
         String[] values2 = {id_workspace};
         Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
         String id_user = session().get("id_user");
-        if(wor.getAll_manage()=="1" || UserWorkspace.hasManageRight(MC, id_workspace,id_user) || Workspace.isCreator(MC, id_workspace,id_user)){
+        System.out.println(wor.getAll_manage());
+        if(wor.getAll_manage().equals("1") || UserWorkspace.hasManageRight(MC, id_workspace,id_user) || Workspace.isCreator(MC, id_workspace,id_user)){
             HashMap list = UserWorkspace.pageWithUser(MC,id_workspace);
             return ok(userManagement.render(list,wor));
         }else{
@@ -253,7 +255,7 @@ public class MapCatalogC extends Controller{
         String[] values2 = {id_workspace};
         Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
         String id_logged = session().get("id_user");
-        if(wor.getAll_manage()=="1" || UserWorkspace.hasManageRight(MC, id_workspace,id_logged) || Workspace.isCreator(MC, id_workspace,id_logged)){
+        if(wor.getAll_manage().equals("1") || UserWorkspace.hasManageRight(MC, id_workspace,id_logged) || Workspace.isCreator(MC, id_workspace,id_logged)){
             DynamicForm form = Form.form().bindFromRequest();
             String read = form.get("Read");
             String write = form.get("Write");
@@ -297,7 +299,7 @@ public class MapCatalogC extends Controller{
         String[] values2 = {id_workspace};
         Workspace wor2 = Workspace.page(MC, attributes2, values2).get(0);
         String id_logged = session().get("id_user");
-        if(wor2.getAll_manage()=="0" || UserWorkspace.hasManageRight(MC, id_workspace,id_logged) || Workspace.isCreator(MC, id_workspace,id_logged)){
+        if(wor2.getAll_manage().equals("0") || UserWorkspace.hasManageRight(MC, id_workspace,id_logged) || Workspace.isCreator(MC, id_workspace,id_logged)){
             DynamicForm form = Form.form().bindFromRequest();
             String name = form.get("name");
             String all_read = (form.get("all_read")!=null) ? "1":"0";
@@ -346,7 +348,7 @@ public class MapCatalogC extends Controller{
         String[] values2 = {id_root};
         Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
         String id_logged = session().get("id_user");
-        if(wor.getAll_manage()=="1" || UserWorkspace.hasManageRight(MC, id_root,id_logged) || Workspace.isCreator(MC, id_root,id_logged)){
+        if(wor.getAll_manage().equals("1") || UserWorkspace.hasManageRight(MC, id_root,id_logged) || Workspace.isCreator(MC, id_root,id_logged)){
             Folder.delete(MC, Long.valueOf(id_folder));
             flash("info", "you successfully deleted the folder.");
             return viewWorkspace(id_root);
@@ -368,7 +370,7 @@ public class MapCatalogC extends Controller{
         String[] values2 = {id_root};
         Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
         String id_logged = session().get("id_user");
-        if(wor.getAll_write()=="1" || UserWorkspace.hasWriteRight(MC, id_root, id_logged) || Workspace.isCreator(MC, id_root,id_logged)){
+        if(wor.getAll_write().equals("1") || UserWorkspace.hasWriteRight(MC, id_root, id_logged) || Workspace.isCreator(MC, id_root,id_logged)){
             MultipartFormData body = request().body().asMultipartFormData();
             FilePart file = body.getFile("mapcontext");
             if(file!=null){
@@ -405,7 +407,7 @@ public class MapCatalogC extends Controller{
         String[] values2 = {id_root};
         Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
         String id_logged = session().get("id_user");
-        if(wor.getAll_write()=="1" || UserWorkspace.hasWriteRight(MC, id_root, id_logged) || Workspace.isCreator(MC, id_root,id_logged)){
+        if(wor.getAll_write().equals("1") || UserWorkspace.hasWriteRight(MC, id_root, id_logged) || Workspace.isCreator(MC, id_root,id_logged)){
             MultipartFormData body = request().body().asMultipartFormData();
             FilePart file = body.getFile("mapcontext");
             if(file!=null){
@@ -450,7 +452,7 @@ public class MapCatalogC extends Controller{
         String[] values2 = {id_root};
         Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
         String id_user = session().get("id_user");
-        if(wor.getAll_read()=="1" || Workspace.isCreator(MC,id_root,id_user) || UserWorkspace.hasReadRight(MC,id_root,id_user)){
+        if(wor.getAll_read().equals("1") || Workspace.isCreator(MC,id_root,id_user) || UserWorkspace.hasReadRight(MC,id_root,id_user)){
             DynamicForm form = Form.form().bindFromRequest();
             String search = form.get("search");
             List<Folder> listF = Folder.search(MC,id_root,search);
@@ -463,7 +465,7 @@ public class MapCatalogC extends Controller{
     }
 
     /**
-     * Search and return a specific list of folders and ows from the root of the worksapce
+     * Search and return a specific list of folders and ows from the root of the workspace
      * @param id_root
      * @param id_folder
      * @return
@@ -473,7 +475,7 @@ public class MapCatalogC extends Controller{
         String[] values2 = {id_root};
         Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
         String id_user = session().get("id_user");
-        if(wor.getAll_read()=="1" || Workspace.isCreator(MC,id_root,id_user) || UserWorkspace.hasReadRight(MC,id_root,id_user)){
+        if(wor.getAll_read().equals("1") || Workspace.isCreator(MC,id_root,id_user) || UserWorkspace.hasReadRight(MC,id_root,id_user)){
             DynamicForm form = Form.form().bindFromRequest();
             String search = form.get("search");
             List<Folder> listF = Folder.search(MC,id_root,search);

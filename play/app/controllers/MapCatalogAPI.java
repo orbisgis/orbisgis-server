@@ -30,10 +30,19 @@ package controllers;
 
 import play.mvc.*;
 import org.orbisgis.server.mapcatalog.*;
-import java.util.ArrayList;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.List;
 
 import csp.ContentSecurityPolicy;
+
+import javax.xml.transform.Source;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 /**
  * Class for REST APi, this will changes when the API will be rewritten with database
@@ -44,22 +53,28 @@ public class MapCatalogAPI extends Controller {
 
     /**
      * Returns a context
+     * @param workspace of the workspace, not used
      * @param id the id of the context
      * @return
      */
-    public static Result getContext(String id){
+    public static Result getContext(String workspace, String id){
         String[] attributes = {"id_owscontext"};
         String[] values = {id};
         List<OWSContext> list = OWSContext.page(MC, attributes, values);
-        return ok(list.get(0).getContent());
+        if(list.isEmpty()){
+            return badRequest();
+        }else{
+            return ok(list.get(0).getContent());
+        }
     }
 
     /**
      * Deletes a context
+     * @param workspace of the workspace, not used
      * @param id the id of the context
      * @return
      */
-    public static Result deleteContext(String id){
+    public static Result deleteContext(String workspace, String id){
         OWSContext.delete(MC, Long.valueOf(id));
         return noContent();
     }
@@ -79,5 +94,95 @@ public class MapCatalogAPI extends Controller {
      */
     public static Result listContexts(String id_workspace){
         return ok(MC.getContextList(id_workspace));
+    }
+
+    /**
+     * adds a context with root as parent
+     * @param id_workspace the root workspace
+     * @return
+     */
+   @BodyParser.Of(BodyParser.Xml.class)
+    public static Result addContextFromRoot(String id_workspace){
+        Http.RequestBody body = request().body();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Source xmlSource = new DOMSource(body.asXml());
+        try{
+            StreamResult outputTarget = new StreamResult(outputStream);
+            TransformerFactory.newInstance().newTransformer().transform(xmlSource, outputTarget);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
+        String title = MapCatalog.getTitleLang(is)[0];
+        OWSContext ows = new OWSContext(id_workspace, null, null, is, title);
+        Long id_ows = ows.save(MC);
+        String answer = "<context id=\""+id_ows+"\" date=\""+DATE+"\">\n" +
+                        "  <title>"+title+"</title>\n" +
+                        "</context>";
+        return created(answer);
+    }
+
+    /**
+     * Adds a context with folder as parent
+     * @param id_workspace the root workspace
+     * @param id_folder the parent folder
+     * @return
+     */
+    @BodyParser.Of(BodyParser.Xml.class)
+    public static Result addContextFromParent(String id_workspace, String id_folder){
+        //processing the input
+        Http.RequestBody body = request().body();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Source xmlSource = new DOMSource(body.asXml());
+        try{
+            StreamResult outputTarget = new StreamResult(outputStream);
+            TransformerFactory.newInstance().newTransformer().transform(xmlSource, outputTarget);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
+        //saving the ows
+        String title = MapCatalog.getTitleLang(is)[0];
+        OWSContext ows = new OWSContext(id_workspace, id_folder, null, is, title);
+        Long id_ows = ows.save(MC);
+        //sending response
+        String answer = "<context id=\""+id_ows+"\" date=\""+DATE+"\">\n" +
+                "  <title>"+title+"</title>\n" +
+                "</context>";
+        return created(answer);
+    }
+
+    /**
+     * Updates a context
+     * @param id_root Root workspace of the context
+     * @param id_owscontext the id of the context to update
+     * @return
+     */
+    @BodyParser.Of(BodyParser.Xml.class)
+    public static Result updateContext(String id_root, String id_owscontext){
+        //Processing the input
+        Http.RequestBody body = request().body();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Source xmlSource = new DOMSource(body.asXml());
+        try{
+            StreamResult outputTarget = new StreamResult(outputStream);
+            TransformerFactory.newInstance().newTransformer().transform(xmlSource, outputTarget);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
+        //looking for the current ows
+        String[] attributes = {"id_owscontext"};
+        String[] values = {id_owscontext};
+        OWSContext current = OWSContext.page(MC, attributes, values).get(0);
+        String title = MapCatalog.getTitleLang(is)[0];
+        //saving the new one
+        OWSContext ows = new OWSContext(id_owscontext, current.getId_root(), current.getId_parent(), current.getId_uploader(), is, title, current.getDate());
+        ows.update(MC);
+        //sending response
+        String answer = "<context id=\""+id_owscontext+"\" date=\""+current.getDate()+"\">\n" +
+                        "  <title>"+title+"</title>\n" +
+                        "</context>";
+        return ok(answer);
     }
 }

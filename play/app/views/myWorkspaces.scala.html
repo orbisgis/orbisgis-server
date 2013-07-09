@@ -122,6 +122,7 @@
                                 @if(userworkspace.getRead().equals("1")){Read}
                                 @if(userworkspace.getWrite().equals("1")){Write}
                                 @if(userworkspace.getManageUser().equals("1")){Manage}
+                                @if(userworkspace.getRead().equals("0")&&userworkspace.getWrite().equals("0")&&userworkspace.getManageUser().equals("0")){None}
                             </td>
                             <td>
                                 @if(workspace.getAll_read().equals("1")){Read}

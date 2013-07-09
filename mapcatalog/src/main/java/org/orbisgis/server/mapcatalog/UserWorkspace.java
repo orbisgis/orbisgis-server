@@ -243,7 +243,7 @@ public class UserWorkspace {
                 String all_write = rs.getString("all_write");
                 String all_manage = rs.getString("all_manage");
                 String description = rs.getString("description");
-                Workspace wor = new Workspace(id_user, name, all_read, all_write, all_manage, description);
+                Workspace wor = new Workspace(id_workspace,id_user, name, all_read, all_write, all_manage, description);
                 paged.put(usewor,wor);
             }
             rs.close();

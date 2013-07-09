@@ -242,7 +242,7 @@ public class MapCatalog {
      * @param content The map context
      * @return the title and the lang
      */
-    String[] getTitleLang(InputStream content){
+    public static String[] getTitleLang(InputStream content){
         String title = "default";
         String lang = "default";
         try {

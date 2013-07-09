@@ -267,4 +267,24 @@ public class OWSContext {
         }
         return searched;
     }
+
+    /**
+     * Execute a query "UPDATE" in the database
+     * @param MC the mapcatalog used for database connection
+     */
+    public void update(MapCatalog MC){
+        String query = "UPDATE owscontext SET id_root = ? , id_parent = ? , id_uploader = ? , content = ? , title = ? WHERE id_user = ?;";
+        try {
+            //preparation of the statement
+            PreparedStatement pstmt = MC.getConnection().prepareStatement(query);
+            pstmt.setString(1, id_root);
+            pstmt.setString(2, id_parent);
+            pstmt.setString(3, id_uploader);
+            pstmt.setAsciiStream(4, content);
+            pstmt.setString(5, title);
+            pstmt.setString(6, id_owscontext);
+            pstmt.executeUpdate();
+            pstmt.close();
+        } catch (SQLException e) {e.printStackTrace();}
+    }
 }
