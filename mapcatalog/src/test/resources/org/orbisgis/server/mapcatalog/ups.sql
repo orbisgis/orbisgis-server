@@ -64,6 +64,10 @@ create table IF NOT EXISTS downloader_ows (
   constraint pk_downloader_ows primary key (id_user, id_owscontext)
 );
 
+create table IF NOT EXISTS version (
+  version		    	bigint
+);
+
 alter table workspace add constraint IF NOT EXISTS fk_workspace_user_1 foreign key (id_creator) references user (id_user) on delete set null on update restrict;
 create index IF NOT EXISTS ix_workspace_id_creator_1 on workspace (id_creator);
 

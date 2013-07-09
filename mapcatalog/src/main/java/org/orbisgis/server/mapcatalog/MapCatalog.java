@@ -46,6 +46,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.security.MessageDigest;
 /**
@@ -55,7 +56,7 @@ import java.security.MessageDigest;
 public class MapCatalog {
 
     private final String DRIVER_NAME = "org.h2.Driver";
-
+    private static final int VERSION = 1;
     {
         try
         {
@@ -67,7 +68,7 @@ public class MapCatalog {
         }
     }
     private MapCatalogProperties mcp = new MapCatalogProperties();
-    private String URL = "jdbc:h2:tcp://localhost/~/test";
+    private String URL = "jdbc:h2:~/test";
     private String USER = "sa";
     private String PASSWORD = "";
 
@@ -107,6 +108,13 @@ public class MapCatalog {
         String password = mcp.getProperty(MapCatalogProperties.DATABASE_PASSWORD).toString();
         MapCatalog mc = new MapCatalog(URL, user, password);
         mc.executeSQL("ups.sql");
+        int dbVersion = mc.getVersion();
+        if(dbVersion==VERSION){
+            while(dbVersion!=VERSION){
+                mc.updateVersion(dbVersion);
+                dbVersion = mc.getVersion();
+            }
+        }
         return mc;
     }
 
@@ -270,6 +278,35 @@ public class MapCatalog {
             sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
         }
         return sb.toString();
+    }
+
+    /**
+     * Returns the number of version of the database
+     * @return The version of database
+     */
+    private int getVersion(){
+        String query = "SELECT * FROM version";
+        int version=0;
+        try {
+            PreparedStatement stmt = this.getConnection().prepareStatement(query);
+            ResultSet rs = stmt.executeQuery();
+            while(rs.next()){
+                version = rs.getInt("version");
+            }
+            rs.close();
+            stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return version;
+    }
+
+    /**
+     *Updates the version of the database with SQL scripts
+     * @param n the number of version that needs to be updated
+     */
+    private void updateVersion(int n){
+        this.executeSQL("update"+n+".sql");
     }
 
     public static void main(String[] args) throws Exception{
