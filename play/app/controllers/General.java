@@ -180,6 +180,7 @@ public class General extends Controller{
         String location = form.get("location");
         String profession = form.get("profession");
         String additional = form.get("additional");
+        session("email",email);
         User use = new User(id_user,name,email,temp.getPassword(),location,profession,additional);
         use.update(MC);
         return profilePage();
@@ -191,5 +192,15 @@ public class General extends Controller{
      */
     public static Result PageNotFound(){
         return notFound(notFound.render());
+    }
+
+    /**
+     * Deletes the account of the connected user
+     */
+    public static Result deleteAccount(){
+        String id_user = session("id_user");
+        User.delete(MC, Long.valueOf(id_user));
+        session().clear();
+        return signin();
     }
 }

@@ -43,14 +43,23 @@
     </div>
     <br/><br/>
     <div class="row-fluid">
-        <div class="span6" id="navigate" style="padding-left:5px;padding-bottom:5px;padding-top:5px;padding-right:5px">
+        <div class="span6" id="display" style="padding-left:5px;padding-bottom:5px;padding-top:5px;padding-right:5px">
             <div class="alert alert-error">
                 <h4>WARNING :</h4>
                 Deleting your account is irreversible, you will loose all your workspaces.
             </div>
-            <a href=""><button class="btn btn-danger">Delete your account</button></a>
+            <form action="@routes.General.deleteAccount()">
+                <div class="message">
+                    <h1>
+                        You are going to delete your account, this action is irreversible, are you sure ?
+                    </h1>
+                    <button type="submit" class="btn btn-large btn-danger" style="margin-left:35%">Confirm</button>
+                    <button type="reset" class="btn btn-large btn-info removePopup2"  style="margin-left:15%">Cancel</button>
+                </div>
+            </form>
+           <button class="btn btn-danger removePopup">Delete your account</button>
         </div>
     </div>
 </div>
-</div>
+<script src="@routes.Assets.at("javascripts/main.js")" type="text/javascript"></script>
 }

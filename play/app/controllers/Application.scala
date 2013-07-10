@@ -53,7 +53,7 @@ object Application extends Controller with Secured2{
     if(username=="admin@admin.com"){
       Ok(views.html.index(styles, layers, fileForm, WMS.styleForm))
     }else{
-      Forbidden("Access denied")
+      Redirect("/home").flashing("error" -> "access denied")
     }
   }
 

@@ -375,4 +375,45 @@ public class UserWorkspace {
             return false;
         }
     }
+
+    /**
+     * Querys for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
+     * @param MC the mapcatalog object for the connection
+     * @param expression the expression to look for in the name or description of the workspaces
+     * @param id
+     * @return
+     */
+    public static HashMap<UserWorkspace, Workspace> searchMyWorkspacesMonitored(MapCatalog MC, String expression, String id){
+        String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ? AND (LOWER(name) LIKE ?) OR (LOWER(description) LIKE ?)";
+        HashMap<UserWorkspace, Workspace> paged = new HashMap<UserWorkspace, Workspace>();
+        expression = "%" + expression.toLowerCase() + "%";
+        try {
+            //preparation of the statement
+            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+            stmt.setString(1, id);
+            stmt.setString(2, expression);
+            stmt.setString(3, expression);
+            //Retrieving values
+            ResultSet rs = stmt.executeQuery();
+            while(rs.next()){
+                String id_user = rs.getString("id_user");
+                String id_workspace = rs.getString("id_workspace");
+                String read = rs.getString("read");
+                String write = rs.getString("write");
+                String manageUser = rs.getString("manage_user");
+                UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
+                String id_creator = rs.getString("id_creator");
+                String name = rs.getString("name");
+                String all_read = rs.getString("all_read");
+                String all_write = rs.getString("all_write");
+                String all_manage = rs.getString("all_manage");
+                String description = rs.getString("description");
+                Workspace wor = new Workspace(id_workspace, id_creator, name, all_read, all_write, all_manage, description);
+                paged.put(usewor,wor);
+            }
+            rs.close();
+            stmt.close();
+        } catch (SQLException e) {e.printStackTrace();}
+        return paged;
+    }
 }

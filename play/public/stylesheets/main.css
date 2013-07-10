@@ -91,10 +91,29 @@
 	border-width:0px 0px 1px 1px;
 }
 
-@keyframes notFoundAnimation {
-0%      {left:-50px;top:0px}
-25%     {left:-25px;top:0px}
-50%     {left:-10px;top:0px}
-75%     {left:-5px;top:0px}
-100%    {left:0px;top:0px}
+div.message {
+    left:15%;
+    top:40%;
+    display:none;
+    position:fixed;
+    border-style:solid;
+    border-color:black;
+    border-width:5px;
+    border-radius:10px;
+    background-color:white;
+    padding-top:10px;
+    padding-bottom:10px;
+    padding-left:10px;
+    padding-right:10px;
+}
+
+div#navigate
+{
+border:2px solid;
+border-radius:10px;
+}
+div#display
+{
+border:2px solid;
+border-radius:10px;
 }

@@ -108,6 +108,8 @@ GET /mapcatalog/workspace/:id_workspace/search                              cont
 
 GET /mapcatalog/workspace/:id_workspace/folder/:id_folder/search            controllers.MapCatalogC.searchFromParent(id_workspace : String, id_folder : String)
 
+GET /mapcatalog/myworkspaces/search                                         controllers.MapCatalogC.searchMyWorkspaces()
+
 GET /profile                                                                controllers.General.profilePage()
 
 GET /changeprofile                                                          controllers.General.changeProfile()
@@ -123,6 +125,8 @@ POST /login                                                 controllers.General.
 GET /signin                                                 controllers.General.signin
 
 POST /signin                                                controllers.General.signedin
+
+GET /profile/delete                                         controllers.General.deleteAccount
 
 #API REST
 

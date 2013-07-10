@@ -132,7 +132,7 @@ object WPS extends Controller with Secured2{
     if(username=="admin@admin.com"){
       Ok(views.html.wpsmanage(wpsMain.processes.values))
     }else{
-      Forbidden("Access denied")
+      Redirect("/home").flashing("error" -> "access denied")
     }
   }
 

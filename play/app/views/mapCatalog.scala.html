@@ -73,7 +73,6 @@
                 <table>
                     <tr>
                         <td>Name</td>
-                        <td>Creator</td>
                         <td>Action</td>
                         <td>Default access</td>
                     </tr>
@@ -81,10 +80,9 @@
                     <tr>
                         <td >
                             <a href="/mapcatalog/workspace/@workspace.getId_workspace()">
-                                <img src="@routes.Assets.at("images/workspace.png")" alt="Map">@workspace.getName()
+                                <img src="@routes.Assets.at("images/workspace.png")" alt="Map"><h5 style="display:inline">@workspace.getName()</h5>
                             </a>
                         </td>
-                        <td>@workspace.getId_creator()</td>
                         <td>
                             <a href="/mapcatalog/workspace/@workspace.getId_workspace()">Explore</a>
                             <a class="toToggle @workspace.getId_workspace()">Info</a>

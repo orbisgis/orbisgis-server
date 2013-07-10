@@ -159,7 +159,7 @@ public class MapCatalog {
             for (Workspace wor : list) {
                 e = dom.createElement("workspace");
                 e2 = dom.createElement("name");
-                e2.appendChild(dom.createTextNode(wor.getName()));
+                e2.appendChild(dom.createTextNode(wor.getId_workspace()));
                 e.appendChild(e2);
                 rootEle.appendChild(e);
             }
@@ -208,8 +208,8 @@ public class MapCatalog {
                 e.setAttribute("id", ows.getId_owscontext());
                 e.setAttribute("date", ows.getDate().toString());
                 e2 = dom.createElement("title");
-                e2.setAttribute("xml:lang", getTitleLang(ows.getContent())[0]);
-                e2.appendChild(dom.createTextNode(getTitleLang(ows.getContent())[1]));
+                e2.setAttribute("xml:lang", getTitleLang(ows.getContent())[1]);
+                e2.appendChild(dom.createTextNode(ows.getId_owscontext()));
                 e.appendChild(e2);
                 rootEle.appendChild(e);
             }

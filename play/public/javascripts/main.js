@@ -26,3 +26,13 @@ for (var j=0;j<toToggle.length;j++)
 if(document.getElementById("imgtoggle")!=null){
     document.getElementById("imgtoggle").addEventListener("click",function(){toggle("addtoggle")},false);
 }
+
+$(function(){
+        $("button.removePopup").click(function(){
+            $(this).parent().children("form").children("div.message").css("display","inline");
+        });
+
+        $("button.removePopup2").click(function(){
+            $(this).parent().css("display","none");
+        });
+});

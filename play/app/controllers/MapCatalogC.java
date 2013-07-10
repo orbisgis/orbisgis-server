@@ -139,6 +139,7 @@ public class MapCatalogC extends Controller{
         String description = form.get("description");
         Workspace work = new Workspace(session("id_user"),name,all_read,all_write,all_manage,description);
         Long id = work.save(MC);
+        flash("info", "you successfully created a workspace!");
         return viewWorkspace(id.toString());
     }
 
@@ -157,6 +158,7 @@ public class MapCatalogC extends Controller{
             String name = form.get("name");
             Folder fol = new Folder(id_root,null,name);
             Long id = fol.save(MC);
+            flash("info", "you successfully created a folder!");
             return viewFolder(id_root, id.toString());
         }else{
             flash("error", "You don't have writing access in this workspace, monitor it to demand the rights");
@@ -179,6 +181,7 @@ public class MapCatalogC extends Controller{
             String name = form.get("name");
             Folder fol = new Folder(id_root,id_parent,name);
             Long id = fol.save(MC);
+            flash("info", "you successfully created a workspace!");
             return viewFolder(id_root, id.toString());
         }else{
             flash("error", "You don't have writing access in this workspace, monitor it to demand the rights");
@@ -200,6 +203,7 @@ public class MapCatalogC extends Controller{
         }else{
             UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,"0","0","0");
             usewor.save(MC);
+            flash("info", "you are now monitoring the workspace");
             return noContent();
         }
     }
@@ -486,5 +490,18 @@ public class MapCatalogC extends Controller{
             flash("error","You don't have the right to explore this workspace, monitor it to demand the rights");
             return index();
         }
+    }
+
+    /**
+     * Search and return a specific list of workspaces for the page myWorkspaces
+     * @return
+     */
+    public static Result searchMyWorkspaces(){
+        DynamicForm form = Form.form().bindFromRequest();
+        String search = form.get("search");
+        String id_user = session("id_user");
+        List<Workspace> list = Workspace.searchMyWorkspacesCreated(MC,search,id_user);
+        HashMap<UserWorkspace,Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC,search,id_user);
+        return ok(myWorkspaces.render(list, hm));
     }
 }
