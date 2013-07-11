@@ -79,12 +79,12 @@
                             <img src="@routes.Assets.at("images/map-compass.png")" alt="Map"></img>
                             @context.getTitle()
                         </td>
-                        <td>View</td>
+                        <td><a href="@routes.MapCatalogC.viewOWSFromRoot(context.getId_root,context.getId_owscontext)">View</a></td>
                     </tr>
                     }
                 </table>
             </div>
-            @if(folders.isEmpty()){There is no information to display}<br/>
+            @if(folders.isEmpty()&&contexts.isEmpty()){There is no information to display}<br/>
             <div class="well well-small" style="margin-right:2%">
                 <img src="@routes.Assets.at("images/add.png")" alt="add"> Add a mapcontext</img>
                 <form style="margin-left:2%" action="@routes.MapCatalogC.addMapContextFromRoot(root.getId_workspace())" enctype="multipart/form-data" method="post">
@@ -95,7 +95,16 @@
             </div>
         </div>
         <div class="span7" id="display" style="background-color:#70c265;">
-            <h2>Display</h2>
+            <h2>Information</h2>
+            <div class="well well-small">
+                <h3>@root.getName()</h3>
+                @root.getDescription()
+            </div>
+            <div class="alert alert-info" >
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <h4>Info :</h4>
+                View a context to display more information, and post comments about it !
+            </div>
         </div>
     </div>
 </div>

@@ -117,3 +117,15 @@ div#display
 border:2px solid;
 border-radius:10px;
 }
+
+div.commentBox {
+    border-style:solid;
+    border-color:black;
+    border-width:5px;
+    border-radius:10px;
+    background-color:white;
+    padding-top:10px;
+    padding-bottom:10px;
+    padding-left:10px;
+    padding-right:10px;
+}

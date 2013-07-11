@@ -504,4 +504,95 @@ public class MapCatalogC extends Controller{
         HashMap<UserWorkspace,Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC,search,id_user);
         return ok(myWorkspaces.render(list, hm));
     }
+
+    /**
+     * Displays the page for OWS context from a folder
+     * @param id_workspace
+     * @param id_folder
+     * @param id_owscontext
+     * @return
+     */
+    @Security.Authenticated(Secured.class)
+    public static Result viewOWSFromParent(String id_workspace, String id_folder, String id_owscontext){
+        String[] attributes2 = {"id_workspace"};
+        String[] values2 = {id_workspace};
+        Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
+        String id_user = session().get("id_user");
+        if(wor.getAll_read().equals("1") || Workspace.isCreator(MC,id_workspace,id_user) || UserWorkspace.hasReadRight(MC,id_workspace,id_user)){
+            String[] attributes = {"id_parent"};
+            String[] values = {id_folder};
+            List<Folder> listF = Folder.page(MC,attributes,values);
+            List<OWSContext> listC = OWSContext.page(MC, attributes, values);
+            List<Folder> path = Folder.getPath(MC, id_folder);
+            OWSContext theContext = null;
+            for(int i = 0; i<listC.size(); i++){
+                if(listC.get(i).getId_owscontext().equals(id_owscontext)){
+                    theContext = listC.get(i);
+                    break;
+                }
+            }
+            if(theContext!=null){
+                return ok(contextFolder.render(listF,listC,path,wor,theContext));
+            }else{
+                flash("error","An error occured, try again later and if the problem persists, contact a moderator");
+                return viewFolder(id_workspace,id_folder);
+            }
+        }else{
+            flash("error","You don't have the right to explore this workspace, monitor it to demand the rights");
+            return index();
+        }
+    }
+
+    /**
+     * Display the page for OWS context from a workspace
+     * @param id_workspace
+     * @param id_owscontext
+     * @return
+     */
+    @Security.Authenticated(Secured.class)
+    public static Result viewOWSFromRoot(String id_workspace, String id_owscontext){
+        String[] attributes2 = {"id_workspace"};
+        String[] values2 = {id_workspace};
+        Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
+        String id_user = session().get("id_user");
+        if(wor.getAll_read().equals("1") || Workspace.isCreator(MC,id_workspace,id_user) || UserWorkspace.hasReadRight(MC,id_workspace,id_user)){
+            String[] attributes = {"id_root", "id_parent"};
+            String[] values = {id_workspace, null};
+            List<Folder> listF = Folder.page(MC,attributes,values);
+            List<OWSContext> listC = OWSContext.page(MC, attributes, values);
+            OWSContext theContext = null;
+            for(int i = 0; i<listC.size(); i++){
+                if(listC.get(i).getId_owscontext().equals(id_owscontext)){
+                    theContext = listC.get(i);
+                    break;
+                }
+            }
+            if(theContext!=null){
+                return ok(contextWorkspace.render(listF,listC,wor,theContext));
+            }else{
+                flash("error","An error occured, try again later and if the problem persists, contact a moderator");
+                return viewWorkspace(id_workspace);
+            }
+        }else{
+            flash("error","You don't have the right to explore this workspace, monitor it to demand the rights");
+            return index();
+        }
+    }
+
+    /**
+     * Sends the ows context
+     * @param id
+     * @return
+     */
+    @Security.Authenticated(Secured.class)
+    public static Result downloadContext(String id){
+        String[] attributes = {"id_owscontext"};
+        String[] values = {id};
+        List<OWSContext> list = OWSContext.page(MC, attributes, values);
+        if(list.isEmpty()){
+            return badRequest();
+        }else{
+            return ok(list.get(0).getContent());
+        }
+    }
 }

@@ -110,6 +110,12 @@ GET /mapcatalog/workspace/:id_workspace/folder/:id_folder/search            cont
 
 GET /mapcatalog/myworkspaces/search                                         controllers.MapCatalogC.searchMyWorkspaces()
 
+GET /mapcatalog/workspace/:id_workspace/folder/:id_folder/context/:id_owscontext   controllers.MapCatalogC.viewOWSFromParent(id_workspace, id_folder, id_owscontext)
+
+GET /mapcatalog/workspace/:id_workspace/context/:id_owscontext              controllers.MapCatalogC.viewOWSFromRoot(id_workspace, id_owscontext)
+
+GET /mapcatalog/context/download/:id_owscontext                             controllers.MapCatalogC.downloadContext(id_owscontext)
+
 GET /profile                                                                controllers.General.profilePage()
 
 GET /changeprofile                                                          controllers.General.changeProfile()

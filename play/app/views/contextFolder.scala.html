@@ -1,4 +1,4 @@
-@(folders : List[org.orbisgis.server.mapcatalog.Folder], contexts : List[org.orbisgis.server.mapcatalog.OWSContext], path : List[org.orbisgis.server.mapcatalog.Folder], root : org.orbisgis.server.mapcatalog.Workspace)
+@(folders : List[org.orbisgis.server.mapcatalog.Folder], contexts : List[org.orbisgis.server.mapcatalog.OWSContext], path : List[org.orbisgis.server.mapcatalog.Folder], root : org.orbisgis.server.mapcatalog.Workspace, context : org.orbisgis.server.mapcatalog.OWSContext)
 
 @import helper.twitterBootstrap._
 
@@ -97,16 +97,15 @@
                 </form>
             </div>
         </div>
-        <div class="span7" id="display" style="background-color:#70c265;">
-            <h2>Information</h2>
-            <div class="well well-small">
-                <h3>@root.getName()</h3>
-                @root.getDescription()
+        <div class="span7">
+            <div id="display" style="background-color:#70c265;padding-left:10px; padding-bottom:10px">
+                <h3>@context.getTitle()</h3>
+                <img src="@routes.Assets.at("images/noPreview.jpg")" alt="no preview"/>
+                <a href="@routes.MapCatalogC.downloadContext(context.getId_owscontext())"><button class="btn btn-primary">download</button></a>
             </div>
-            <div class="alert alert-info" style="width:30%;margin-left:30%">
-                <button type="button" class="close" data-dismiss="alert">&times;</button>
-                <h4>Info :</h4>
-                View a context to display more information, and post comments about it !
+            <br>
+            <div class="commentBox">
+                <h3>Comments :</h3>
             </div>
         </div>
     </div>
