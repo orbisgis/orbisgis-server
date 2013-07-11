@@ -110,26 +110,23 @@ public class User {
      * @param MC the mapcatalog object for the connection
      * @return The ID of the User just created (primary key)
      */
-    public  Long save(MapCatalog MC) {
+    public  Long save(MapCatalog MC) throws SQLException{
         Long last = null;
-        try{
-            String query = "INSERT INTO user (name,email,password,location,profession,additional) VALUES (? , ? , ? , ? , ? , ?);";
-            PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
-            pstmt.setString(1, name);
-            pstmt.setString(2, email);
-            pstmt.setString(3, password);
-            pstmt.setString(4, location);
-            pstmt.setString(5, profession);
-            pstmt.setString(6, additional);
-            pstmt.executeUpdate();
-            ResultSet rs = pstmt.getGeneratedKeys();
-            if(rs.next()){
-                last = rs.getLong(1);
-            }
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        String query = "INSERT INTO user (name,email,password,location,profession,additional) VALUES (? , ? , ? , ? , ? , ?);";
+        PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+        pstmt.setString(1, name);
+        pstmt.setString(2, email);
+        pstmt.setString(3, password);
+        pstmt.setString(4, location);
+        pstmt.setString(5, profession);
+        pstmt.setString(6, additional);
+        pstmt.executeUpdate();
+        ResultSet rs = pstmt.getGeneratedKeys();
+        if(rs.next()){
+            last = rs.getLong(1);
         }
+        rs.close();
+        pstmt.close();
         return last;
     }
 
@@ -138,15 +135,12 @@ public class User {
      * @param MC the mapcatalog object for the connection
      * @param id_user The primary key of the user
      */
-    public static void delete(MapCatalog MC, Long id_user) {
+    public static void delete(MapCatalog MC, Long id_user) throws SQLException{
         String query = "DELETE FROM user WHERE id_user = ? ;";
-        try{
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            stmt.setLong(1, id_user);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setLong(1, id_user);
+        stmt.executeUpdate();
+        stmt.close();
     }
 
     /**
@@ -156,51 +150,49 @@ public class User {
      * @param values The values of the attributes, this is totally SQL injection safe
      * @return A list of User containing the result of the query
      */
-    public static List<User> page(MapCatalog MC, String[] attributes, String[] values){
+    public static List<User> page(MapCatalog MC, String[] attributes, String[] values) throws SQLException{
         String query = "SELECT * FROM user WHERE ";
         List<User> paged = new LinkedList<User>();
-        try {
-            //case argument invalid
-            if(attributes == null || values == null){
-                throw new IllegalArgumentException("Arguments cannot be null");
-            }
-            if(attributes.length != values.length){
-                throw new IllegalArgumentException("String arrays have to be of the same length");
-            }
-            //preparation of the query
-            query+=attributes[0]+" = ?";
-            for(int i=1; i<attributes.length; i++){
-                if(values[i]==null){
-                    query += "AND "+attributes[i]+" IS NULL";
-                }else{
-                    query += " AND "+attributes[i]+" = ?";
-                }
-            }
-            //preparation of the statement
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            int j=1;
-            for(int i=0; i<values.length; i++){
-                if(values[i]!=null){
-                    stmt.setString(j, values[i]);
-                    j++;
-                }
-            }
-            //Retrieving values
-            ResultSet rs = stmt.executeQuery();
-            while(rs.next()){
-                String id_user = rs.getString("id_user");
-                String name = rs.getString("name");
-                String email = rs.getString("email");
-                String password = rs.getString("password");
-                String location = rs.getString("location");
-                String profession = rs.getString("profession");
-                String additional =rs.getString("additional");
-                User use = new User(id_user,name,email,password,location,profession,additional);
-                paged.add(use);
-            }
-            rs.close();
+        //case argument invalid
+        if(attributes == null || values == null){
+            throw new IllegalArgumentException("Arguments cannot be null");
         }
-        catch (SQLException e) {e.printStackTrace();}
+        if(attributes.length != values.length){
+            throw new IllegalArgumentException("String arrays have to be of the same length");
+        }
+        //preparation of the query
+        query+=attributes[0]+" = ?";
+        for(int i=1; i<attributes.length; i++){
+            if(values[i]==null){
+                query += "AND "+attributes[i]+" IS NULL";
+            }else{
+                query += " AND "+attributes[i]+" = ?";
+            }
+        }
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        int j=1;
+        for(int i=0; i<values.length; i++){
+            if(values[i]!=null){
+                stmt.setString(j, values[i]);
+                j++;
+            }
+        }
+        //Retrieving values
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_user = rs.getString("id_user");
+            String name = rs.getString("name");
+            String email = rs.getString("email");
+            String password = rs.getString("password");
+            String location = rs.getString("location");
+            String profession = rs.getString("profession");
+            String additional =rs.getString("additional");
+            User use = new User(id_user,name,email,password,location,profession,additional);
+            paged.add(use);
+        }
+        rs.close();
+        stmt.close();
         return paged;
     }
 
@@ -209,27 +201,24 @@ public class User {
      * @param MC the mapcatalog object for the connection
      * @return A list of user containing the result of the query
      */
-    public static List<User> page(MapCatalog MC){
+    public static List<User> page(MapCatalog MC) throws SQLException{
         String query = "SELECT * FROM user";
         List<User> paged = new LinkedList<User>();
-        try {
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            ResultSet rs = stmt.executeQuery();
-            while(rs.next()){
-                String id_user = rs.getString("id_user");
-                String name = rs.getString("name");
-                String email = rs.getString("email");
-                String password = rs.getString("password");
-                String location = rs.getString("location");
-                String profession = rs.getString("profession");
-                String additional =rs.getString("additional");
-                User use = new User(id_user,name,email,password,location,profession,additional);
-                paged.add(use);
-            }
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_user = rs.getString("id_user");
+            String name = rs.getString("name");
+            String email = rs.getString("email");
+            String password = rs.getString("password");
+            String location = rs.getString("location");
+            String profession = rs.getString("profession");
+            String additional =rs.getString("additional");
+            User use = new User(id_user,name,email,password,location,profession,additional);
+            paged.add(use);
         }
+        rs.close();
+        stmt.close();
         return paged;
     }
 
@@ -237,20 +226,18 @@ public class User {
      * Execute a query "UPDATE" in the database
      * @param MC the mapcatalog used for database connection
      */
-    public void update(MapCatalog MC){
+    public void update(MapCatalog MC) throws SQLException{
         String query = "UPDATE user SET name = ? , email = ? , location = ? , password = ? , profession = ? , additional = ? WHERE id_user = ?;";
-        try {
-            //preparation of the statement
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            stmt.setString(1, name);
-            stmt.setString(2, email);
-            stmt.setString(3, location);
-            stmt.setString(4, password);
-            stmt.setString(5, profession);
-            stmt.setString(6, additional);
-            stmt.setString(7, id_user);
-            stmt.executeUpdate();
-            stmt.close();
-        } catch (SQLException e) {e.printStackTrace();}
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, name);
+        stmt.setString(2, email);
+        stmt.setString(3, location);
+        stmt.setString(4, password);
+        stmt.setString(5, profession);
+        stmt.setString(6, additional);
+        stmt.setString(7, id_user);
+        stmt.executeUpdate();
+        stmt.close();
     }
 }

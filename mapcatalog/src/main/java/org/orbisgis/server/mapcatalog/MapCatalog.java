@@ -102,7 +102,7 @@ public class MapCatalog {
      * @param mcp
      * @return
      */
-    public static MapCatalog init(MapCatalogProperties mcp){
+    public static MapCatalog init(MapCatalogProperties mcp) throws SQLException{
         String URL = mcp.getProperty(MapCatalogProperties.DATABASE_URL).toString();
         String user = mcp.getProperty(MapCatalogProperties.DATABASE_USER).toString();
         String password = mcp.getProperty(MapCatalogProperties.DATABASE_PASSWORD).toString();
@@ -122,7 +122,7 @@ public class MapCatalog {
      * Executes a .sql file
      * @param file
      */
-    void executeSQL(String file){
+    void executeSQL(String file) throws SQLException{
         String s;
         StringBuffer sb = new StringBuffer();
         try{
@@ -137,19 +137,18 @@ public class MapCatalog {
             Statement st = c.createStatement();
             st.execute(sb.toString());
             c.close();
-        } catch(Exception e){
-            e.printStackTrace();
+        } catch(IOException e){
+            e.printStackTrace(); //unreachable code
         }
     }
 
     /**
      * Sends a query to database that returns the workspace list, then write it in a xml file a the root of project.
      */
-    public InputStream getWorkspaceList() {
-        try{
-            //get the list of workspace names from the database
-            List<Workspace>  list = Workspace.page(this);
-
+    public InputStream getWorkspaceList() throws SQLException{
+        //get the list of workspace names from the database
+        List<Workspace>  list = Workspace.page(this);
+        try {
             Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();;
             Element e ;
             Element e2 ;
@@ -165,23 +164,20 @@ public class MapCatalog {
             }
             dom.appendChild(rootEle);
             //transform the dom in XML
-            try {
-                Transformer tr = TransformerFactory.newInstance().newTransformer();
-                tr.setOutputProperty(OutputKeys.INDENT, "yes");
-                tr.setOutputProperty(OutputKeys.METHOD, "xml");
-                tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-                tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                Source xmlSource = new DOMSource(dom);
-                Result outputTarget = new StreamResult(outputStream);
-                tr.transform(xmlSource, outputTarget);
-                InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
-                return is;
-            } catch (TransformerException te) {
-                System.out.println(te.getMessage());
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+
+            Transformer tr = TransformerFactory.newInstance().newTransformer();
+            tr.setOutputProperty(OutputKeys.INDENT, "yes");
+            tr.setOutputProperty(OutputKeys.METHOD, "xml");
+            tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+            tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            Source xmlSource = new DOMSource(dom);
+            Result outputTarget = new StreamResult(outputStream);
+            tr.transform(xmlSource, outputTarget);
+            InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
+            return is;
+        } catch (Exception te) {
+            te.printStackTrace();
         }
         return null;
     }
@@ -190,13 +186,12 @@ public class MapCatalog {
      * Queries the database for the list of context, then writes it into a XML file
      * @param id_workspace The workspace which
      */
-    public InputStream getContextList(String id_workspace){
+    public InputStream getContextList(String id_workspace) throws SQLException{
+        //get the ows from database
+        String[] attributes = {"id_root"};
+        String[] values = {id_workspace};
+        List<OWSContext> list = OWSContext.page(this, attributes, values);
         try{
-            //get the ows from database
-            String[] attributes = {"id_root"};
-            String[] values = {id_workspace};
-            List<OWSContext> list = OWSContext.page(this, attributes, values);
-
             Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();;
             Element e;
             Element e2 ;
@@ -208,7 +203,7 @@ public class MapCatalog {
                 e.setAttribute("id", ows.getId_owscontext());
                 e.setAttribute("date", ows.getDate().toString());
                 e2 = dom.createElement("title");
-                e2.setAttribute("xml:lang", getTitleLang(ows.getContent())[1]);
+                e2.setAttribute("xml:lang", "fr");
                 e2.appendChild(dom.createTextNode(ows.getId_owscontext()));
                 e.appendChild(e2);
                 rootEle.appendChild(e);
@@ -216,23 +211,19 @@ public class MapCatalog {
             dom.appendChild(rootEle);
 
             //transforms into XML
-            try {
-                Transformer tr = TransformerFactory.newInstance().newTransformer();
-                tr.setOutputProperty(OutputKeys.INDENT, "yes");
-                tr.setOutputProperty(OutputKeys.METHOD, "xml");
-                tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-                tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                Source xmlSource = new DOMSource(dom);
-                Result outputTarget = new StreamResult(outputStream);
-                tr.transform(xmlSource, outputTarget);
-                InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
-                return is;
-            } catch (Exception exe) {
-                exe.printStackTrace();
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            Transformer tr = TransformerFactory.newInstance().newTransformer();
+            tr.setOutputProperty(OutputKeys.INDENT, "yes");
+            tr.setOutputProperty(OutputKeys.METHOD, "xml");
+            tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+            tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            Source xmlSource = new DOMSource(dom);
+            Result outputTarget = new StreamResult(outputStream);
+            tr.transform(xmlSource, outputTarget);
+            InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
+            return is;
+        } catch (Exception exe) {
+            exe.printStackTrace();
         }
         return null;
     }
@@ -242,10 +233,10 @@ public class MapCatalog {
      * @param content The map context
      * @return the title and the lang
      */
-    public static String[] getTitleLang(InputStream content){
+    public static String[] getTitleLang(InputStream content) throws SQLException{
         String title = "default";
         String lang = "default";
-        try {
+        try{
             DocumentBuilder dBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
             Document doc = dBuilder.parse(content);
             doc.getDocumentElement().normalize();
@@ -254,10 +245,7 @@ public class MapCatalog {
             Element titleNode = (Element) nodes.item(0);
             title = titleNode.getTextContent();
             lang = titleNode.getAttribute("xml:lang");
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        }catch(Exception e){e.printStackTrace();}
         return (new String[]{title,lang});
     }
 
@@ -284,20 +272,16 @@ public class MapCatalog {
      * Returns the number of version of the database
      * @return The version of database
      */
-    private int getVersion(){
+    private int getVersion() throws SQLException{
         String query = "SELECT * FROM version";
         int version=0;
-        try {
-            PreparedStatement stmt = this.getConnection().prepareStatement(query);
-            ResultSet rs = stmt.executeQuery();
-            while(rs.next()){
-                version = rs.getInt("version");
-            }
-            rs.close();
-            stmt.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        PreparedStatement stmt = this.getConnection().prepareStatement(query);
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            version = rs.getInt("version");
         }
+        rs.close();
+        stmt.close();
         return version;
     }
 
@@ -305,7 +289,7 @@ public class MapCatalog {
      *Updates the version of the database with SQL scripts
      * @param n the number of version that needs to be updated
      */
-    private void updateVersion(int n){
+    private void updateVersion(int n) throws SQLException{
         this.executeSQL("update"+n+".sql");
     }
 

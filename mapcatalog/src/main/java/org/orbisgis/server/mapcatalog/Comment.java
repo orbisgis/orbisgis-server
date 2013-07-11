@@ -95,24 +95,21 @@ public class Comment {
      * @param MC the mapcatalog object for the connection
      * @return The ID of the comment just created (primary key)
      */
-    public Long save(MapCatalog MC) {
+    public Long save(MapCatalog MC) throws SQLException{
         Long last = null;
-        try{
-            String query = "INSERT INTO comment (id_writer,id_map,content,title) VALUES (? , ? , ? , ?);";
-            PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
-            pstmt.setString(1, id_writer);
-            pstmt.setString(2, id_map);
-            pstmt.setString(3, content);
-            pstmt.setString(4, title);
-            pstmt.executeUpdate();
-            ResultSet rs = pstmt.getGeneratedKeys();
-            if(rs.next()){
-                last = rs.getLong(1);
-            }
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        String query = "INSERT INTO comment (id_writer,id_map,content,title) VALUES (? , ? , ? , ?);";
+        PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+        pstmt.setString(1, id_writer);
+        pstmt.setString(2, id_map);
+        pstmt.setString(3, content);
+        pstmt.setString(4, title);
+        pstmt.executeUpdate();
+        ResultSet rs = pstmt.getGeneratedKeys();
+        if(rs.next()){
+            last = rs.getLong(1);
         }
+        rs.close();
+        pstmt.close();
         return last;
     }
 
@@ -121,15 +118,12 @@ public class Comment {
      * @param MC the mapcatalog object for the connection
      * @param id_comment The primary key of the comment
      */
-    public static void delete(MapCatalog MC, Long id_comment) {
+    public static void delete(MapCatalog MC, Long id_comment) throws SQLException{
         String query = "DELETE FROM comment WHERE id_comment = ? ;";
-        try{
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            stmt.setLong(1, id_comment);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setLong(1, id_comment);
+        stmt.executeUpdate();
+        stmt.close();
     }
 
     /**
@@ -139,48 +133,47 @@ public class Comment {
      * @param values The values of the attributes, this is totally SQL injection safe
      * @return A list of Comment containing the result of the query
      */
-    public static List<Comment> page(MapCatalog MC, String[] attributes, String[] values){
+    public static List<Comment> page(MapCatalog MC, String[] attributes, String[] values) throws SQLException{
         String query = "SELECT * FROM comment WHERE ";
         List<Comment> paged = new LinkedList<Comment>();
-        try {
-            //case argument invalid
-            if(attributes == null || values == null){
-                throw new IllegalArgumentException("Arguments cannot be null");
+        //case argument invalid
+        if(attributes == null || values == null){
+            throw new IllegalArgumentException("Arguments cannot be null");
+        }
+        if(attributes.length != values.length){
+            throw new IllegalArgumentException("String arrays have to be of the same length");
+        }
+        //preparation of the query
+        query+=attributes[0]+" = ?";
+        for(int i=1; i<attributes.length; i++){
+            if(values[i]==null){
+                query += "AND "+attributes[i]+" IS NULL";
+            }else{
+                query += " AND "+attributes[i]+" = ?";
             }
-            if(attributes.length != values.length){
-                throw new IllegalArgumentException("String arrays have to be of the same length");
+        }
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        int j=1;
+        for(int i=0; i<values.length; i++){
+            if(values[i]!=null){
+                stmt.setString(j, values[i]);
+                j++;
             }
-            //preparation of the query
-            query+=attributes[0]+" = ?";
-            for(int i=1; i<attributes.length; i++){
-                if(values[i]==null){
-                    query += "AND "+attributes[i]+" IS NULL";
-                }else{
-                    query += " AND "+attributes[i]+" = ?";
-                }
-            }
-            //preparation of the statement
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            int j=1;
-            for(int i=0; i<values.length; i++){
-                if(values[i]!=null){
-                    stmt.setString(j, values[i]);
-                    j++;
-                }
-            }
-            //Retrieving values
-            ResultSet rs = stmt.executeQuery();
-            while(rs.next()){
-                String id_comment = rs.getString("id_Comment");
-                String id_writer = rs.getString("id_writer");
-                String id_map = rs.getString("id_map");
-                String content = rs.getString("content");
-                String title = rs.getString("title");
-                Comment com = new Comment(id_comment,id_writer,id_map,content,title);
-                paged.add(com);
-            }
-            rs.close();
-        } catch (SQLException e) {e.printStackTrace();}
+        }
+        //Retrieving values
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_comment = rs.getString("id_Comment");
+            String id_writer = rs.getString("id_writer");
+            String id_map = rs.getString("id_map");
+            String content = rs.getString("content");
+            String title = rs.getString("title");
+            Comment com = new Comment(id_comment,id_writer,id_map,content,title);
+            paged.add(com);
+        }
+        rs.close();
+        stmt.close();
         return paged;
     }
 
@@ -189,25 +182,22 @@ public class Comment {
      * @param MC the mapcatalog object for the connection
      * @return A list of comment containing the result of the query
      */
-    public static List<Comment> page(MapCatalog MC){
+    public static List<Comment> page(MapCatalog MC) throws SQLException{
         String query = "SELECT * FROM comment";
         List<Comment> paged = new LinkedList<Comment>();
-        try {
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            ResultSet rs = stmt.executeQuery();
-            while(rs.next()){
-                String id_comment = rs.getString("id_Comment");
-                String id_writer = rs.getString("id_writer");
-                String id_map = rs.getString("id_map");
-                String content = rs.getString("content");
-                String title = rs.getString("title");
-                Comment com = new Comment(id_comment,id_writer,id_map,content,title);
-                paged.add(com);
-            }
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_comment = rs.getString("id_Comment");
+            String id_writer = rs.getString("id_writer");
+            String id_map = rs.getString("id_map");
+            String content = rs.getString("content");
+            String title = rs.getString("title");
+            Comment com = new Comment(id_comment,id_writer,id_map,content,title);
+            paged.add(com);
         }
+        rs.close();
+        stmt.close();
         return paged;
     }
 }

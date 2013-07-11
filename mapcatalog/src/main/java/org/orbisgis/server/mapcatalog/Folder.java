@@ -37,12 +37,12 @@ import java.util.List;
  */
 public class Folder {
     private String id_folder = null;
-    private String id_root = "0";
+    private String id_root = null;
     private String id_parent = null;
     private String name =  "default";
 
     /**
-     * The constructor of the Folder
+     * The constructor of the Folder without primary key
      * @param id_root
      * @param id_parent Null if there is no parent folder (note: A workspace is NOT a folder)
      * @param name
@@ -57,7 +57,7 @@ public class Folder {
      * Constructor with primary key
      * @param id_folder
      * @param id_root
-     * @param id_parent
+     * @param id_parent Null if there is no parent folder
      * @param name
      */
     public Folder(String id_folder, String id_root, String id_parent, String name) {
@@ -84,27 +84,24 @@ public class Folder {
     }
 
     /**
-     * Method that saves a instantiaCollections.reverse(list)ted folder into database. Handles SQL injections.
+     * Method that saves a instantiated folder into database. Handles SQL injections. Auto increments primary key
      * @param MC the mapcatalog object for the connection
      * @return The ID of the folder just created (primary key)
      */
-    public  Long save(MapCatalog MC) {
+    public  Long save(MapCatalog MC) throws SQLException{
         Long last = null;
-        try{
-            String query = "INSERT INTO folder (id_root,id_parent,name) VALUES (? , ? , ?);";
-            PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
-            pstmt.setString(1, id_root);
-            pstmt.setString(2, id_parent);
-            pstmt.setString(3, name);
-            pstmt.executeUpdate();
-            ResultSet rs = pstmt.getGeneratedKeys();
-            if(rs.next()){
-                last = rs.getLong(1);
-            }
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        String query = "INSERT INTO folder (id_root,id_parent,name) VALUES (? , ? , ?);";
+        PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+        pstmt.setString(1, id_root);
+        pstmt.setString(2, id_parent);
+        pstmt.setString(3, name);
+        pstmt.executeUpdate();
+        ResultSet rs = pstmt.getGeneratedKeys();
+        if(rs.next()){
+            last = rs.getLong(1);
         }
+        rs.close();
+        pstmt.close();
         return last;
     }
 
@@ -113,15 +110,12 @@ public class Folder {
      * @param MC the mapcatalog object for the connection
      * @param id_folder The primary key of the folder
      */
-    public static void delete(MapCatalog MC, Long id_folder) {
+    public static void delete(MapCatalog MC, Long id_folder) throws SQLException{
         String query = "DELETE FROM folder WHERE id_folder = ? ;";
-        try{
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            stmt.setLong(1, id_folder);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setLong(1, id_folder);
+        stmt.executeUpdate();
+        stmt.close();
     }
 
     /**
@@ -131,47 +125,46 @@ public class Folder {
      * @param values The values of the attributes, this is totally SQL injection safe
      * @return A list of Folder containing the result of the query
      */
-    public static List<Folder> page(MapCatalog MC, String[] attributes, String[] values){
+    public static List<Folder> page(MapCatalog MC, String[] attributes, String[] values) throws SQLException{
         String query = "SELECT * FROM folder WHERE ";
         List<Folder> paged = new LinkedList<Folder>();
-        try {
-            //case argument invalid
-            if(attributes == null || values == null){
-                throw new IllegalArgumentException("Arguments cannot be null");
+        //case argument invalid
+        if(attributes == null || values == null){
+            throw new IllegalArgumentException("Arguments cannot be null");
+        }
+        if(attributes.length != values.length){
+            throw new IllegalArgumentException("String arrays have to be of the same length");
+        }
+        //preparation of the query
+        query+=attributes[0]+" = ?";
+        for(int i=1; i<attributes.length; i++){
+            if(values[i]==null){
+                query += "AND "+attributes[i]+" IS NULL";
+            }else{
+            query += " AND "+attributes[i]+" = ?";
             }
-            if(attributes.length != values.length){
-                throw new IllegalArgumentException("String arrays have to be of the same length");
+        }
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        int j=1;
+        for(int i=0; i<values.length; i++){
+            if(values[i]!=null){
+                stmt.setString(j, values[i]);
+                j++;
             }
-            //preparation of the query
-            query+=attributes[0]+" = ?";
-            for(int i=1; i<attributes.length; i++){
-                if(values[i]==null){
-                    query += "AND "+attributes[i]+" IS NULL";
-                }else{
-                query += " AND "+attributes[i]+" = ?";
-                }
-            }
-            //preparation of the statement
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            int j=1;
-            for(int i=0; i<values.length; i++){
-                if(values[i]!=null){
-                    stmt.setString(j, values[i]);
-                    j++;
-                }
-            }
-            //Retrieving values
-            ResultSet rs = stmt.executeQuery();
-            while(rs.next()){
-                String id_folder = rs.getString("id_folder");
-                String id_root = rs.getString("id_root");
-                String id_parent = rs.getString("id_parent");
-                String name = rs.getString("name");
-                Folder fol = new Folder(id_folder,id_root,id_parent,name);
-                paged.add(fol);
-            }
-            rs.close();
-        } catch (SQLException e) {e.printStackTrace();}
+        }
+        //Retrieving values
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_folder = rs.getString("id_folder");
+            String id_root = rs.getString("id_root");
+            String id_parent = rs.getString("id_parent");
+            String name = rs.getString("name");
+            Folder fol = new Folder(id_folder,id_root,id_parent,name);
+            paged.add(fol);
+        }
+        rs.close();
+        stmt.close();
         return paged;
     }
 
@@ -180,24 +173,21 @@ public class Folder {
      * @param MC the mapcatalog object for the connection
      * @return A list of folder containing the result of the query
      */
-    public static List<Folder> page(MapCatalog MC){
+    public static List<Folder> page(MapCatalog MC) throws SQLException{
         String query = "SELECT * FROM folder";
         List<Folder> paged = new LinkedList<Folder>();
-        try {
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            ResultSet rs = stmt.executeQuery();
-            while(rs.next()){
-                String id_folder = rs.getString("id_folder");
-                String id_root = rs.getString("id_root");
-                String id_parent = rs.getString("id_parent");
-                String name = rs.getString("name");
-                Folder fol = new Folder(id_folder,id_root,id_parent,name);
-                paged.add(fol);
-            }
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_folder = rs.getString("id_folder");
+            String id_root = rs.getString("id_root");
+            String id_parent = rs.getString("id_parent");
+            String name = rs.getString("name");
+            Folder fol = new Folder(id_folder,id_root,id_parent,name);
+            paged.add(fol);
         }
+        rs.close();
+        stmt.close();
         return paged;
     }
 
@@ -207,7 +197,7 @@ public class Folder {
      * @param id_folder the folder you desire to get the path from
      * @return
      */
-    public static List<Folder> getPath(MapCatalog MC, String id_folder){
+    public static List<Folder> getPath(MapCatalog MC, String id_folder) throws SQLException{
         String id = id_folder;
         List<Folder> list = new LinkedList<Folder>();
         while(id!=null){
@@ -227,27 +217,23 @@ public class Folder {
      * @param expression the String to run the search on, case insensitive
      * @return The list of workspaces corresponding to the search
      */
-    public static List<Folder> search(MapCatalog MC, String id_root, String expression){
+    public static List<Folder> search(MapCatalog MC, String id_root, String expression) throws SQLException{
         String query = "SELECT * FROM FOLDER WHERE (LOWER(name) LIKE ?) AND (id_root = ?)";
         List<Folder> searched = new LinkedList<Folder>();
         expression = "%" + expression.toLowerCase() + "%";
-        try {
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            stmt.setString(1, expression);
-            stmt.setString(2, id_root);
-            ResultSet rs = stmt.executeQuery();
-            while(rs.next()){
-                String id_folder = rs.getString("id_folder");
-                String id_parent = rs.getString("id_parent");
-                String name = rs.getString("name");
-                Folder fol = new Folder(id_folder,id_root,id_parent,name);
-                searched.add(fol);
-            }
-            rs.close();
-            stmt.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, expression);
+        stmt.setString(2, id_root);
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_folder = rs.getString("id_folder");
+            String id_parent = rs.getString("id_parent");
+            String name = rs.getString("name");
+            Folder fol = new Folder(id_folder,id_root,id_parent,name);
+            searched.add(fol);
         }
+        rs.close();
+        stmt.close();
         return searched;
     }
 }

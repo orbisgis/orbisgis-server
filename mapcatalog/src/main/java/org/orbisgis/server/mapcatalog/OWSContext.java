@@ -40,7 +40,6 @@ public class OWSContext {
     private String id_root = null;
     private String id_parent = null;
     private String id_uploader = null;
-    private InputStream content;
     private String title = "default";
     private Date date = null;
 
@@ -49,14 +48,12 @@ public class OWSContext {
      * @param id_root
      * @param id_parent
      * @param id_uploader
-     * @param content
      * @param title
      */
-    public OWSContext(String id_root, String id_parent, String id_uploader, InputStream content, String title) {
+    public OWSContext(String id_root, String id_parent, String id_uploader, String title) {
         this.id_root = id_root;
         this.id_parent = id_parent;
         this.id_uploader = id_uploader;
-        this.content = content;
         this.title = title;
     }
 
@@ -66,16 +63,14 @@ public class OWSContext {
      * @param id_root
      * @param id_parent
      * @param id_uploader
-     * @param content
      * @param title
      * @param date
      */
-    public OWSContext(String id_owscontext, String id_root, String id_parent, String id_uploader, InputStream content, String title, Date date) {
+    public OWSContext(String id_owscontext, String id_root, String id_parent, String id_uploader, String title, Date date) {
         this.id_owscontext = id_owscontext;
         this.id_root = id_root;
         this.id_parent = id_parent;
         this.id_uploader = id_uploader;
-        this.content = content;
         this.title = title;
         this.date = date;
     }
@@ -96,7 +91,21 @@ public class OWSContext {
         return id_uploader;
     }
 
-    public InputStream getContent() {
+    /**
+     * Gets an input stream for the xml content of a context in the database
+     * @param MC
+     * @return
+     * @throws SQLException
+     */
+    public InputStream getContent(MapCatalog MC) throws SQLException{
+        String query = "SELECT content FROM owscontext WHERE id_owscontext = ?";
+        InputStream content = null;
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, id_owscontext);
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            content = rs.getAsciiStream("content");
+        }
         return content;
     }
 
@@ -111,28 +120,25 @@ public class OWSContext {
     /**
      * Method that saves a instantiated OWSContext into database. Handles SQL injections.
      * @param MC the mapcatalog object for the connection
+     * @param content the input stream containing the XML content of the ows context
      * @return The ID of the OWSContext just created (primary key)
      */
-    public  Long save(MapCatalog MC) {
+    public  Long save(MapCatalog MC, InputStream content) throws SQLException{
         Long last = null;
-        try{
-            String query = "INSERT INTO owscontext (id_root,id_parent,id_uploader,content, title) VALUES (? , ? , ? , ? , ?);";
-            PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
-
-            pstmt.setString(1, id_root);
-            pstmt.setString(2, id_parent);
-            pstmt.setString(3, id_uploader);
-            pstmt.setAsciiStream(4, content);
-            pstmt.setString(5, title);
-            pstmt.executeUpdate();
-            ResultSet rs = pstmt.getGeneratedKeys();
-            if(rs.next()){
-                last = rs.getLong(1);
-            }
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        String query = "INSERT INTO owscontext (id_root,id_parent,id_uploader,content, title) VALUES (? , ? , ? , ? , ?);";
+        PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+        pstmt.setString(1, id_root);
+        pstmt.setString(2, id_parent);
+        pstmt.setString(3, id_uploader);
+        pstmt.setAsciiStream(4, content);
+        pstmt.setString(5, title);
+        pstmt.executeUpdate();
+        ResultSet rs = pstmt.getGeneratedKeys();
+        if(rs.next()){
+            last = rs.getLong(1);
         }
+        rs.close();
+        pstmt.close();
         return last;
     }
 
@@ -141,15 +147,12 @@ public class OWSContext {
      * @param MC the mapcatalog object for the connection
      * @param id_owscontext The primary key of the owscontext
      */
-    public static void delete(MapCatalog MC, Long id_owscontext) {
+    public static void delete(MapCatalog MC, Long id_owscontext) throws SQLException{
         String query = "DELETE FROM owscontext WHERE id_owscontext = ? ;";
-        try{
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            stmt.setLong(1, id_owscontext);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setLong(1, id_owscontext);
+        stmt.executeUpdate();
+        stmt.close();
     }
 
     /**
@@ -159,50 +162,48 @@ public class OWSContext {
      * @param values The values of the attributes, this is totally SQL injection safe
      * @return A list of owscontext containing the result of the query
      */
-    public static List<OWSContext> page(MapCatalog MC, String[] attributes, String[] values){
+    public static List<OWSContext> page(MapCatalog MC, String[] attributes, String[] values) throws SQLException{
         String query = "SELECT * FROM owscontext WHERE ";
         List<OWSContext> paged = new LinkedList<OWSContext>();
-        try {
-            //case argument invalid
-            if(attributes == null || values == null){
-                throw new IllegalArgumentException("Arguments cannot be null");
+        //case argument invalid
+        if(attributes == null || values == null){
+            throw new IllegalArgumentException("Arguments cannot be null");
+        }
+        if(attributes.length != values.length){
+            throw new IllegalArgumentException("String arrays have to be of the same length");
+        }
+        //preparation of the query
+        query+=attributes[0]+" = ?";
+        for(int i=1; i<attributes.length; i++){
+            if(values[i]==null){
+                query += "AND "+attributes[i]+" IS NULL";
+            }else{
+                query += " AND "+attributes[i]+" = ?";
             }
-            if(attributes.length != values.length){
-                throw new IllegalArgumentException("String arrays have to be of the same length");
+        }
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        int j=1;
+        for(int i=0; i<values.length; i++){
+            if(values[i]!=null){
+                stmt.setString(j, values[i]);
+                j++;
             }
-            //preparation of the query
-            query+=attributes[0]+" = ?";
-            for(int i=1; i<attributes.length; i++){
-                if(values[i]==null){
-                    query += "AND "+attributes[i]+" IS NULL";
-                }else{
-                    query += " AND "+attributes[i]+" = ?";
-                }
-            }
-            //preparation of the statement
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            int j=1;
-            for(int i=0; i<values.length; i++){
-                if(values[i]!=null){
-                    stmt.setString(j, values[i]);
-                    j++;
-                }
-            }
-            //Retrieving values
-            ResultSet rs = stmt.executeQuery();
-            while(rs.next()){
-                String id_owscontext = rs.getString("id_owscontext");
-                String id_root = rs.getString("id_root");
-                String id_parent = rs.getString("id_parent");
-                String id_uploader = rs.getString("id_uploader");
-                InputStream content = rs.getAsciiStream("content");
-                String title = rs.getString("title");
-                Date date = rs.getDate("date");
-                OWSContext ows = new OWSContext(id_owscontext,id_root,id_parent,id_uploader,content,title,date);
-                paged.add(ows);
-            }
-            rs.close();
-        } catch (SQLException e) {e.printStackTrace();}
+        }
+        //Retrieving values
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_owscontext = rs.getString("id_owscontext");
+            String id_root = rs.getString("id_root");
+            String id_parent = rs.getString("id_parent");
+            String id_uploader = rs.getString("id_uploader");
+            String title = rs.getString("title");
+            Date date = rs.getDate("date");
+            OWSContext ows = new OWSContext(id_owscontext,id_root,id_parent,id_uploader,title,date);
+            paged.add(ows);
+        }
+        rs.close();
+        stmt.close();
         return paged;
     }
 
@@ -211,27 +212,23 @@ public class OWSContext {
      * @param MC the mapcatalog object for the connection
      * @return A list of owscontext containing the result of the query
      */
-    public static List<OWSContext> page(MapCatalog MC){
+    public static List<OWSContext> page(MapCatalog MC) throws SQLException{
         String query = "SELECT * FROM owscontext";
         List<OWSContext> paged = new LinkedList<OWSContext>();
-        try {
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            ResultSet rs = stmt.executeQuery();
-            while(rs.next()){
-                String id_owscontext = rs.getString("id_owscontext");
-                String id_root = rs.getString("id_root");
-                String id_parent = rs.getString("id_parent");
-                String id_uploader = rs.getString("id_uploader");
-                InputStream content = rs.getAsciiStream("content");
-                String title = rs.getString("title");
-                Date date = rs.getDate("date");
-                OWSContext ows = new OWSContext(id_owscontext,id_root,id_parent,id_uploader,content,title,date);
-                paged.add(ows);
-            }
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_owscontext = rs.getString("id_owscontext");
+            String id_root = rs.getString("id_root");
+            String id_parent = rs.getString("id_parent");
+            String id_uploader = rs.getString("id_uploader");
+            String title = rs.getString("title");
+            Date date = rs.getDate("date");
+            OWSContext ows = new OWSContext(id_owscontext,id_root,id_parent,id_uploader,title,date);
+            paged.add(ows);
         }
+        rs.close();
+        stmt.close();
         return paged;
     }
 
@@ -240,31 +237,26 @@ public class OWSContext {
      * @param expression the String to run the search on, case insensitive
      * @return The list of workspaces corresponding to the search
      */
-    public static List<OWSContext> search(MapCatalog MC, String id_root, String expression){
+    public static List<OWSContext> search(MapCatalog MC, String id_root, String expression) throws SQLException{
         String query = "SELECT * FROM FOLDER WHERE (LOWER(title) LIKE ?) AND (id_root = ?)";
         List<OWSContext> searched = new LinkedList<OWSContext>();
         expression = "%" + expression.toLowerCase() + "%";
-        try {
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            stmt.setString(1, expression);
-            stmt.setString(2, id_root);
-            ResultSet rs = stmt.executeQuery();
-            while(rs.next()){
-                String id_owscontext = rs.getString("id_owscontext");
-                id_root = rs.getString("id_root");
-                String id_parent = rs.getString("id_parent");
-                String id_uploader = rs.getString("id_uploader");
-                InputStream content = rs.getBinaryStream("content");
-                String title = rs.getString("title");
-                Date date = rs.getDate("date");
-                OWSContext ows = new OWSContext(id_owscontext,id_root,id_parent,id_uploader,content,title,date);
-                searched.add(ows);
-            }
-            rs.close();
-            stmt.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, expression);
+        stmt.setString(2, id_root);
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_owscontext = rs.getString("id_owscontext");
+            id_root = rs.getString("id_root");
+            String id_parent = rs.getString("id_parent");
+            String id_uploader = rs.getString("id_uploader");
+            String title = rs.getString("title");
+            Date date = rs.getDate("date");
+            OWSContext ows = new OWSContext(id_owscontext,id_root,id_parent,id_uploader,title,date);
+            searched.add(ows);
         }
+        rs.close();
+        stmt.close();
         return searched;
     }
 
@@ -272,19 +264,17 @@ public class OWSContext {
      * Execute a query "UPDATE" in the database
      * @param MC the mapcatalog used for database connection
      */
-    public void update(MapCatalog MC){
+    public void update(MapCatalog MC, InputStream content) throws SQLException{
         String query = "UPDATE owscontext SET id_root = ? , id_parent = ? , id_uploader = ? , content = ? , title = ? WHERE id_user = ?;";
-        try {
-            //preparation of the statement
-            PreparedStatement pstmt = MC.getConnection().prepareStatement(query);
-            pstmt.setString(1, id_root);
-            pstmt.setString(2, id_parent);
-            pstmt.setString(3, id_uploader);
-            pstmt.setAsciiStream(4, content);
-            pstmt.setString(5, title);
-            pstmt.setString(6, id_owscontext);
-            pstmt.executeUpdate();
-            pstmt.close();
-        } catch (SQLException e) {e.printStackTrace();}
+        //preparation of the statement
+        PreparedStatement pstmt = MC.getConnection().prepareStatement(query);
+        pstmt.setString(1, id_root);
+        pstmt.setString(2, id_parent);
+        pstmt.setString(3, id_uploader);
+        pstmt.setAsciiStream(4, content);
+        pstmt.setString(5, title);
+        pstmt.setString(6, id_owscontext);
+        pstmt.executeUpdate();
+        pstmt.close();
     }
 }

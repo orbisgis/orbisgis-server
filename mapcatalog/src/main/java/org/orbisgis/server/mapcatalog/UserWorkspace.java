@@ -84,26 +84,22 @@ public class UserWorkspace {
      * @param MC the mapcatalog object for the connection
      * @return The ID of the User just created (primary key)
      */
-    public Long save(MapCatalog MC) {
+    public Long save(MapCatalog MC) throws SQLException{
         Long last = null;
-        try{
-            String query = "INSERT INTO user_workspace (id_user,id_workspace,read,write,manage_user) VALUES (? , ? , ? , ? , ?);";
-            PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
-            pstmt.setString(1, id_user);
-            pstmt.setString(2, id_workspace);
-            pstmt.setString(3, read);
-            pstmt.setString(4, write);
-            pstmt.setString(5, manageUser);
-            pstmt.executeUpdate();
-            ResultSet rs = pstmt.getGeneratedKeys();
-            if(rs.next()){
-                last = rs.getLong(1);
-            }
-            rs.close();
-            pstmt.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        String query = "INSERT INTO user_workspace (id_user,id_workspace,read,write,manage_user) VALUES (? , ? , ? , ? , ?);";
+        PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
+        pstmt.setString(1, id_user);
+        pstmt.setString(2, id_workspace);
+        pstmt.setString(3, read);
+        pstmt.setString(4, write);
+        pstmt.setString(5, manageUser);
+        pstmt.executeUpdate();
+        ResultSet rs = pstmt.getGeneratedKeys();
+        if(rs.next()){
+            last = rs.getLong(1);
         }
+        rs.close();
+        pstmt.close();
         return last;
     }
 
@@ -113,17 +109,13 @@ public class UserWorkspace {
      * @param id_user The primary key of the user
      * @param id_workspace The primary key of the workspace
      */
-    public static void delete(MapCatalog MC, Long id_user, Long id_workspace) {
+    public static void delete(MapCatalog MC, Long id_user, Long id_workspace) throws SQLException{
         String query = "DELETE FROM user_workspace WHERE id_user = ? AND id_workspace = ?;";
-        try{
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            stmt.setLong(1, id_user);
-            stmt.setLong(2, id_workspace);
-            stmt.executeUpdate();
-            stmt.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setLong(1, id_user);
+        stmt.setLong(2, id_workspace);
+        stmt.executeUpdate();
+        stmt.close();
     }
 
     /**
@@ -133,49 +125,47 @@ public class UserWorkspace {
      * @param values The values of the attributes, this is totally SQL injection safe
      * @return A list of UserWorkspace containing the result of the query
      */
-    public static List<UserWorkspace> page(MapCatalog MC, String[] attributes, String[] values){
+    public static List<UserWorkspace> page(MapCatalog MC, String[] attributes, String[] values) throws SQLException{
         String query = "SELECT * FROM user_workspace WHERE ";
         List<UserWorkspace> paged = new LinkedList<UserWorkspace>();
-        try {
-            //case argument invalid
-            if(attributes == null || values == null){
-                throw new IllegalArgumentException("Arguments cannot be null");
+        //case argument invalid
+        if(attributes == null || values == null){
+            throw new IllegalArgumentException("Arguments cannot be null");
+        }
+        if(attributes.length != values.length){
+            throw new IllegalArgumentException("String arrays have to be of the same length");
+        }
+        //preparation of the query
+        query+=attributes[0]+" = ?";
+        for(int i=1; i<attributes.length; i++){
+            if(values[i]==null){
+                query += "AND "+attributes[i]+" IS NULL";
+            }else{
+                query += " AND "+attributes[i]+" = ?";
             }
-            if(attributes.length != values.length){
-                throw new IllegalArgumentException("String arrays have to be of the same length");
+        }
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        int j=1;
+        for(int i=0; i<values.length; i++){
+            if(values[i]!=null){
+                stmt.setString(j, values[i]);
+                j++;
             }
-            //preparation of the query
-            query+=attributes[0]+" = ?";
-            for(int i=1; i<attributes.length; i++){
-                if(values[i]==null){
-                    query += "AND "+attributes[i]+" IS NULL";
-                }else{
-                    query += " AND "+attributes[i]+" = ?";
-                }
-            }
-            //preparation of the statement
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            int j=1;
-            for(int i=0; i<values.length; i++){
-                if(values[i]!=null){
-                    stmt.setString(j, values[i]);
-                    j++;
-                }
-            }
-            //Retrieving values
-            ResultSet rs = stmt.executeQuery();
-            while(rs.next()){
-                String id_user = rs.getString("id_user");
-                String id_workspace = rs.getString("id_workspace");
-                String read = rs.getString("read");
-                String write = rs.getString("write");
-                String manageUser = rs.getString("manage_user");
-                UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
-                paged.add(usewor);
-            }
-            rs.close();
-            stmt.close();
-        } catch (SQLException e) {e.printStackTrace();}
+        }
+        //Retrieving values
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_user = rs.getString("id_user");
+            String id_workspace = rs.getString("id_workspace");
+            String read = rs.getString("read");
+            String write = rs.getString("write");
+            String manageUser = rs.getString("manage_user");
+            UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
+            paged.add(usewor);
+        }
+        rs.close();
+        stmt.close();
         return paged;
     }
 
@@ -185,34 +175,32 @@ public class UserWorkspace {
      * @param id
      * @return
      */
-    public static HashMap<UserWorkspace, User> pageWithUser(MapCatalog MC, String id){
+    public static HashMap<UserWorkspace, User> pageWithUser(MapCatalog MC, String id) throws SQLException{
         String query = "SELECT * FROM USER_WORKSPACE JOIN USER ON USER.ID_USER=USER_WORKSPACE.ID_USER WHERE USER_WORKSPACE.ID_WORKSPACE = ?";
         HashMap<UserWorkspace, User> paged = new HashMap<UserWorkspace, User>();
-        try {
-            //preparation of the statement
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            stmt.setString(1, id);
-            //Retrieving values
-            ResultSet rs = stmt.executeQuery();
-            while(rs.next()){
-                String id_user = rs.getString("id_user");
-                String id_workspace = rs.getString("id_workspace");
-                String read = rs.getString("read");
-                String write = rs.getString("write");
-                String manageUser = rs.getString("manage_user");
-                UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
-                String name = rs.getString("name");
-                String email = rs.getString("email");
-                String password = rs.getString("password");
-                String location = rs.getString("location");
-                String profession = rs.getString("profession");
-                String additional = rs.getString("additional");
-                User use = new User(id_user, name, email, password, location,profession,additional);
-                paged.put(usewor,use);
-            }
-            rs.close();
-            stmt.close();
-        } catch (SQLException e) {e.printStackTrace();}
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, id);
+        //Retrieving values
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_user = rs.getString("id_user");
+            String id_workspace = rs.getString("id_workspace");
+            String read = rs.getString("read");
+            String write = rs.getString("write");
+            String manageUser = rs.getString("manage_user");
+            UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
+            String name = rs.getString("name");
+            String email = rs.getString("email");
+            String password = rs.getString("password");
+            String location = rs.getString("location");
+            String profession = rs.getString("profession");
+            String additional = rs.getString("additional");
+            User use = new User(id_user, name, email, password, location,profession,additional);
+            paged.put(usewor,use);
+        }
+        rs.close();
+        stmt.close();
         return paged;
     }
 
@@ -222,33 +210,31 @@ public class UserWorkspace {
      * @param id
      * @return
      */
-    public static HashMap<UserWorkspace, Workspace> pageWithWorkspaceManage(MapCatalog MC, String id){
+    public static HashMap<UserWorkspace, Workspace> pageWithWorkspaceManage(MapCatalog MC, String id) throws SQLException{
         String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ? AND( ALL_MANAGE = 1 OR MANAGE_USER = 1)";
         HashMap<UserWorkspace, Workspace> paged = new HashMap<UserWorkspace, Workspace>();
-        try {
-            //preparation of the statement
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            stmt.setString(1, id);
-            //Retrieving values
-            ResultSet rs = stmt.executeQuery();
-            while(rs.next()){
-                String id_user = rs.getString("id_user");
-                String id_workspace = rs.getString("id_workspace");
-                String read = rs.getString("read");
-                String write = rs.getString("write");
-                String manageUser = rs.getString("manage_user");
-                UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
-                String name = rs.getString("name");
-                String all_read = rs.getString("all_read");
-                String all_write = rs.getString("all_write");
-                String all_manage = rs.getString("all_manage");
-                String description = rs.getString("description");
-                Workspace wor = new Workspace(id_workspace,id_user, name, all_read, all_write, all_manage, description);
-                paged.put(usewor,wor);
-            }
-            rs.close();
-            stmt.close();
-        } catch (SQLException e) {e.printStackTrace();}
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, id);
+        //Retrieving values
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_user = rs.getString("id_user");
+            String id_workspace = rs.getString("id_workspace");
+            String read = rs.getString("read");
+            String write = rs.getString("write");
+            String manageUser = rs.getString("manage_user");
+            UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
+            String name = rs.getString("name");
+            String all_read = rs.getString("all_read");
+            String all_write = rs.getString("all_write");
+            String all_manage = rs.getString("all_manage");
+            String description = rs.getString("description");
+            Workspace wor = new Workspace(id_workspace,id_user, name, all_read, all_write, all_manage, description);
+            paged.put(usewor,wor);
+        }
+        rs.close();
+        stmt.close();
         return paged;
     }
 
@@ -258,34 +244,32 @@ public class UserWorkspace {
      * @param id
      * @return
      */
-    public static HashMap<UserWorkspace, Workspace> pageWithWorkspace(MapCatalog MC, String id){
+    public static HashMap<UserWorkspace, Workspace> pageWithWorkspace(MapCatalog MC, String id) throws SQLException{
         String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ?";
         HashMap<UserWorkspace, Workspace> paged = new HashMap<UserWorkspace, Workspace>();
-        try {
-            //preparation of the statement
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            stmt.setString(1, id);
-            //Retrieving values
-            ResultSet rs = stmt.executeQuery();
-            while(rs.next()){
-                String id_user = rs.getString("id_user");
-                String id_workspace = rs.getString("id_workspace");
-                String read = rs.getString("read");
-                String write = rs.getString("write");
-                String manageUser = rs.getString("manage_user");
-                UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
-                String id_creator = rs.getString("id_creator");
-                String name = rs.getString("name");
-                String all_read = rs.getString("all_read");
-                String all_write = rs.getString("all_write");
-                String all_manage = rs.getString("all_manage");
-                String description = rs.getString("description");
-                Workspace wor = new Workspace(id_workspace, id_creator, name, all_read, all_write, all_manage, description);
-                paged.put(usewor,wor);
-            }
-            rs.close();
-            stmt.close();
-        } catch (SQLException e) {e.printStackTrace();}
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, id);
+        //Retrieving values
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_user = rs.getString("id_user");
+            String id_workspace = rs.getString("id_workspace");
+            String read = rs.getString("read");
+            String write = rs.getString("write");
+            String manageUser = rs.getString("manage_user");
+            UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
+            String id_creator = rs.getString("id_creator");
+            String name = rs.getString("name");
+            String all_read = rs.getString("all_read");
+            String all_write = rs.getString("all_write");
+            String all_manage = rs.getString("all_manage");
+            String description = rs.getString("description");
+            Workspace wor = new Workspace(id_workspace, id_creator, name, all_read, all_write, all_manage, description);
+            paged.put(usewor,wor);
+        }
+        rs.close();
+        stmt.close();
         return paged;
     }
 
@@ -293,19 +277,17 @@ public class UserWorkspace {
      * Execute a query "UPDATE" in the database
      * @param MC the mapcatalog used for database connection
      */
-    public void update(MapCatalog MC){
+    public void update(MapCatalog MC) throws SQLException{
         String query = "UPDATE user_workspace SET read = ? , write = ? , manage_user = ? WHERE id_user = ? AND id_workspace = ?;";
-        try {
-            //preparation of the statement
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            stmt.setString(1, read);
-            stmt.setString(2, write);
-            stmt.setString(3, manageUser);
-            stmt.setString(4, id_user);
-            stmt.setString(5, id_workspace);
-            stmt.executeUpdate();
-            stmt.close();
-        } catch (SQLException e) {e.printStackTrace();}
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, read);
+        stmt.setString(2, write);
+        stmt.setString(3, manageUser);
+        stmt.setString(4, id_user);
+        stmt.setString(5, id_workspace);
+        stmt.executeUpdate();
+        stmt.close();
     }
 
     /**
@@ -314,7 +296,7 @@ public class UserWorkspace {
      * @param id_user the user to test
      * @return
      */
-    public static boolean isMonitoring(MapCatalog MC, String id_workspace, String id_user){
+    public static boolean isMonitoring(MapCatalog MC, String id_workspace, String id_user) throws SQLException{
         String[] attributes = {"id_user","id_workspace"};
         String[] values = {id_user, id_workspace};
         List<UserWorkspace> useworList = UserWorkspace.page(MC, attributes, values);
@@ -331,7 +313,7 @@ public class UserWorkspace {
      * @param id_user the user to test
      * @return
      */
-    public static boolean hasReadRight(MapCatalog MC, String id_workspace, String id_user){
+    public static boolean hasReadRight(MapCatalog MC, String id_workspace, String id_user) throws SQLException{
         String[] attributes = {"id_user","id_workspace","READ"};
         String[] values = {id_user, id_workspace,"1"};
         List<UserWorkspace> useworList = UserWorkspace.page(MC, attributes, values);
@@ -348,7 +330,7 @@ public class UserWorkspace {
      * @param id_user the user to test
      * @return
      */
-    public static boolean hasWriteRight(MapCatalog MC, String id_workspace, String id_user){
+    public static boolean hasWriteRight(MapCatalog MC, String id_workspace, String id_user) throws SQLException{
         String[] attributes = {"id_user","id_workspace","WRITE"};
         String[] values = {id_user, id_workspace,"1"};
         List<UserWorkspace> useworList = UserWorkspace.page(MC, attributes, values);
@@ -365,7 +347,7 @@ public class UserWorkspace {
      * @param id_user the user to test
      * @return
      */
-    public static boolean hasManageRight(MapCatalog MC, String id_workspace, String id_user){
+    public static boolean hasManageRight(MapCatalog MC, String id_workspace, String id_user) throws SQLException{
         String[] attributes = {"id_user","id_workspace","MANAGE_USER"};
         String[] values = {id_user, id_workspace,"1"};
         List<UserWorkspace> useworList = UserWorkspace.page(MC, attributes, values);
@@ -383,37 +365,35 @@ public class UserWorkspace {
      * @param id
      * @return
      */
-    public static HashMap<UserWorkspace, Workspace> searchMyWorkspacesMonitored(MapCatalog MC, String expression, String id){
+    public static HashMap<UserWorkspace, Workspace> searchMyWorkspacesMonitored(MapCatalog MC, String expression, String id) throws SQLException{
         String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ? AND (LOWER(name) LIKE ?) OR (LOWER(description) LIKE ?)";
         HashMap<UserWorkspace, Workspace> paged = new HashMap<UserWorkspace, Workspace>();
         expression = "%" + expression.toLowerCase() + "%";
-        try {
-            //preparation of the statement
-            PreparedStatement stmt = MC.getConnection().prepareStatement(query);
-            stmt.setString(1, id);
-            stmt.setString(2, expression);
-            stmt.setString(3, expression);
-            //Retrieving values
-            ResultSet rs = stmt.executeQuery();
-            while(rs.next()){
-                String id_user = rs.getString("id_user");
-                String id_workspace = rs.getString("id_workspace");
-                String read = rs.getString("read");
-                String write = rs.getString("write");
-                String manageUser = rs.getString("manage_user");
-                UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
-                String id_creator = rs.getString("id_creator");
-                String name = rs.getString("name");
-                String all_read = rs.getString("all_read");
-                String all_write = rs.getString("all_write");
-                String all_manage = rs.getString("all_manage");
-                String description = rs.getString("description");
-                Workspace wor = new Workspace(id_workspace, id_creator, name, all_read, all_write, all_manage, description);
-                paged.put(usewor,wor);
-            }
-            rs.close();
-            stmt.close();
-        } catch (SQLException e) {e.printStackTrace();}
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, id);
+        stmt.setString(2, expression);
+        stmt.setString(3, expression);
+        //Retrieving values
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_user = rs.getString("id_user");
+            String id_workspace = rs.getString("id_workspace");
+            String read = rs.getString("read");
+            String write = rs.getString("write");
+            String manageUser = rs.getString("manage_user");
+            UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
+            String id_creator = rs.getString("id_creator");
+            String name = rs.getString("name");
+            String all_read = rs.getString("all_read");
+            String all_write = rs.getString("all_write");
+            String all_manage = rs.getString("all_manage");
+            String description = rs.getString("description");
+            Workspace wor = new Workspace(id_workspace, id_creator, name, all_read, all_write, all_manage, description);
+            paged.put(usewor,wor);
+        }
+        rs.close();
+        stmt.close();
         return paged;
     }
 }

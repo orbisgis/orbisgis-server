@@ -31,7 +31,7 @@ create table IF NOT EXISTS folder (
 create table IF NOT EXISTS comment (
   id_comment			bigint auto_increment not null,
   id_writer			    bigint,
-  id_map			    bigint,
+  id_map			    bigint not null,
   content			    clob,
   title                 varchar(255),
   date                  timestamp default CURRENT_TIMESTAMP,
