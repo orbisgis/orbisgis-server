@@ -28,13 +28,14 @@ package controllers;
  * directly: info_at_ orbisgis.org
  */
 
+import constant.Message;
 import play.data.*;
-import play.mvc.*;
 import views.html.*;
+import play.mvc.*;
 import org.orbisgis.server.mapcatalog.*;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
+import java.sql.SQLException;
 import java.util.List;
 
 import csp.ContentSecurityPolicy;
@@ -52,26 +53,6 @@ public class General extends Controller{
     }
 
     /**
-     * class that represent the login form
-     */
-    public static class Login {
-
-        public String email;
-        public String password;
-
-    }
-
-    /**
-     * class that represent the signin form
-     */
-    public static class Signin {
-        public String name;
-        public String email;
-        public String password;
-        public String location;
-    }
-
-    /**
      * Renders the login page
      * @return
      */
@@ -84,23 +65,28 @@ public class General extends Controller{
      * @return The home page if success, the login page with error if error.
      * @throws Exception
      */
-    public static Result authenticate() throws Exception{
-        DynamicForm form = Form.form().bindFromRequest();
-        String email = form.get("email");
-        String password = form.get("password");
-        String error ="";
-        if(email != null && password != null){
-            String[] attributes = {"email","password"};
-            String[] values = {email,MapCatalog.hasher(password)};
-            List<User> list = User.page(MC, attributes, values);
-            if(!list.isEmpty()){
-                session().clear();
-                session("email", email);
-                session("id_user", list.get(0).getId_user());
-                return ok(home.render());
-            }else{error="Error: Email or password invalid";}
+    public static Result authenticate() {
+        String error="";
+        try {
+            DynamicForm form = Form.form().bindFromRequest();
+            String email = form.get("email");
+            String password = form.get("password");
+            if(email != null && password != null){
+                String[] attributes = {"email","password"};
+                String[] values = {email,MapCatalog.hasher(password)};
+                List<User> list = User.page(MC, attributes, values);
+                if(!list.isEmpty()){
+                    session().clear();
+                    session("email", email);
+                    session("id_user", list.get(0).getId_user());
+                    return ok(home.render());
+                }else{error= Message.ERROR_LOGIN;}
+            }
+        } catch (NoSuchAlgorithmException e) {
+            error= Message.ERROR_GENERAL;
+        } catch (SQLException e) {
+            error= Message.ERROR_GENERAL;
         }
-        System.out.println(email +"++++"+ password);
         return badRequest(login.render(error));
     }
 
@@ -119,7 +105,7 @@ public class General extends Controller{
      */
     public static Result signin(){
         if(session().get("email")!=null){
-            flash("error","You must log out to create another account");
+            flash("error", Message.ERROR_ALREADY_LOGGED);
             return forbidden(home.render());
         }
         return ok(signin.render(""));
@@ -130,24 +116,29 @@ public class General extends Controller{
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public static Result signedin() throws NoSuchAlgorithmException {
-        DynamicForm form = Form.form().bindFromRequest();
-        String email = form.get("email");
-        String location = form.get("location");
-        String name = form.get("name");
-        String password = form.get("password");
-        String[] attribute = {"email"};
-        String[] values = {email};
-        System.out.println(email + "+++++" + location + "+++++" + name + "+++++" + password + "++++");
-        List<User> user = User.page(MC, attribute, values);
+    public static Result signedin() {
         String error="";
-        if(email!=null && password.length()>=6){ //check the form
-            if(user.isEmpty()){ //check if user mail is used
-                User usr = new User(name, email, password, location);
-                usr.save(MC);
-                return ok(home.render());
-            }else{error="Error: Email already used";}
-        }else{error="Error: Email or password invalid";}
+        try {
+            DynamicForm form = Form.form().bindFromRequest();
+            String email = form.get("email");
+            String location = form.get("location");
+            String name = form.get("name");
+            String password = form.get("password");
+            String[] attribute = {"email"};
+            String[] values = {email};
+            List<User> user = User.page(MC, attribute, values);
+            if(email!=null && password.length()>=6){ //check the form
+                if(user.isEmpty()){ //check if user mail is used
+                    User usr = new User(name, email, password, location);
+                    usr.save(MC);
+                    return ok(home.render());
+                }else{error= Message.ERROR_EMAIL_USED;}
+            }else{error= Message.ERROR_LOGIN;}
+        } catch (SQLException e) {
+            error= Message.ERROR_GENERAL;
+        } catch (NoSuchAlgorithmException e) {
+            error= Message.ERROR_GENERAL;
+        }
         return (badRequest(signin.render(error)));
     }
 
@@ -157,11 +148,17 @@ public class General extends Controller{
      */
     @Security.Authenticated(Secured.class)
     public static Result profilePage() {
-        String id_user = session("id_user");
-        String[] attributes = {"id_user"};
-        String[] values = {id_user};
-        User use = User.page(MC, attributes, values).get(0);
-        return ok(profile.render(use));
+        try {
+            String id_user = session("id_user");
+            String[] attributes = {"id_user"};
+            String[] values = {id_user};
+            User use = User.page(MC, attributes, values).get(0);
+            return ok(profile.render(use));
+        } catch (SQLException e) {
+            flash("error", Message.ERROR_GENERAL);
+        }
+        return home();
+
     }
 
     /**
@@ -170,20 +167,25 @@ public class General extends Controller{
      */
     @Security.Authenticated(Secured.class)
     public static Result changeProfile() {
-        String id_user = session("id_user");
-        String[] attributes = {"id_user"};
-        String[] values = {id_user};
-        User temp = User.page(MC, attributes, values).get(0);
-        DynamicForm form = Form.form().bindFromRequest();
-        String name = form.get("name");
-        String email = form.get("email");
-        String location = form.get("location");
-        String profession = form.get("profession");
-        String additional = form.get("additional");
-        session("email",email);
-        User use = new User(id_user,name,email,temp.getPassword(),location,profession,additional);
-        use.update(MC);
-        return profilePage();
+        try {
+            String id_user = session("id_user");
+            String[] attributes = {"id_user"};
+            String[] values = {id_user};
+            User temp = User.page(MC, attributes, values).get(0);
+            DynamicForm form = Form.form().bindFromRequest();
+            String name = form.get("name");
+            String email = form.get("email");
+            String location = form.get("location");
+            String profession = form.get("profession");
+            String additional = form.get("additional");
+            session("email",email);
+            User use = new User(id_user,name,email,temp.getPassword(),location,profession,additional);
+            use.update(MC);
+            return profilePage();
+        } catch (SQLException e) {
+            flash("error", Message.ERROR_GENERAL);
+        }
+        return home();
     }
 
     /**
@@ -198,9 +200,14 @@ public class General extends Controller{
      * Deletes the account of the connected user
      */
     public static Result deleteAccount(){
-        String id_user = session("id_user");
-        User.delete(MC, Long.valueOf(id_user));
-        session().clear();
-        return signin();
+        try {
+            String id_user = session("id_user");
+            User.delete(MC, Long.valueOf(id_user));
+            session().clear();
+            return signin();
+        } catch (SQLException e) {
+            flash("error", Message.ERROR_GENERAL);
+        }
+        return home();
     }
 }

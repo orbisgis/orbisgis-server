@@ -34,6 +34,7 @@ import org.orbisgis.server.mapcatalog.*;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.sql.SQLException;
 import java.util.List;
 
 import csp.ContentSecurityPolicy;
@@ -58,13 +59,17 @@ public class MapCatalogAPI extends Controller {
      * @return
      */
     public static Result getContext(String workspace, String id){
-        String[] attributes = {"id_owscontext"};
-        String[] values = {id};
-        List<OWSContext> list = OWSContext.page(MC, attributes, values);
-        if(list.isEmpty()){
-            return badRequest();
-        }else{
-            return ok(list.get(0).getContent());
+        try {
+            String[] attributes = {"id_owscontext"};
+            String[] values = {id};
+            List<OWSContext> list = OWSContext.page(MC, attributes, values);
+            if(list.isEmpty()){
+                return badRequest();
+            }else{
+                return ok(list.get(0).getContent(MC));
+            }
+        } catch (SQLException e) {
+            return badRequest(e.getMessage());
         }
     }
 
@@ -75,8 +80,12 @@ public class MapCatalogAPI extends Controller {
      * @return
      */
     public static Result deleteContext(String workspace, String id){
-        OWSContext.delete(MC, Long.valueOf(id));
-        return noContent();
+        try {
+            OWSContext.delete(MC, Long.valueOf(id));
+            return noContent();
+        } catch (SQLException e) {
+            return badRequest(e.getMessage());
+        }
     }
 
     /**
@@ -84,7 +93,11 @@ public class MapCatalogAPI extends Controller {
      * @return
      */
     public static Result listWorkspaces(){
-        return ok(MC.getWorkspaceList());
+        try {
+            return ok(MC.getWorkspaceList());
+        } catch (SQLException e) {
+            return badRequest(e.getMessage());
+        }
     }
 
     /**
@@ -93,7 +106,11 @@ public class MapCatalogAPI extends Controller {
      * @return
      */
     public static Result listContexts(String id_workspace){
-        return ok(MC.getContextList(id_workspace));
+        try {
+            return ok(MC.getContextList(id_workspace));
+        } catch (SQLException e) {
+            return badRequest(e.getMessage());
+        }
     }
 
     /**
@@ -103,24 +120,28 @@ public class MapCatalogAPI extends Controller {
      */
    @BodyParser.Of(BodyParser.Xml.class)
     public static Result addContextFromRoot(String id_workspace){
-        Http.RequestBody body = request().body();
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Source xmlSource = new DOMSource(body.asXml());
-        try{
-            StreamResult outputTarget = new StreamResult(outputStream);
-            TransformerFactory.newInstance().newTransformer().transform(xmlSource, outputTarget);
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-        InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
-        String title = MapCatalog.getTitleLang(is)[0];
-        OWSContext ows = new OWSContext(id_workspace, null, null, is, title);
-        Long id_ows = ows.save(MC);
-        String answer = "<context id=\""+id_ows+"\" date=\""+DATE+"\">\n" +
-                        "  <title>"+title+"</title>\n" +
-                        "</context>";
-        return created(answer);
-    }
+       try {
+           Http.RequestBody body = request().body();
+           ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+           Source xmlSource = new DOMSource(body.asXml());
+           try{
+               StreamResult outputTarget = new StreamResult(outputStream);
+               TransformerFactory.newInstance().newTransformer().transform(xmlSource, outputTarget);
+           }catch(Exception e){
+               return badRequest(e.getMessage());
+           }
+           InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
+           String title = request().body().asRaw().asFile().getName();
+           OWSContext ows = new OWSContext(id_workspace, null, null, title);
+           Long id_ows = ows.save(MC, is);
+           String answer = "<context id=\""+id_ows+"\" date=\""+DATE+"\">\n" +
+                           "  <title>"+id_ows+"</title>\n" +
+                           "</context>";
+           return created(answer);
+       } catch (SQLException e) {
+           return badRequest(e.getMessage());
+       }
+   }
 
     /**
      * Adds a context with folder as parent
@@ -130,26 +151,30 @@ public class MapCatalogAPI extends Controller {
      */
     @BodyParser.Of(BodyParser.Xml.class)
     public static Result addContextFromParent(String id_workspace, String id_folder){
-        //processing the input
-        Http.RequestBody body = request().body();
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Source xmlSource = new DOMSource(body.asXml());
-        try{
-            StreamResult outputTarget = new StreamResult(outputStream);
-            TransformerFactory.newInstance().newTransformer().transform(xmlSource, outputTarget);
-        }catch(Exception e){
-            e.printStackTrace();
+        try {
+            //processing the input
+            Http.RequestBody body = request().body();
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            Source xmlSource = new DOMSource(body.asXml());
+            try{
+                StreamResult outputTarget = new StreamResult(outputStream);
+                TransformerFactory.newInstance().newTransformer().transform(xmlSource, outputTarget);
+            }catch(Exception e){
+                return badRequest(e.getMessage());
+            }
+            InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
+            //saving the ows
+            String title = request().body().asRaw().asFile().getName();
+            OWSContext ows = new OWSContext(id_workspace, id_folder, null, title);
+            Long id_ows = ows.save(MC, is);
+            //sending response
+            String answer = "<context id=\""+id_ows+"\" date=\""+DATE+"\">\n" +
+                    "  <title>"+id_ows+"</title>\n" +
+                    "</context>";
+            return created(answer);
+        } catch (SQLException e) {
+            return badRequest(e.getMessage());
         }
-        InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
-        //saving the ows
-        String title = MapCatalog.getTitleLang(is)[0];
-        OWSContext ows = new OWSContext(id_workspace, id_folder, null, is, title);
-        Long id_ows = ows.save(MC);
-        //sending response
-        String answer = "<context id=\""+id_ows+"\" date=\""+DATE+"\">\n" +
-                "  <title>"+title+"</title>\n" +
-                "</context>";
-        return created(answer);
     }
 
     /**
@@ -160,29 +185,33 @@ public class MapCatalogAPI extends Controller {
      */
     @BodyParser.Of(BodyParser.Xml.class)
     public static Result updateContext(String id_root, String id_owscontext){
-        //Processing the input
-        Http.RequestBody body = request().body();
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        Source xmlSource = new DOMSource(body.asXml());
-        try{
-            StreamResult outputTarget = new StreamResult(outputStream);
-            TransformerFactory.newInstance().newTransformer().transform(xmlSource, outputTarget);
-        }catch(Exception e){
-            e.printStackTrace();
+        try {
+            //Processing the input
+            Http.RequestBody body = request().body();
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            Source xmlSource = new DOMSource(body.asXml());
+            try{
+                StreamResult outputTarget = new StreamResult(outputStream);
+                TransformerFactory.newInstance().newTransformer().transform(xmlSource, outputTarget);
+            }catch(Exception e){
+                return badRequest(e.getMessage());
+            }
+            InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
+            //looking for the current ows
+            String[] attributes = {"id_owscontext"};
+            String[] values = {id_owscontext};
+            OWSContext current = OWSContext.page(MC, attributes, values).get(0);
+            String title = request().body().asRaw().asFile().getName();
+            //saving the new one
+            OWSContext ows = new OWSContext(id_owscontext, current.getId_root(), current.getId_parent(), current.getId_uploader(), title, current.getDate());
+            ows.update(MC, is);
+            //sending response
+            String answer = "<context id=\""+id_owscontext+"\" date=\""+current.getDate()+"\">\n" +
+                            "  <title>"+id_owscontext+"</title>\n" +
+                            "</context>";
+            return ok(answer);
+        } catch (SQLException e) {
+            return badRequest(e.getMessage());
         }
-        InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
-        //looking for the current ows
-        String[] attributes = {"id_owscontext"};
-        String[] values = {id_owscontext};
-        OWSContext current = OWSContext.page(MC, attributes, values).get(0);
-        String title = MapCatalog.getTitleLang(is)[0];
-        //saving the new one
-        OWSContext ows = new OWSContext(id_owscontext, current.getId_root(), current.getId_parent(), current.getId_uploader(), is, title, current.getDate());
-        ows.update(MC);
-        //sending response
-        String answer = "<context id=\""+id_owscontext+"\" date=\""+current.getDate()+"\">\n" +
-                        "  <title>"+title+"</title>\n" +
-                        "</context>";
-        return ok(answer);
     }
 }
