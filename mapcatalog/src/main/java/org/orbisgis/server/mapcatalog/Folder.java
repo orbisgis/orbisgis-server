@@ -236,4 +236,20 @@ public class Folder {
         stmt.close();
         return searched;
     }
+
+    /**
+     * Execute a query "UPDATE" in the database
+     * @param MC the mapcatalog used for database connection
+     */
+    public void update(MapCatalog MC) throws SQLException{
+        String query = "UPDATE folder SET id_root = ? , id_parent = ? , name = ? WHERE id_folder = ?;";
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, id_root);
+        stmt.setString(2, id_parent);
+        stmt.setString(3, name);
+        stmt.setString(4, id_folder);
+        stmt.executeUpdate();
+        stmt.close();
+    }
 }
