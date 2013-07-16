@@ -71,6 +71,9 @@ public class MapCatalog {
     private String URL = "jdbc:h2:~/test";
     private String USER = "sa";
     private String PASSWORD = "";
+    static final String URL_TEST = "jdbc:h2:./target/testdb";
+    static final String USER_TEST = "sa";
+    static final String PASSWORD_TEST = "";
 
     /**
      * Constructor to specify a database to connect

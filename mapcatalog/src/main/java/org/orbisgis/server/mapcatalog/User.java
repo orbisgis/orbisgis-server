@@ -223,20 +223,19 @@ public class User {
     }
 
     /**
-     * Execute a query "UPDATE" in the database
+     * Execute a query "UPDATE" in the database, password is not updated, so it can be set to whatever.
      * @param MC the mapcatalog used for database connection
      */
     public void update(MapCatalog MC) throws SQLException{
-        String query = "UPDATE user SET name = ? , email = ? , location = ? , password = ? , profession = ? , additional = ? WHERE id_user = ?;";
+        String query = "UPDATE user SET name = ? , email = ? , location = ?, profession = ? , additional = ? WHERE id_user = ?;";
         //preparation of the statement
         PreparedStatement stmt = MC.getConnection().prepareStatement(query);
         stmt.setString(1, name);
         stmt.setString(2, email);
         stmt.setString(3, location);
-        stmt.setString(4, password);
-        stmt.setString(5, profession);
-        stmt.setString(6, additional);
-        stmt.setString(7, id_user);
+        stmt.setString(4, profession);
+        stmt.setString(5, additional);
+        stmt.setString(6, id_user);
         stmt.executeUpdate();
         stmt.close();
     }

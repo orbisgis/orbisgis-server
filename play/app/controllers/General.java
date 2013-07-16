@@ -171,7 +171,6 @@ public class General extends Controller{
             String id_user = session("id_user");
             String[] attributes = {"id_user"};
             String[] values = {id_user};
-            User temp = User.page(MC, attributes, values).get(0);
             DynamicForm form = Form.form().bindFromRequest();
             String name = form.get("name");
             String email = form.get("email");
@@ -179,7 +178,7 @@ public class General extends Controller{
             String profession = form.get("profession");
             String additional = form.get("additional");
             session("email",email);
-            User use = new User(id_user,name,email,temp.getPassword(),location,profession,additional);
+            User use = new User(id_user,name,email,"",location,profession,additional);
             use.update(MC);
             return profilePage();
         } catch (SQLException e) {

@@ -42,7 +42,7 @@ public class UserWorkspaceTest {
 
     @BeforeClass
     public static void init() throws SQLException {
-        MC = new MapCatalog("jdbc:h2:./target/testdb","sa","");
+        MC = new MapCatalog(MapCatalog.URL_TEST, MapCatalog.USER_TEST, MapCatalog.PASSWORD_TEST);
         MC.executeSQL("down.sql");
         MC.executeSQL("ups.sql");
         MC.executeSQL("populate.sql");

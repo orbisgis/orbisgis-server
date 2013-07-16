@@ -708,7 +708,7 @@ public class MapCatalogC extends Controller{
             if(list.isEmpty()){
                 return badRequest();
             }else{
-                return ok(list.get(0).getContent(MC).);
+                return ok(list.get(0).getContent(MC));
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
