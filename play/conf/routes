@@ -116,6 +116,10 @@ GET /mapcatalog/workspace/:id_workspace/context/:id_owscontext              cont
 
 GET /mapcatalog/context/download/:id_owscontext                             controllers.MapCatalogC.downloadContext(id_owscontext)
 
+GET /mapcatalog/workspace/:id_workspace/deleteContext/:id_owscontext        controllers.MapCatalogC.deleteContext(id_workspace, id_owscontext)
+
+GET /mapcatalog/workspace/:id_workspace/stopMonitoring                      controllers.MapCatalogC.stopMonitoring(id_workspace)
+
 GET /profile                                                                controllers.General.profilePage()
 
 GET /changeprofile                                                          controllers.General.changeProfile()

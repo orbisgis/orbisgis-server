@@ -19,7 +19,8 @@
         <tbody>
         @layers.map { l =>
         <tr>
-            <td><b>@l._1</b></td><td>@l._2.getAbsolutePath</td><td><a class="btn btn-mini" href="@controllers.routes.Application.removeFile(l._1)"></i>Remove</a></td>
+            <td><b>@l._1</b></td><td>@l._2.getAbsolutePath</td>
+            <td><a class="btn btn-mini" href="@controllers.routes.Application.removeFile(l._1)"></i>Remove</a></td>
         </tr>
         }
         </tbody>

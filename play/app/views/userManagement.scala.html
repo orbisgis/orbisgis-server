@@ -6,7 +6,7 @@
 <div class="container" xmlns="http://www.w3.org/1999/html">
     <div class="page-header">
         <h1>
-            <img src="@routes.Assets.at("images/OrbisMapCatalog.png")" alt="Map Catalog"></img>
+            <img src="@routes.Assets.at("images/logos/OrbisMapCatalog.png")" alt="Map Catalog"></img>
         </h1>
     </div>
 </div>
@@ -66,8 +66,17 @@
         <div class="span5" id="display" style="background-color:#70c265;">
             <h2>Workspace info</h2>
             <div style="margin-left:2%">
-                <a href="@routes.MapCatalogC.deleteWorkspace(wor.getId_workspace())"><button class="btn btn-danger">Delete</button></a>
-                <br/><br/>
+                <form action="@routes.MapCatalogC.deleteWorkspace(wor.getId_workspace())">
+                    <div class="message">
+                        <h1>
+                            You are going to delete this workspace, this action is irreversible, are you sure ?
+                        </h1>
+                        <button type="submit" class="btn btn-large btn-danger" style="margin-left:35%">Confirm</button>
+                        <button type="reset" class="btn btn-large btn-info removePopup2"  style="margin-left:15%">Cancel</button>
+                    </div>
+                </form>
+                <button class="btn btn-danger removePopup">Delete this workspace</button>
+                <br><br>
                 <div class="alert alert-info">
                     <h4>Info :</h4>
                     You can set your workspace to be visible or editable for all connected users by setting the default acesses.
@@ -98,4 +107,5 @@
         </div>
     </div>
 </div>
+<script src="@routes.Assets.at("javascripts/main.js")" type="text/javascript"></script>
 }

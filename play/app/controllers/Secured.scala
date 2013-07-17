@@ -29,6 +29,10 @@ import play.api.mvc._
  * For more information, please consult: <http://www.orbisgis.org/> or contact
  * directly: info_at_ orbisgis.org
  */
+
+/**
+ * Trait to verify if a user is connected or not
+ */
 trait Secured2 {
 
   def username(request: RequestHeader) = {request.session.get("email")

@@ -7,6 +7,9 @@ import play.mvc.Result;
 
 import static play.Play.application;
 
+/**
+ * Class to care about XSS
+ */
 public class ContentSecurityPolicyAction extends Action<ContentSecurityPolicy> {
 
     public static final String OFFICIAL = "Content-Security-Policy";

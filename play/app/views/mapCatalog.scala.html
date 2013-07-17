@@ -6,7 +6,7 @@
 <div class="container">
     <div class="page-header">
         <h1>
-            <img src="@routes.Assets.at("images/OrbisMapCatalog.png")" alt="Map Catalog"></img>
+            <img src="@routes.Assets.at("images/logos/OrbisMapCatalog.png")" alt="Map Catalog"></img>
         </h1>
     </div>
 </div>
@@ -22,10 +22,10 @@
         <div class="span5" id="navigate" style="background-color:#61a8df;padding-left: 5px">
 
             <ul class="nav nav-tabs" style="margin-top:2%">
-                <li @if(flash.contains("section")){class="active"}>
+                <li>
                     <a href="@routes.MapCatalogC.myWorkspaces()"><h4>My workspaces</h4></a>
                 </li>
-                <li @if(!flash.contains("section")){class="active"}>
+                <li class="active">
                     <a href="@routes.MapCatalogC.index()"><h4>All workspaces</h4></a>
                 </li>
             </ul>
@@ -45,7 +45,7 @@
             <h3>Workspaces</h3>
             @if(session.get("email")!=null){
             <div class="well well-small">
-                <img id="imgtoggle" src="@routes.Assets.at("images/add.png")" alt="add"> create my own workspace</img>
+                <img id="imgtoggle" src="@routes.Assets.at("images/icons/add.png")" alt="add"> create my own workspace</img>
                 <form id="addtoggle" style="margin-left:2%;padding-bottom:2px;display:none" action="@routes.MapCatalogC.createWorkspace()">
                     <fieldset>
                         <label>Name</label>
@@ -80,13 +80,19 @@
                     <tr>
                         <td >
                             <a href="/mapcatalog/workspace/@workspace.getId_workspace()">
-                                <img src="@routes.Assets.at("images/workspace.png")" alt="Map"><h5 style="display:inline">@workspace.getName()</h5>
+                                <img src="@routes.Assets.at("images/icons/workspace.png")" alt="Map"/><h5 style="display:inline">@workspace.getName()</h5>
                             </a>
                         </td>
                         <td>
-                            <a href="/mapcatalog/workspace/@workspace.getId_workspace()">Explore</a>
-                            <a class="toToggle @workspace.getId_workspace()">Info</a>
-                            @if(!flash.contains("section")){<a href="@routes.MapCatalogC.monitor(workspace.getId_workspace())">Monitor</a>}
+                            <a href="/mapcatalog/workspace/@workspace.getId_workspace()">
+                                <img src="@routes.Assets.at("images/icons/open-folder.png")" alt="explore" title="Explore the workspace"/>
+                            </a>
+                            <a class="toToggle @workspace.getId_workspace()">
+                                <img src="@routes.Assets.at("images/icons/dialog-information-3.png")" alt="info" title="More info about the workspace"/>
+                            </a>
+                            <a href="@routes.MapCatalogC.monitor(workspace.getId_workspace())">
+                                <img src="@routes.Assets.at("images/icons/eye.png")" alt="monitor" title="Monitor the workspace"/>
+                            </a>
                         </td>
                         <td>
                             @if(workspace.getAll_read().equals("1")){Read}

@@ -103,7 +103,8 @@ public class MapCatalogC extends Controller{
                 String[] values = {id_workspace, null};
                 List<Folder> listF = Folder.page(MC,attributes,values);
                 List<OWSContext> listC = OWSContext.page(MC, attributes, values);
-                return ok(workspace.render(listF,listC,wor));
+                boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||(wor.getAll_manage().equals("1")?true:false);
+                return ok(workspace.render(listF,listC,wor,hasDeleteRights));
             }else{
                 flash("error", Message.ERROR_UNAUTHORIZED_WORKSPACE);
                 return index();
@@ -133,7 +134,8 @@ public class MapCatalogC extends Controller{
                 List<Folder> listF = Folder.page(MC,attributes,values);
                 List<OWSContext> listC = OWSContext.page(MC, attributes, values);
                 List<Folder> path = Folder.getPath(MC, id_folder);
-                return ok(folder.render(listF,listC,path,wor));
+                boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||(wor.getAll_manage().equals("1")?true:false);
+                return ok(folder.render(listF,listC,path,wor,hasDeleteRights));
             }else{
                 flash("error", Message.ERROR_UNAUTHORIZED_WORKSPACE);
                 return index();
@@ -239,7 +241,7 @@ public class MapCatalogC extends Controller{
                 UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,"0","0","0");
                 usewor.save(MC);
                 flash("info", Message.INFO_WORKSPACE_MONITORED);
-                return noContent();
+                return myWorkspaces();
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
@@ -552,7 +554,8 @@ public class MapCatalogC extends Controller{
                 String search = form.get("search");
                 List<Folder> listF = Folder.search(MC,id_root,search);
                 List<OWSContext> listC = OWSContext.search(MC,id_root,search);
-                return ok(workspace.render(listF,listC,wor));
+                boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_root, id_user)||(wor.getAll_manage().equals("1")?true:false);
+                return ok(workspace.render(listF,listC,wor,hasDeleteRights));
             }else{
                 flash("error",Message.ERROR_UNAUTHORIZED_WORKSPACE);
                 return index();
@@ -581,7 +584,8 @@ public class MapCatalogC extends Controller{
                 List<Folder> listF = Folder.search(MC,id_root,search);
                 List<OWSContext> listC = OWSContext.search(MC,id_root,search);
                 List<Folder> path = Folder.getPath(MC, id_folder);
-                return ok(folder.render(listF,listC,path,wor));
+                boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_root, id_user)||(wor.getAll_manage().equals("1")?true:false);
+                return ok(folder.render(listF,listC,path,wor,hasDeleteRights));
             }else{
                 flash("error",Message.ERROR_UNAUTHORIZED_WORKSPACE);
                 return index();
@@ -638,7 +642,9 @@ public class MapCatalogC extends Controller{
                     }
                 }
                 if(theContext!=null){
-                    return ok(contextFolder.render(listF,listC,path,wor,theContext));
+
+                    boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||(wor.getAll_manage().equals("1")?true:false);
+                    return ok(contextFolder.render(listF,listC,path,wor,theContext,hasDeleteRights));
                 }else{
                     flash("error",Message.ERROR_GENERAL);
                     return viewFolder(id_workspace,id_folder);
@@ -679,7 +685,9 @@ public class MapCatalogC extends Controller{
                     }
                 }
                 if(theContext!=null){
-                    return ok(contextWorkspace.render(listF,listC,wor,theContext));
+
+                    boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||(wor.getAll_manage().equals("1")?true:false);
+                    return ok(contextWorkspace.render(listF,listC,wor,theContext,hasDeleteRights));
                 }else{
                     flash("error",Message.ERROR_GENERAL);
                     return viewWorkspace(id_workspace);
@@ -714,5 +722,39 @@ public class MapCatalogC extends Controller{
             flash("error", Message.ERROR_GENERAL);
         }
         return General.home();
+    }
+
+    @Security.Authenticated(Secured.class)
+    public static Result deleteContext(String id_root, String id_owscontext){
+        try {
+            //verification of rights
+            String[] attributes2 = {"id_workspace"};
+            String[] values2 = {id_root};
+            Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
+            String id_logged = session().get("id_user");
+            if(wor.getAll_manage().equals("1") || UserWorkspace.hasManageRight(MC, id_root,id_logged) || Workspace.isCreator(MC, id_root,id_logged)){
+                OWSContext.delete(MC, Long.valueOf(id_owscontext));
+                flash("info",Message.INFO_OWS_DELETED);
+                return viewWorkspace(id_root);
+            }else{
+                flash("error",Message.ERROR_UNAUTHORIZED_WORKSPACE);
+                return forbidden(home.render());
+            }
+        } catch (SQLException e) {
+            flash("error", Message.ERROR_GENERAL);
+        }
+        return General.home();
+    }
+
+    @Security.Authenticated(Secured.class)
+    public static Result stopMonitoring(String id_workspace){
+        String id_user = session().get("id_user");
+        try{
+            UserWorkspace.delete(MC, Long.valueOf(id_user), Long.valueOf(id_workspace));
+            flash("info", Message.INFO_STOP_MONITORING);
+        }catch (SQLException e){
+            flash("error", Message.ERROR_GENERAL);
+        }
+        return myWorkspaces();
     }
 }

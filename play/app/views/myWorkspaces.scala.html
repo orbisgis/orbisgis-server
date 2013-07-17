@@ -6,7 +6,7 @@
 <div class="container">
     <div class="page-header">
         <h1>
-            <img src="@routes.Assets.at("images/OrbisMapCatalog.png")" alt="Map Catalog"></img>
+            <img src="@routes.Assets.at("images/logos/OrbisMapCatalog.png")" alt="Map Catalog"/>
         </h1>
     </div>
 </div>
@@ -15,6 +15,13 @@
     <button type="button" class="close" data-dismiss="alert">&times;</button>
     <h4>Error :</h4>
     @flash.get("error")
+</div>
+}
+@if(flash.get("info")!=null){
+<div class="alert alert-info" style="width:30%;margin-left:30%">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    <h4>Info :</h4>
+    @flash.get("info")
 </div>
 }
 <div class="container-fluid" >
@@ -44,7 +51,7 @@
             </form>
             <h3>Workspaces</h3>
             <div class="well well-small">
-                <img id="imgtoggle" src="@routes.Assets.at("images/add.png")" alt="add"> create my own workspace</img>
+                <img id="imgtoggle" src="@routes.Assets.at("images/icons/add.png")" alt="add"> create my own workspace</img>
                 <form id="addtoggle" style="margin-left:2%;padding-bottom:2px;display:none" action="@routes.MapCatalogC.createWorkspace()">
                     <fieldset>
                         <label>Name</label>
@@ -78,12 +85,16 @@
                     <tr>
                         <td >
                             <a href="/mapcatalog/workspace/@workspace.getId_workspace()">
-                                <img src="@routes.Assets.at("images/workspace.png")" alt="Map"><h5 style="display:inline">@workspace.getName()</h5>
+                                <img src="@routes.Assets.at("images/icons/workspace.png")" alt="Map"><h5 style="display:inline">@workspace.getName()</h5>
                             </a>
                         </td>
                         <td>
-                            <a href="/mapcatalog/workspace/@workspace.getId_workspace()">Explore</a>
-                            <a class="toToggle @workspace.getId_workspace()">Info</a>
+                            <a href="/mapcatalog/workspace/@workspace.getId_workspace()">
+                                <img src="@routes.Assets.at("images/icons/open-folder.png")" alt="explore" title="Explore the workspace"/>
+                            </a>
+                            <a class="toToggle @workspace.getId_workspace()">
+                                <img src="@routes.Assets.at("images/icons/dialog-information-3.png")" alt="info" title="More info about the workspace"/>
+                            </a>
                         </td>
                         <td>
                             @if(workspace.getAll_read().equals("1")){Read}
@@ -111,12 +122,19 @@
                         <tr>
                             <td >
                                 <a href="/mapcatalog/workspace/@workspace.getId_workspace()">
-                                    <img src="@routes.Assets.at("images/workspace.png")" alt="Map"><h5 style="display:inline">@workspace.getName()</h5>
+                                    <img src="@routes.Assets.at("images/icons/workspace.png")" alt="Map"><h5 style="display:inline">@workspace.getName()</h5>
                                 </a>
                             </td>
                             <td>
-                                <a href="/mapcatalog/workspace/@workspace.getId_workspace()">Explore</a>
-                                <a class="toToggle @workspace.getId_workspace()">Info</a>
+                                <a href="/mapcatalog/workspace/@workspace.getId_workspace()">
+                                    <img src="@routes.Assets.at("images/icons/open-folder.png")" alt="explore" title="Explore the workspace"/>
+                                </a>
+                                <a class="toToggle @workspace.getId_workspace()">
+                                    <img src="@routes.Assets.at("images/icons/dialog-information-3.png")" alt="info" title="More info about the workspace"/>
+                                </a>
+                                <a href="@routes.MapCatalogC.stopMonitoring(workspace.getId_workspace())">
+                                    <img src="@routes.Assets.at("images/icons/process-stop.png")" alt="stop monitoring" title="Stop monitoring the workspace"/>
+                                </a>
                             </td>
                             <td>
                                 @if(userworkspace.getRead().equals("1")){Read}

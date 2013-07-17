@@ -48,4 +48,6 @@ public class Message {
     public static final String INFO_FOLDER_DELETED = "The folder has been successfully deleted";
     public static final String INFO_WORKSPACE_DELETED = "The workspace has been successfully deleted";
     public static final String INFO_OWS_CREATED = "You successfully uploaded an OWS Context";
+    public static final String INFO_OWS_DELETED = "You successfully deleted an OWS Context";
+    public static final String INFO_STOP_MONITORING = "You are no longer monitoring this workspace";
 }

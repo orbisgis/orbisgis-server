@@ -1,4 +1,4 @@
-@(folders : List[org.orbisgis.server.mapcatalog.Folder], contexts : List[org.orbisgis.server.mapcatalog.OWSContext], root : org.orbisgis.server.mapcatalog.Workspace, context : org.orbisgis.server.mapcatalog.OWSContext)
+@(folders : List[org.orbisgis.server.mapcatalog.Folder], contexts : List[org.orbisgis.server.mapcatalog.OWSContext], root : org.orbisgis.server.mapcatalog.Workspace, context : org.orbisgis.server.mapcatalog.OWSContext, hasDeleteRights: Boolean)
 
 @import helper.twitterBootstrap._
 
@@ -6,7 +6,7 @@
 <div class="container">
     <div class="page-header">
         <h1>
-            <img src="@routes.Assets.at("images/OrbisMapCatalog.png")" alt="Map Catalog"></img>
+            <img src="@routes.Assets.at("images/logos/OrbisMapCatalog.png")" alt="Map Catalog"></img>
         </h1>
     </div>
 </div>
@@ -40,7 +40,7 @@
                 <button type="submit" class="btn">Search</button>
             </form>
             <div class="well well-small" style="margin-right:2%">
-                <img id="imgtoggle" src="@routes.Assets.at("images/add.png")"alt="add"> create a folder here</img>
+                <img id="imgtoggle" src="@routes.Assets.at("images/icons/add.png")"alt="add"> create a folder here</img>
                 <form id="addtoggle" style="margin-left:2%;padding-bottom:2px;display:none" action="@routes.MapCatalogC.createFolderFromRoot(root.getId_workspace())">
                     <fieldset>
                         <label>Name</label>
@@ -63,30 +63,45 @@
                     <tr>
                         <td>
                             <a href="@routes.MapCatalogC.viewFolder(folder.getId_root(), folder.getId_folder())">
-                                <img src="@routes.Assets.at("images/document.png")" alt="Map">
+                                <img src="@routes.Assets.at("images/icons/document.png")" alt="Map">
                                 @folder.getName()
                             </a>
                         </td>
                         <td>
-                            <a href="@routes.MapCatalogC.viewFolder(folder.getId_root(), folder.getId_folder())">Open</a>
-                            <a href="@routes.MapCatalogC.deleteFolder(folder.getId_root(), folder.getId_folder())">Delete</a>
+                            <a href="@routes.MapCatalogC.viewFolder(folder.getId_root(), folder.getId_folder())">
+                                <img src="@routes.Assets.at("images/icons/open-folder.png")" alt="explore" title="Explore the folder"/>
+                            </a>
+                            @if(hasDeleteRights){
+                            <a href="@routes.MapCatalogC.deleteFolder(folder.getId_root(), folder.getId_folder())">
+                                <img src="@routes.Assets.at("images/icons/edit-delete-2.png")" alt="delete" title="Delete the folder"/>
+                            </a>
+                            }
                         </td>
                     </tr>
                     }
                     @for(context <- contexts){
                     <tr>
                         <td>
-                            <img src="@routes.Assets.at("images/map-compass.png")" alt="Map"></img>
+                            <img src="@routes.Assets.at("images/icons/map-compass.png")" alt="Map"></img>
                             @context.getTitle()
                         </td>
-                        <td><a href="@routes.MapCatalogC.viewOWSFromRoot(context.getId_root,context.getId_owscontext)">View</a></td>
+                        <td>
+                            <a href="@routes.MapCatalogC.viewOWSFromRoot(context.getId_root,context.getId_owscontext)">
+                                <img src="@routes.Assets.at("images/icons/document-preview.png")" alt="View" title="Preview of the context"/>
+                            </a>
+                            @if(hasDeleteRights){
+                            <a href="@routes.MapCatalogC.deleteContext(context.getId_root, context.getId_owscontext)">
+                                <img src="@routes.Assets.at("images/icons/edit-delete-2.png")" alt="delete" title="Delete the owscontext"/>
+                            </a>
+                            }
+                        </td>
                     </tr>
                     }
                 </table>
             </div>
             @if(folders.isEmpty()&&contexts.isEmpty()){There is no information to display}<br/>
             <div class="well well-small" style="margin-right:2%">
-                <img src="@routes.Assets.at("images/add.png")" alt="add"> Add a mapcontext</img>
+                <img src="@routes.Assets.at("images/icons/add.png")" alt="add"> Add a mapcontext</img>
                 <form style="margin-left:2%" action="@routes.MapCatalogC.addMapContextFromRoot(root.getId_workspace())" enctype="multipart/form-data" method="post">
                     <input type="file" name="mapcontext">
                     <br>
