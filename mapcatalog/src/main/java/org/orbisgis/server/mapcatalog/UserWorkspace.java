@@ -366,7 +366,7 @@ public class UserWorkspace {
      * @return
      */
     public static HashMap<UserWorkspace, Workspace> searchMyWorkspacesMonitored(MapCatalog MC, String expression, String id) throws SQLException{
-        String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ? AND (LOWER(name) LIKE ?) OR (LOWER(description) LIKE ?)";
+        String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ? AND ((LOWER(name) LIKE ?) OR (LOWER(description) LIKE ?))";
         HashMap<UserWorkspace, Workspace> paged = new HashMap<UserWorkspace, Workspace>();
         expression = "%" + expression.toLowerCase() + "%";
         //preparation of the statement

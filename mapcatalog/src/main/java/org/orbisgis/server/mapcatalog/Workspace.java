@@ -300,7 +300,7 @@ public class Workspace {
      * @return The list of workspaces corresponding to the search
      */
     public static List<Workspace> searchMyWorkspacesCreated(MapCatalog MC, String expression, String id_user) throws SQLException{
-        String query = "SELECT * FROM WORKSPACE WHERE (LOWER(name) LIKE ?) OR (LOWER(description) LIKE ?) AND id_creator= ? ";
+        String query = "SELECT * FROM WORKSPACE WHERE ((LOWER(name) LIKE ?) OR (LOWER(description) LIKE ?)) AND id_creator= ?";
         List<Workspace> searched = new LinkedList<Workspace>();
         expression = "%" + expression.toLowerCase() + "%";
         PreparedStatement stmt = MC.getConnection().prepareStatement(query);

@@ -211,6 +211,10 @@ public class General extends Controller{
         return home();
     }
 
+    /**
+     * Change the password of a user
+     * @return
+     */
     @Security.Authenticated(Secured.class)
     public static Result changePass() {
         try {

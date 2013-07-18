@@ -703,7 +703,7 @@ public class MapCatalogC extends Controller{
 
     /**
      * Sends the ows context
-     * @param id
+     * @param id the id of the context
      * @return
      */
     @Security.Authenticated(Secured.class)
@@ -724,6 +724,12 @@ public class MapCatalogC extends Controller{
         return General.home();
     }
 
+    /**
+     * deletes a context from database
+     * @param id_root the root of the context
+     * @param id_owscontext the id of the context
+     * @return
+     */
     @Security.Authenticated(Secured.class)
     public static Result deleteContext(String id_root, String id_owscontext){
         try {
@@ -746,6 +752,11 @@ public class MapCatalogC extends Controller{
         return General.home();
     }
 
+    /**
+     * delete the relation UserWorkspace corresponding to the monitoring action of a user in a workspace
+     * @param id_workspace
+     * @return
+     */
     @Security.Authenticated(Secured.class)
     public static Result stopMonitoring(String id_workspace){
         String id_user = session().get("id_user");
