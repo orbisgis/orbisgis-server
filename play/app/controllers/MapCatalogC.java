@@ -283,7 +283,6 @@ public class MapCatalogC extends Controller{
             String[] values2 = {id_workspace};
             Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
             String id_user = session().get("id_user");
-            System.out.println(wor.getAll_manage());
             if(wor.getAll_manage().equals("1") || UserWorkspace.hasManageRight(MC, id_workspace,id_user) || Workspace.isCreator(MC, id_workspace,id_user)){
                 HashMap list = UserWorkspace.pageWithUser(MC,id_workspace);
                 return ok(userManagement.render(list,wor));
@@ -366,7 +365,7 @@ public class MapCatalogC extends Controller{
             String[] values2 = {id_workspace};
             Workspace wor2 = Workspace.page(MC, attributes2, values2).get(0);
             String id_logged = session().get("id_user");
-            if(wor2.getAll_manage().equals("0") || UserWorkspace.hasManageRight(MC, id_workspace,id_logged) || Workspace.isCreator(MC, id_workspace,id_logged)){
+            if(wor2.getAll_manage().equals("1") || UserWorkspace.hasManageRight(MC, id_workspace,id_logged) || Workspace.isCreator(MC, id_workspace,id_logged)){
                 DynamicForm form = Form.form().bindFromRequest();
                 String name = form.get("name");
                 String all_read = (form.get("all_read")!=null) ? "1":"0";
@@ -716,6 +715,7 @@ public class MapCatalogC extends Controller{
             if(list.isEmpty()){
                 return badRequest();
             }else{
+                response().setHeader("Content-Disposition", "attachment; filename="+list.get(0).getTitle()+".ows");
                 return ok(list.get(0).getContent(MC));
             }
         } catch (SQLException e) {

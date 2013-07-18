@@ -40,6 +40,9 @@ public class Message {
     public static final String ERROR_UNAUTHORIZED_WORKSPACE = "You don't have the necessary rights in this workspace to do that, monitor it to demand them";
     public static final String ERROR_ALREADY_MONITORING = "You are already monitoring this workspace";
     public static final String ERROR_FILE_INVALID = "The file is missing or invalid";
+    public static final String ERROR_PASSWORD_MATCH = "The passwords don't match";
+    public static final String ERROR_PASSWORD_LENGTH = "New password is too short (at least 6 characters)";
+    public static final String ERROR_PASSWORD_INVALID = "You typed the current password wrong";
 
     //Info
     public static final String INFO_WORKSPACE_CREATED = "You successfully created a workspace!";
@@ -50,4 +53,5 @@ public class Message {
     public static final String INFO_OWS_CREATED = "You successfully uploaded an OWS Context";
     public static final String INFO_OWS_DELETED = "You successfully deleted an OWS Context";
     public static final String INFO_STOP_MONITORING = "You are no longer monitoring this workspace";
+    public static final String INFO_PASSWORD_UPDATED = "Password successfully changed";
 }

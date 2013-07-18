@@ -49,14 +49,13 @@
                 <input type="text" class="input-medium search-query" placeholder="Search a workspace" name="search">
                 <button type="submit" class="btn">Search</button>
             </form>
-            <h3>Workspaces</h3>
             <div class="well well-small">
                 <img id="imgtoggle" src="@routes.Assets.at("images/icons/add.png")" alt="add"> create my own workspace</img>
                 <form id="addtoggle" style="margin-left:2%;padding-bottom:2px;display:none" action="@routes.MapCatalogC.createWorkspace()">
                     <fieldset>
                         <label>Name</label>
                         <input required="required" type="text" placeholder="Type the name of the workspace" name="name">
-                        <span class="help-block">Decide whether the workspace has default accesses or not :</span>
+                        <span class="help-block">Decide whether the workspace has default accesses or not, all users will have the rights corresponding to the access you check.</span>
                         <label class="checkbox inline">
                             <input type="checkbox" name="all_read" value="1">Read access
                         </label>

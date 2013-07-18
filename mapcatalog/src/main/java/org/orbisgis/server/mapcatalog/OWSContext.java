@@ -25,9 +25,12 @@ package org.orbisgis.server.mapcatalog; /**
  * For more information, please consult: <http://www.orbisgis.org/> or contact
  * directly: info_at_ orbisgis.org
  */
+
 import java.io.InputStream;
-import java.sql.*;
-import java.util.Collections;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -265,7 +268,7 @@ public class OWSContext {
      * @param MC the mapcatalog used for database connection
      */
     public void update(MapCatalog MC, InputStream content) throws SQLException{
-        String query = "UPDATE owscontext SET id_root = ? , id_parent = ? , id_uploader = ? , content = ? , title = ? WHERE id_user = ?;";
+        String query = "UPDATE owscontext SET id_root = ? , id_parent = ? , id_uploader = ? , content = ? , title = ? WHERE id_owscontext = ?;";
         //preparation of the statement
         PreparedStatement pstmt = MC.getConnection().prepareStatement(query);
         pstmt.setString(1, id_root);
@@ -274,6 +277,23 @@ public class OWSContext {
         pstmt.setAsciiStream(4, content);
         pstmt.setString(5, title);
         pstmt.setString(6, id_owscontext);
+        pstmt.executeUpdate();
+        pstmt.close();
+    }
+
+    /**
+     * Execute a query "UPDATE" in the database without the XML
+     * @param MC the mapcatalog used for database connection
+     */
+    public void update(MapCatalog MC) throws SQLException{
+        String query = "UPDATE owscontext SET id_root = ? , id_parent = ? , id_uploader = ? , title = ? WHERE id_owscontext = ?;";
+        //preparation of the statement
+        PreparedStatement pstmt = MC.getConnection().prepareStatement(query);
+        pstmt.setString(1, id_root);
+        pstmt.setString(2, id_parent);
+        pstmt.setString(3, id_uploader);
+        pstmt.setString(4, title);
+        pstmt.setString(5, id_owscontext);
         pstmt.executeUpdate();
         pstmt.close();
     }

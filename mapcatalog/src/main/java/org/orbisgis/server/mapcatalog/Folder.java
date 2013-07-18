@@ -26,7 +26,9 @@ package org.orbisgis.server.mapcatalog; /**
  * directly: info_at_ orbisgis.org
  */
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;

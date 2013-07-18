@@ -124,15 +124,18 @@ public class General extends Controller{
             String location = form.get("location");
             String name = form.get("name");
             String password = form.get("password");
+            String password2 = form.get("password2");
             String[] attribute = {"email"};
             String[] values = {email};
             List<User> user = User.page(MC, attribute, values);
             if(email!=null && password.length()>=6){ //check the form
-                if(user.isEmpty()){ //check if user mail is used
-                    User usr = new User(name, email, password, location);
-                    usr.save(MC);
-                    return ok(home.render());
-                }else{error= Message.ERROR_EMAIL_USED;}
+                if(password.equals(password2)){
+                    if(user.isEmpty()){ //check if user mail is used
+                        User usr = new User(name, email, password, location);
+                        usr.save(MC);
+                        return ok(home.render());
+                    }else{error= Message.ERROR_EMAIL_USED;}
+                }else{error= Message.ERROR_PASSWORD_MATCH;}
             }else{error= Message.ERROR_LOGIN;}
         } catch (SQLException e) {
             error= Message.ERROR_GENERAL;
@@ -169,8 +172,6 @@ public class General extends Controller{
     public static Result changeProfile() {
         try {
             String id_user = session("id_user");
-            String[] attributes = {"id_user"};
-            String[] values = {id_user};
             DynamicForm form = Form.form().bindFromRequest();
             String name = form.get("name");
             String email = form.get("email");
@@ -205,6 +206,36 @@ public class General extends Controller{
             session().clear();
             return signin();
         } catch (SQLException e) {
+            flash("error", Message.ERROR_GENERAL);
+        }
+        return home();
+    }
+
+    @Security.Authenticated(Secured.class)
+    public static Result changePass() {
+        try {
+            String id_user = session("id_user");
+            String[] attributes = {"id_user"};
+            String[] values = {id_user};
+            User use = User.page(MC, attributes, values).get(0);
+            DynamicForm form = Form.form().bindFromRequest();
+            String currentpass = form.get("currentpass");
+            String newpass = form.get("newpass");
+            String newpass2 = form.get("newpass2");
+            System.out.println(newpass+" "+newpass2);
+            if(newpass.equals(newpass2)){
+                if(newpass.length()>=6){
+                    if(MapCatalog.hasher(currentpass).equals(use.getPassword())){
+                        User newUse = new User(id_user,"","",MapCatalog.hasher(newpass),"","","");
+                        newUse.updatePass(MC);
+                        flash("info", Message.INFO_PASSWORD_UPDATED);
+                    }else{flash("error", Message.ERROR_PASSWORD_INVALID);}
+                }else{flash("error", Message.ERROR_PASSWORD_LENGTH);}
+            }else{flash("error", Message.ERROR_PASSWORD_MATCH);}
+            return profilePage();
+        } catch (SQLException e) {
+            flash("error", Message.ERROR_GENERAL);
+        } catch (NoSuchAlgorithmException e) {
             flash("error", Message.ERROR_GENERAL);
         }
         return home();

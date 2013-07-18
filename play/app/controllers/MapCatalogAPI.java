@@ -28,19 +28,24 @@ package controllers;
  * directly: info_at_ orbisgis.org
  */
 
+import org.xml.sax.SAXException;
 import play.mvc.*;
 import org.orbisgis.server.mapcatalog.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import csp.ContentSecurityPolicy;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -97,6 +102,10 @@ public class MapCatalogAPI extends Controller {
             return ok(MC.getWorkspaceList());
         } catch (SQLException e) {
             return badRequest(e.getMessage());
+        } catch (ParserConfigurationException e) {
+            return badRequest(e.getMessage());
+        } catch (TransformerException e) {
+            return badRequest(e.getMessage());
         }
     }
 
@@ -109,6 +118,10 @@ public class MapCatalogAPI extends Controller {
         try {
             return ok(MC.getContextList(id_workspace));
         } catch (SQLException e) {
+            return badRequest(e.getMessage());
+        } catch (ParserConfigurationException e) {
+            return badRequest(e.getMessage());
+        } catch (TransformerException e) {
             return badRequest(e.getMessage());
         }
     }
@@ -130,15 +143,31 @@ public class MapCatalogAPI extends Controller {
            }catch(Exception e){
                return badRequest(e.getMessage());
            }
+           //saving the ows
            InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
-           String title = request().body().asRaw().asFile().getName();
-           OWSContext ows = new OWSContext(id_workspace, null, null, title);
+           OWSContext ows = new OWSContext(id_workspace, null, null, "");
            Long id_ows = ows.save(MC, is);
-           String answer = "<context id=\""+id_ows+"\" date=\""+DATE+"\">\n" +
+           //retrieving the title
+           String[] attributes = {"id_owscontext"};
+           String[] values = {id_ows.toString()};
+           OWSContext updated = OWSContext.page(MC, attributes, values).get(0);
+           String[] titleLang = MapCatalog.getTitleLang(updated.getContent(MC));
+           //updating the ows with new title
+           OWSContext toUpdate = new OWSContext(id_ows.toString(), id_workspace, null, null, titleLang[0], null);
+           toUpdate.update(MC);
+           //sending the response
+           String date = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss z").format(updated.getDate());
+           String answer = "<context id=\""+id_ows+"\" date=\""+date+"\">\n" +
                            "  <title>"+id_ows+"</title>\n" +
                            "</context>";
            return created(answer);
        } catch (SQLException e) {
+           return badRequest(e.getMessage());
+       } catch (ParserConfigurationException e) {
+           return badRequest(e.getMessage());
+       } catch (SAXException e) {
+           return badRequest(e.getMessage());
+       } catch (IOException e) {
            return badRequest(e.getMessage());
        }
    }
@@ -164,15 +193,29 @@ public class MapCatalogAPI extends Controller {
             }
             InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
             //saving the ows
-            String title = request().body().asRaw().asFile().getName();
-            OWSContext ows = new OWSContext(id_workspace, id_folder, null, title);
+            OWSContext ows = new OWSContext(id_workspace, id_folder, null, "");
             Long id_ows = ows.save(MC, is);
-            //sending response
-            String answer = "<context id=\""+id_ows+"\" date=\""+DATE+"\">\n" +
+            //retrieving the title
+            String[] attributes = {"id_owscontext"};
+            String[] values = {id_ows.toString()};
+            OWSContext updated = OWSContext.page(MC, attributes, values).get(0);
+            String[] titleLang = MapCatalog.getTitleLang(updated.getContent(MC));
+            //updating the ows with new title
+            OWSContext toUpdate = new OWSContext(id_ows.toString(), id_workspace, id_folder, null, titleLang[0], null);
+            toUpdate.update(MC);
+            //sending the response
+            String date = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss z").format(updated.getDate());
+            String answer = "<context id=\""+id_ows+"\" date=\""+date+"\">\n" +
                     "  <title>"+id_ows+"</title>\n" +
                     "</context>";
             return created(answer);
         } catch (SQLException e) {
+            return badRequest(e.getMessage());
+        } catch (ParserConfigurationException e) {
+            return badRequest(e.getMessage());
+        } catch (SAXException e) {
+            return badRequest(e.getMessage());
+        } catch (IOException e) {
             return badRequest(e.getMessage());
         }
     }
@@ -201,16 +244,27 @@ public class MapCatalogAPI extends Controller {
             String[] attributes = {"id_owscontext"};
             String[] values = {id_owscontext};
             OWSContext current = OWSContext.page(MC, attributes, values).get(0);
-            String title = request().body().asRaw().asFile().getName();
             //saving the new one
-            OWSContext ows = new OWSContext(id_owscontext, current.getId_root(), current.getId_parent(), current.getId_uploader(), title, current.getDate());
+            OWSContext ows = new OWSContext(id_owscontext, current.getId_root(), current.getId_parent(), current.getId_uploader(), "", current.getDate());
             ows.update(MC, is);
+            //retrieving the title
+            OWSContext updated = OWSContext.page(MC, attributes, values).get(0);
+            String[] titleLang = MapCatalog.getTitleLang(updated.getContent(MC));
+            //updating the ows with new title
+            OWSContext toUpdate = new OWSContext(id_owscontext.toString(), current.getId_root(), current.getId_parent(), current.getId_uploader(), titleLang[0], null);
+            toUpdate.update(MC, ows.getContent(MC));
             //sending response
             String answer = "<context id=\""+id_owscontext+"\" date=\""+current.getDate()+"\">\n" +
                             "  <title>"+id_owscontext+"</title>\n" +
                             "</context>";
             return ok(answer);
         } catch (SQLException e) {
+            return badRequest(e.getMessage());
+        } catch (ParserConfigurationException e) {
+            return badRequest(e.getMessage());
+        } catch (SAXException e) {
+            return badRequest(e.getMessage());
+        } catch (IOException e) {
             return badRequest(e.getMessage());
         }
     }

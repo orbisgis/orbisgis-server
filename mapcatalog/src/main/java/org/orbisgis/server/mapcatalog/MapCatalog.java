@@ -29,26 +29,24 @@ package org.orbisgis.server.mapcatalog;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.XMLReader;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
+import java.io.*;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
-import java.io.*;
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.security.MessageDigest;
 /**
  * Manages workspaces and map contexts
  * @author Mario Jothy
@@ -109,14 +107,22 @@ public class MapCatalog {
         String URL = mcp.getProperty(MapCatalogProperties.DATABASE_URL).toString();
         String user = mcp.getProperty(MapCatalogProperties.DATABASE_USER).toString();
         String password = mcp.getProperty(MapCatalogProperties.DATABASE_PASSWORD).toString();
+        //Connection creation
         MapCatalog mc = new MapCatalog(URL, user, password);
+        //Database initialization
         mc.executeSQL("ups.sql");
+        //Verification of version
         int dbVersion = mc.getVersion();
-        if(dbVersion==VERSION){
-            while(dbVersion!=VERSION){
-                mc.updateVersion(dbVersion);
-                dbVersion = mc.getVersion();
-            }
+        while(dbVersion!=VERSION){
+            mc.updateVersion(dbVersion);
+            dbVersion = mc.getVersion();
+        }
+        //Admin creation
+        String[] attributes = {"email"};
+        String[] values = {"admin@admin.com"};
+        List<User> list = User.page(mc, attributes, values);
+        if(list.isEmpty()){
+            mc.executeSQL("populate.sql");
         }
         return mc;
     }
@@ -148,87 +154,77 @@ public class MapCatalog {
     /**
      * Sends a query to database that returns the workspace list, then write it in a xml file a the root of project.
      */
-    public InputStream getWorkspaceList() throws SQLException{
+    public InputStream getWorkspaceList() throws SQLException, ParserConfigurationException, TransformerException {
         //get the list of workspace names from the database
         List<Workspace>  list = Workspace.page(this);
-        try {
-            Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();;
-            Element e ;
-            Element e2 ;
-            Element rootEle = dom.createElement("workspaces");
+        Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();;
+        Element e ;
+        Element e2 ;
+        Element rootEle = dom.createElement("workspaces");
 
-            //Create a node for each workspace, and add the name
-            for (Workspace wor : list) {
-                e = dom.createElement("workspace");
-                e2 = dom.createElement("name");
-                e2.appendChild(dom.createTextNode(wor.getId_workspace()));
-                e.appendChild(e2);
-                rootEle.appendChild(e);
-            }
-            dom.appendChild(rootEle);
-            //transform the dom in XML
-
-            Transformer tr = TransformerFactory.newInstance().newTransformer();
-            tr.setOutputProperty(OutputKeys.INDENT, "yes");
-            tr.setOutputProperty(OutputKeys.METHOD, "xml");
-            tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-            tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            Source xmlSource = new DOMSource(dom);
-            Result outputTarget = new StreamResult(outputStream);
-            tr.transform(xmlSource, outputTarget);
-            InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
-            return is;
-        } catch (Exception te) {
-            te.printStackTrace();
+        //Create a node for each workspace, and add the name
+        for (Workspace wor : list) {
+            e = dom.createElement("workspace");
+            e2 = dom.createElement("name");
+            e2.appendChild(dom.createTextNode(wor.getId_workspace()));
+            e.appendChild(e2);
+            rootEle.appendChild(e);
         }
-        return null;
+        dom.appendChild(rootEle);
+        //transform the dom in XML
+
+        Transformer tr = TransformerFactory.newInstance().newTransformer();
+        tr.setOutputProperty(OutputKeys.INDENT, "yes");
+        tr.setOutputProperty(OutputKeys.METHOD, "xml");
+        tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+        tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Source xmlSource = new DOMSource(dom);
+        Result outputTarget = new StreamResult(outputStream);
+        tr.transform(xmlSource, outputTarget);
+        InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
+        return is;
     }
 
     /**
      * Queries the database for the list of context, then writes it into a XML file
      * @param id_workspace The workspace which
      */
-    public InputStream getContextList(String id_workspace) throws SQLException{
+    public InputStream getContextList(String id_workspace) throws SQLException, ParserConfigurationException, TransformerException {
         //get the ows from database
         String[] attributes = {"id_root"};
         String[] values = {id_workspace};
         List<OWSContext> list = OWSContext.page(this, attributes, values);
-        try{
-            Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();;
-            Element e;
-            Element e2 ;
-            Element rootEle = dom.createElement("contexts");
+        Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();;
+        Element e;
+        Element e2 ;
+        Element rootEle = dom.createElement("contexts");
 
-            //create a node for each ows
-            for (OWSContext ows : list) {
-                e = dom.createElement("context");
-                e.setAttribute("id", ows.getId_owscontext());
-                e.setAttribute("date", ows.getDate().toString());
-                e2 = dom.createElement("title");
-                e2.setAttribute("xml:lang", "fr");
-                e2.appendChild(dom.createTextNode(ows.getId_owscontext()));
-                e.appendChild(e2);
-                rootEle.appendChild(e);
-            }
-            dom.appendChild(rootEle);
-
-            //transforms into XML
-            Transformer tr = TransformerFactory.newInstance().newTransformer();
-            tr.setOutputProperty(OutputKeys.INDENT, "yes");
-            tr.setOutputProperty(OutputKeys.METHOD, "xml");
-            tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-            tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            Source xmlSource = new DOMSource(dom);
-            Result outputTarget = new StreamResult(outputStream);
-            tr.transform(xmlSource, outputTarget);
-            InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
-            return is;
-        } catch (Exception exe) {
-            exe.printStackTrace();
+        //create a node for each ows
+        for (OWSContext ows : list) {
+            e = dom.createElement("context");
+            e.setAttribute("id", ows.getId_owscontext());
+            e.setAttribute("date", new SimpleDateFormat("yyyy.MM.dd HH:mm:ss z").format(ows.getDate()));
+            e2 = dom.createElement("title");
+            e2.setAttribute("xml:lang", "fr");
+            e2.appendChild(dom.createTextNode(ows.getTitle()));
+            e.appendChild(e2);
+            rootEle.appendChild(e);
         }
-        return null;
+        dom.appendChild(rootEle);
+
+        //transforms into XML
+        Transformer tr = TransformerFactory.newInstance().newTransformer();
+        tr.setOutputProperty(OutputKeys.INDENT, "yes");
+        tr.setOutputProperty(OutputKeys.METHOD, "xml");
+        tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+        tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Source xmlSource = new DOMSource(dom);
+        Result outputTarget = new StreamResult(outputStream);
+        tr.transform(xmlSource, outputTarget);
+        InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
+        return is;
     }
 
     /**
@@ -236,19 +232,16 @@ public class MapCatalog {
      * @param content The map context
      * @return the title and the lang
      */
-    public static String[] getTitleLang(InputStream content) throws SQLException{
-        String title = "default";
-        String lang = "default";
-        try{
-            DocumentBuilder dBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document doc = dBuilder.parse(content);
-            doc.getDocumentElement().normalize();
-
-            NodeList nodes = doc.getElementsByTagName("ns1:Title"); //subject to changes
-            Element titleNode = (Element) nodes.item(0);
-            title = titleNode.getTextContent();
-            lang = titleNode.getAttribute("xml:lang");
-        }catch(Exception e){e.printStackTrace();}
+    public static String[] getTitleLang(InputStream content) throws SQLException, ParserConfigurationException, IOException, SAXException {
+        DocumentBuilder dBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document doc = dBuilder.parse(content);
+        doc.getDocumentElement().normalize();
+        HashMap hm = XMLTools.getNameSpacesMap(doc);
+        String namespace = XMLTools.getTitleNameSpace(hm);
+        NodeList nodes = doc.getElementsByTagName(namespace+":Title");
+        Element titleNode = (Element) nodes.item(0);
+        String title = titleNode.getTextContent();
+        String lang = titleNode.getAttribute("xml:lang");
         return (new String[]{title,lang});
     }
 
@@ -297,5 +290,6 @@ public class MapCatalog {
     }
 
     public static void main(String[] args) throws Exception{
+        System.out.println(hasher("thecakeisalie"));
     }
 }

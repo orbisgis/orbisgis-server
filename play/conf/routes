@@ -124,6 +124,8 @@ GET /profile                                                                cont
 
 GET /changeprofile                                                          controllers.General.changeProfile()
 
+POST /changepass                                                             controllers.General.changePass()
+
 # Authentification
 
 GET /login                                                  controllers.General.login

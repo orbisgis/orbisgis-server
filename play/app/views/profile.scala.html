@@ -12,14 +12,22 @@
     @flash.get("error")
 </div>
 }
+@if(flash.get("info")!=null){
+<div class="alert alert-info" style="width:30%;margin-left:30%">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    <h4>Info :</h4>
+    @flash.get("info")
+</div>
+}
 <div class="container-fluid">
     <div class="row-fluid">
         <div class="span6" id="navigate" style="padding-left:5px;padding-bottom:5px;padding-top:5px;padding-right:5px">
-            <h2>Personal information</h2>
             @defining(MD5Util.md5Hex(session.get("email"))){icon =>
                 <a href="http://www.gravatar.com"><img src="https://www.gravatar.com/avatar/@icon?s=80&amp;d=identicon"></a>
             }
-            <br/><br/>
+            <h2 style="display:inline">Personal information</h2>
+            <br/>
+            <a href="http://www.gravatar.com">You can modify your avatar here</a>
             <form action="@routes.General.changeProfile()">
                 <div class="well ">
                     <h3>Name</h3>
@@ -37,13 +45,26 @@
                     <h3>Additional info</h3>
                     <textarea style="width:70%" maxlength="999" name="additional">@user.getAdditional()</textarea>
                 </div>
-                <a href=""><button class="btn btn-primary">Submit your changes</button></a>
+                <button class="btn btn-primary" type="submit">Submit your changes</button>
             </form>
         </div>
-    </div>
-    <br/><br/>
-    <div class="row-fluid">
         <div class="span6" id="display" style="padding-left:5px;padding-bottom:5px;padding-top:5px;padding-right:5px">
+            <h2>Account parameters</h2>
+            <h3>Change password</h3>
+            <form action="@routes.General.changePass()" method="post">
+                <div class="well ">
+                    <h4>Current password</h4>
+                    <input type="password" name="currentpass" placeholder="Type your current password" style="min-width:70%">
+
+                    <h4>New password</h4>
+                    <input type="password" name="newpass" placeholder="Type your new password" style="min-width:70%">
+
+                    <h4>Confirm your new password</h4>
+                    <input type="password" name="newpass2" placeholder="Retype your new password" style="min-width:70%">
+                </div>
+                <button class="btn btn-primary" type="submit">Submit your changes</button>
+            </form>
+            <h3>Delete your account</h3>
             <div class="alert alert-error">
                 <h4>WARNING :</h4>
                 Deleting your account is irreversible, you will loose all your workspaces.

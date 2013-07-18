@@ -1,0 +1,1 @@
+INSERT INTO user (name,email,password,location,profession,additional) VALUES ('admin','admin@admin.com','7179b0b3098801c2b963812b7827f67f1399fd3ca0386f4f6dc5f1b33e9af5a0','Nantes','dev','dev');
