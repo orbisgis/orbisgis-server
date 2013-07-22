@@ -47,11 +47,11 @@ public class User {
     private String additional = "";
 
     /**
-     * Constructor that hashes the password of the user
-     * @param name
-     * @param email
-     * @param passwordtohash
-     * @param location
+     * Constructor that hashes the password of the user (used for saving into database)
+     * @param name The name of the user
+     * @param email the email of the user
+     * @param passwordtohash The password, not hashed
+     * @param location The location of the user
      */
     public User(String name, String email, String passwordtohash, String location) throws NoSuchAlgorithmException {
         this.name = name;
@@ -61,14 +61,14 @@ public class User {
     }
 
     /**
-     * Constructor with primarykey
-     * @param id_user
-     * @param name
-     * @param email
-     * @param password
-     * @param location
-     * @param profession
-     * @param additional
+     * Constructor with primarykey (usually used for select queries)
+     * @param id_user The id of the user
+     * @param name The name of the user
+     * @param email The email of the user
+     * @param password the password of the user
+     * @param location The location of the user
+     * @param profession The profession of the user
+     * @param additional The additional information about a user
      */
     public User(String id_user, String name, String email, String password, String location, String profession, String additional) {
         this.id_user = id_user;
@@ -175,9 +175,9 @@ public class User {
         //preparation of the statement
         PreparedStatement stmt = MC.getConnection().prepareStatement(query);
         int j=1;
-        for(int i=0; i<values.length; i++){
-            if(values[i]!=null){
-                stmt.setString(j, values[i]);
+        for (String value : values) {
+            if (value != null) {
+                stmt.setString(j, value);
                 j++;
             }
         }
@@ -245,7 +245,7 @@ public class User {
 
     /**
      * Executes a UPDATE query in the database for a specified user, and updates only the password (only the attributes id_user and password are used)
-     * @param MC
+     * @param MC The current instantiation of MapCatalog to get connection to database from
      * @throws SQLException
      */
     public void updatePass(MapCatalog MC) throws SQLException{

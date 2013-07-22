@@ -47,12 +47,12 @@ public class Workspace {
 
     /**
      * Constructor of workspace for an insert (without PK)
-     * @param id_creator
-     * @param name
-     * @param all_read
-     * @param all_write
-     * @param all_manage
-     * @param description
+     * @param id_creator The creator of the workspace
+     * @param name The name of the workspace
+     * @param all_read The default read access
+     * @param all_write The default write access
+     * @param all_manage The default manage access
+     * @param description The description of the workspace
      */
     public Workspace(String id_creator, String name, String all_read, String all_write, String all_manage, String description) {
         this.id_creator = id_creator;
@@ -65,13 +65,13 @@ public class Workspace {
 
     /**
      * Constructor of workspace for a select (with PK)
-     * @param id_workspace
-     * @param id_creator
-     * @param name
-     * @param all_read
-     * @param all_write
-     * @param all_manage
-     * @param description
+     * @param id_workspace The id of the workspace
+     * @param id_creator The id of the creator
+     * @param name The name of the workspace
+     * @param all_read The default read access
+     * @param all_write The default write access
+     * @param all_manage The default manage access
+     * @param description The description of the workspace
      */
     public Workspace(String id_workspace, String id_creator, String name, String all_read, String all_write, String all_manage, String description) {
         this.id_workspace = id_workspace;
@@ -178,9 +178,9 @@ public class Workspace {
         //preparation of the statement
         PreparedStatement stmt = MC.getConnection().prepareStatement(query);
         int j=1;
-        for(int i=0; i<values.length; i++){
-            if(values[i]!=null){
-                stmt.setString(j, values[i]);
+        for (String value : values) {
+            if (value != null) {
+                stmt.setString(j, value);
                 j++;
             }
         }
@@ -233,9 +233,9 @@ public class Workspace {
         //preparation of the statement
         PreparedStatement stmt = MC.getConnection().prepareStatement(query);
         int j=1;
-        for(int i=0; i<values.length; i++){
-            if(values[i]!=null){
-                stmt.setString(j, values[i]);
+        for (String value : values) {
+            if (value != null) {
+                stmt.setString(j, value);
                 j++;
             }
         }
@@ -286,9 +286,9 @@ public class Workspace {
         //preparation of the statement
         PreparedStatement stmt = MC.getConnection().prepareStatement(query);
         int j=1;
-        for(int i=0; i<values.length; i++){
-            if(values[i]!=null){
-                stmt.setString(j, values[i]);
+        for (String value : values) {
+            if (value != null) {
+                stmt.setString(j, value);
                 j++;
             }
         }
@@ -359,7 +359,7 @@ public class Workspace {
     /**
      * Returns the number of workspace in database
      * @param MC the mapcatalog object for the connection
-     * @return
+     * @return The number of workspaces in database
      */
     public static int pageCount(MapCatalog MC) throws SQLException{
         String query = "SELECT COUNT(*) FROM workspace";
@@ -397,17 +397,12 @@ public class Workspace {
      * Verify if a user is creator of the workspace
      * @param id_workspace the workspace to test
      * @param id_user the user to test
-     * @return
      */
     public static boolean isCreator(MapCatalog MC, String id_workspace, String id_user) throws SQLException{
         String[] attributes = {"id_creator","id_workspace"};
         String[] values = {id_user, id_workspace};
         List<Workspace> workspaceList = Workspace.page(MC, attributes, values);
-        if(!workspaceList.isEmpty()){
-            return true;
-        }else{
-            return false;
-        }
+        return !workspaceList.isEmpty();
     }
 
     /**

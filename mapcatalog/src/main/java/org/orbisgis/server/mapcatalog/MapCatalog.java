@@ -29,7 +29,6 @@ package org.orbisgis.server.mapcatalog;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -45,7 +44,6 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 /**
  * Manages workspaces and map contexts
@@ -53,11 +51,11 @@ import java.util.List;
  */
 public class MapCatalog {
 
-    private final String DRIVER_NAME = "org.h2.Driver";
     private static final int VERSION = 1;
-    {
+    static {
         try
         {
+            String DRIVER_NAME = "org.h2.Driver";
             Class.forName(DRIVER_NAME).newInstance();
         }
         catch(Exception e)
@@ -65,7 +63,6 @@ public class MapCatalog {
             e.printStackTrace();
         }
     }
-    private MapCatalogProperties mcp = new MapCatalogProperties();
     private String URL = "jdbc:h2:~/test";
     private String USER = "sa";
     private String PASSWORD = "";
@@ -75,9 +72,9 @@ public class MapCatalog {
 
     /**
      * Constructor to specify a database to connect
-     * @param URL
-     * @param USER
-     * @param PASSWORD
+     * @param URL The URL of the database
+     * @param USER The Username to connect to database
+     * @param PASSWORD The password to connect to database
      */
     public MapCatalog (String URL, String USER, String PASSWORD){
         this.URL = URL;
@@ -100,8 +97,8 @@ public class MapCatalog {
 
     /**
      * Initialize the database, and returns the MapCatalog object that provide the connection to it
-     * @param mcp
-     * @return
+     * @param mcp The properties of connection to database (url username and password)
+     * @return The current instance of MapCatalog
      */
     public static MapCatalog init(MapCatalogProperties mcp) throws SQLException{
         String URL = mcp.getProperty(MapCatalogProperties.DATABASE_URL).toString();
@@ -129,13 +126,12 @@ public class MapCatalog {
 
     /**
      * Executes a .sql file
-     * @param file
-     */
+     * @param file The name of the sql file (stocked in resources) to be executed
+     **/
     void executeSQL(String file) throws SQLException{
         String s;
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         try{
-            //FileReader fr = new FileReader(new File(MapCatalog.class.getResource(file).toURI()));
             InputStreamReader fr = new InputStreamReader(getClass().getResourceAsStream(file));
             BufferedReader br = new BufferedReader(fr);
             while((s = br.readLine()) != null){
@@ -157,7 +153,7 @@ public class MapCatalog {
     public InputStream getWorkspaceList() throws SQLException, ParserConfigurationException, TransformerException {
         //get the list of workspace names from the database
         List<Workspace>  list = Workspace.page(this);
-        Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();;
+        Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
         Element e ;
         Element e2 ;
         Element rootEle = dom.createElement("workspaces");
@@ -182,8 +178,7 @@ public class MapCatalog {
         Source xmlSource = new DOMSource(dom);
         Result outputTarget = new StreamResult(outputStream);
         tr.transform(xmlSource, outputTarget);
-        InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
-        return is;
+        return new ByteArrayInputStream(outputStream.toByteArray());
     }
 
     /**
@@ -195,7 +190,7 @@ public class MapCatalog {
         String[] attributes = {"id_root"};
         String[] values = {id_workspace};
         List<OWSContext> list = OWSContext.page(this, attributes, values);
-        Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();;
+        Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
         Element e;
         Element e2 ;
         Element rootEle = dom.createElement("contexts");
@@ -223,8 +218,7 @@ public class MapCatalog {
         Source xmlSource = new DOMSource(dom);
         Result outputTarget = new StreamResult(outputStream);
         tr.transform(xmlSource, outputTarget);
-        InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
-        return is;
+        return new ByteArrayInputStream(outputStream.toByteArray());
     }
 
     /**
@@ -247,19 +241,19 @@ public class MapCatalog {
 
     /**
      * Hashes a string into a string SHA 256
-     * @param tohash The string to hash
+     * @param toHash The string to hash
      * @return The hashed string
      * @throws NoSuchAlgorithmException
      */
-    public static String hasher(String tohash) throws NoSuchAlgorithmException {
+    public static String hasher(String toHash) throws NoSuchAlgorithmException {
         //hashing the password
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        md.update(tohash.getBytes());
+        md.update(toHash.getBytes());
         byte byteData[] = md.digest();
         //convert the byte to hex format
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < byteData.length; i++) {
-            sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
+        StringBuilder sb = new StringBuilder();
+        for (byte aByteData : byteData) {
+            sb.append(Integer.toString((aByteData & 0xff) + 0x100, 16).substring(1));
         }
         return sb.toString();
     }

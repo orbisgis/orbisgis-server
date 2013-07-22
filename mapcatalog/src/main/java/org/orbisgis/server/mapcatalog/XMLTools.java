@@ -33,9 +33,9 @@ import org.w3c.dom.NamedNodeMap;
 import java.util.HashMap;
 
 public class XMLTools {
-    public static HashMap getNameSpacesMap(Document dom){
+    public static HashMap<String, String> getNameSpacesMap(Document dom){
         NamedNodeMap nm = dom.getDocumentElement().getAttributes();
-        HashMap hm = new HashMap();
+        HashMap<String, String> hm = new HashMap<String, String>();
         for(int i=0;i<nm.getLength();i++){
             hm.put(nm.item(i).getChildNodes().item(0).getTextContent(),nm.item(i).getNodeName());
         }

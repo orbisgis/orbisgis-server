@@ -45,11 +45,11 @@ public class UserWorkspace {
 
     /**
      * Constructor
-     * @param id_user
-     * @param id_workspace
-     * @param read
-     * @param write
-     * @param manageUser
+     * @param id_user the id of the user in the relation
+     * @param id_workspace the id of the workspace in the relation
+     * @param read The read access of the user in this workspace
+     * @param write The write access of the user in this workspace
+     * @param manageUser The manage access of the user in this workspace
      */
     public UserWorkspace(String id_user, String id_workspace, String read, String write, String manageUser) {
         this.id_user = id_user;
@@ -147,9 +147,9 @@ public class UserWorkspace {
         //preparation of the statement
         PreparedStatement stmt = MC.getConnection().prepareStatement(query);
         int j=1;
-        for(int i=0; i<values.length; i++){
-            if(values[i]!=null){
-                stmt.setString(j, values[i]);
+        for (String value : values) {
+            if (value != null) {
+                stmt.setString(j, value);
                 j++;
             }
         }
@@ -199,9 +199,9 @@ public class UserWorkspace {
         //preparation of the statement
         PreparedStatement stmt = MC.getConnection().prepareStatement(query);
         int j=1;
-        for(int i=0; i<values.length; i++){
-            if(values[i]!=null){
-                stmt.setString(j, values[i]);
+        for (String value : values) {
+            if (value != null) {
+                stmt.setString(j, value);
                 j++;
             }
         }
@@ -225,8 +225,8 @@ public class UserWorkspace {
     /**
      * Querys for a join from user_workspace and User, to get the information about each user linked to a workspace
      * @param MC the mapcatalog object for the connection
-     * @param id
-     * @return
+     * @param id The id of the user
+     * @return A hashmap containing, for each Workspace, the relation as key, and the workspace as value
      */
     public static HashMap<UserWorkspace, User> pageWithUser(MapCatalog MC, String id) throws SQLException{
         String query = "SELECT * FROM USER_WORKSPACE JOIN USER ON USER.ID_USER=USER_WORKSPACE.ID_USER WHERE USER_WORKSPACE.ID_WORKSPACE = ?";
@@ -260,8 +260,9 @@ public class UserWorkspace {
     /**
      * Querys for a join from user_workspace and User, to get the information about each user linked to a workspace
      * @param MC the mapcatalog object for the connection
-     * @param id
-     * @return
+     * @param id The id of the user
+     * @param offset The number of workspace to skip
+     * @return A hashmap containing, for each Workspace, the relation as key, and the workspace as value
      */
     public static HashMap<UserWorkspace, User> pageWithUser(MapCatalog MC, String id, int offset) throws SQLException{
         String query = "SELECT * FROM USER_WORKSPACE JOIN USER ON USER.ID_USER=USER_WORKSPACE.ID_USER WHERE USER_WORKSPACE.ID_WORKSPACE = ? LIMIT '10' OFFSET ?";
@@ -296,8 +297,8 @@ public class UserWorkspace {
     /**
      * Querys for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
      * @param MC the mapcatalog object for the connection
-     * @param id
-     * @return
+     * @param id The id of the user
+     * @return A hashmap containing, for each Workspace, the relation as key, and the workspace as value were the user has management right
      */
     public static HashMap<UserWorkspace, Workspace> pageWithWorkspaceManage(MapCatalog MC, String id) throws SQLException{
         String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ? AND( ALL_MANAGE = 1 OR MANAGE_USER = 1)";
@@ -330,8 +331,8 @@ public class UserWorkspace {
     /**
      * Querys for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
      * @param MC the mapcatalog object for the connection
-     * @param id
-     * @return
+     * @param id The id of the user
+     * @return A hashmap containing, for each Workspace, the relation as key, and the workspace as value were the user has management right
      */
     public static HashMap<UserWorkspace, Workspace> pageWithWorkspaceManage(MapCatalog MC, String id, int offset) throws SQLException{
         String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ? AND( ALL_MANAGE = 1 OR MANAGE_USER = 1) LIMIT '10' OFFSET ?";
@@ -365,8 +366,8 @@ public class UserWorkspace {
     /**
      * Querys for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
      * @param MC the mapcatalog object for the connection
-     * @param id
-     * @return
+     * @param id The id of the user
+     * @return A hashmap containing, for each Workspace, the relation as key, and the workspace as value
      */
     public static HashMap<UserWorkspace, Workspace> pageWithWorkspace(MapCatalog MC, String id) throws SQLException{
         String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ?";
@@ -400,8 +401,8 @@ public class UserWorkspace {
     /**
      * Querys for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
      * @param MC the mapcatalog object for the connection
-     * @param id
-     * @return
+     * @param id The id of the user
+     * @return A hashmap containing, for each Workspace, the relation as key, and the workspace as value were the user has management right
      */
     public static HashMap<UserWorkspace, Workspace> pageWithWorkspace(MapCatalog MC, String id, int offset) throws SQLException{
         String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ? LIMIT '10' OFFSET ?";
@@ -436,8 +437,8 @@ public class UserWorkspace {
     /**
      * Querys for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
      * @param MC the mapcatalog object for the connection
-     * @param id
-     * @return
+     * @param id The id of the user
+     * @return the number of results corresponding to the query
      */
     public static int pageWithWorkspaceCount(MapCatalog MC, String id) throws SQLException{
         String query = "SELECT COUNT(*) FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ?";
@@ -476,76 +477,57 @@ public class UserWorkspace {
      * Verify if a user is following the workspace
      * @param id_workspace the workspace to test
      * @param id_user the user to test
-     * @return
+     * @return true if monitoring, false if not
      */
     public static boolean isMonitoring(MapCatalog MC, String id_workspace, String id_user) throws SQLException{
         String[] attributes = {"id_user","id_workspace"};
         String[] values = {id_user, id_workspace};
         List<UserWorkspace> useworList = UserWorkspace.page(MC, attributes, values);
-        if(!useworList.isEmpty()){
-            return true;
-        }else{
-            return false;
-        }
+        return !useworList.isEmpty();
     }
 
     /**
      * Verify if a user has read right
      * @param id_workspace the workspace to test
      * @param id_user the user to test
-     * @return
      */
     public static boolean hasReadRight(MapCatalog MC, String id_workspace, String id_user) throws SQLException{
         String[] attributes = {"id_user","id_workspace","READ"};
         String[] values = {id_user, id_workspace,"1"};
         List<UserWorkspace> useworList = UserWorkspace.page(MC, attributes, values);
-        if(!useworList.isEmpty()){
-            return true;
-        }else{
-            return false;
-        }
+        return !useworList.isEmpty();
     }
 
     /**
      * Verify if a user has read right
      * @param id_workspace the workspace to test
      * @param id_user the user to test
-     * @return
      */
     public static boolean hasWriteRight(MapCatalog MC, String id_workspace, String id_user) throws SQLException{
         String[] attributes = {"id_user","id_workspace","WRITE"};
         String[] values = {id_user, id_workspace,"1"};
         List<UserWorkspace> useworList = UserWorkspace.page(MC, attributes, values);
-        if(!useworList.isEmpty()){
-            return true;
-        }else{
-            return false;
-        }
+        return !useworList.isEmpty();
     }
 
     /**
      * Verify if a user has management right
      * @param id_workspace the workspace to test
      * @param id_user the user to test
-     * @return
      */
     public static boolean hasManageRight(MapCatalog MC, String id_workspace, String id_user) throws SQLException{
         String[] attributes = {"id_user","id_workspace","MANAGE_USER"};
         String[] values = {id_user, id_workspace,"1"};
         List<UserWorkspace> useworList = UserWorkspace.page(MC, attributes, values);
-        if(!useworList.isEmpty()){
-            return true;
-        }else{
-            return false;
-        }
+        return !useworList.isEmpty();
     }
 
     /**
      * Querys for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
      * @param MC the mapcatalog object for the connection
      * @param expression the expression to look for in the name or description of the workspaces
-     * @param id
-     * @return
+     * @param id the user's id
+     * @return A hasmap containing the key UserWorkspace linked to workspace monitored
      */
     public static HashMap<UserWorkspace, Workspace> searchMyWorkspacesMonitored(MapCatalog MC, String expression, String id) throws SQLException{
         String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ? AND ((LOWER(name) LIKE ?) OR (LOWER(description) LIKE ?))";
@@ -583,8 +565,8 @@ public class UserWorkspace {
      * Querys for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
      * @param MC the mapcatalog object for the connection
      * @param expression the expression to look for in the name or description of the workspaces
-     * @param id
-     * @return
+     * @param id The id of the user
+     * @return A hashmap containing the key UserWorkspace linked to workspace monitored
      */
     public static HashMap<UserWorkspace, Workspace> searchMyWorkspacesMonitored(MapCatalog MC, String expression, String id, int offset) throws SQLException{
         String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ? AND ((LOWER(name) LIKE ?) OR (LOWER(description) LIKE ?)) LIMIT '10' OFFSET ?";
@@ -623,8 +605,8 @@ public class UserWorkspace {
      * Querys for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
      * @param MC the mapcatalog object for the connection
      * @param expression the expression to look for in the name or description of the workspaces
-     * @param id
-     * @return
+     * @param id the id of the user
+     * @return the number of workspaces and UserWorkspaces corresponding to the search
      */
     public static int searchMyWorkspacesMonitoredCount(MapCatalog MC, String expression, String id) throws SQLException{
         String query = "SELECT COUNT(*) FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ? AND ((LOWER(name) LIKE ?) OR (LOWER(description) LIKE ?))";

@@ -44,10 +44,10 @@ public class Folder {
     private String name =  "default";
 
     /**
-     * The constructor of the Folder without primary key
-     * @param id_root
+     * The constructor of the Folder without primary key (usually for saving in database)
+     * @param id_root The root workspace
      * @param id_parent Null if there is no parent folder (note: A workspace is NOT a folder)
-     * @param name
+     * @param name The name of the folder
      */
     public Folder(String id_root, String id_parent, String name) {
         this.id_root = id_root;
@@ -56,11 +56,11 @@ public class Folder {
     }
 
     /**
-     * Constructor with primary key
-     * @param id_folder
-     * @param id_root
+     * Constructor with primary key (usually for Select queries)
+     * @param id_folder The id of the folder
+     * @param id_root The root workspace of the folder
      * @param id_parent Null if there is no parent folder
-     * @param name
+     * @param name The name of the folder
      */
     public Folder(String id_folder, String id_root, String id_parent, String name) {
         this.id_folder = id_folder;
@@ -149,9 +149,9 @@ public class Folder {
         //preparation of the statement
         PreparedStatement stmt = MC.getConnection().prepareStatement(query);
         int j=1;
-        for(int i=0; i<values.length; i++){
-            if(values[i]!=null){
-                stmt.setString(j, values[i]);
+        for (String value : values) {
+            if (value != null) {
+                stmt.setString(j, value);
                 j++;
             }
         }
@@ -197,7 +197,7 @@ public class Folder {
      * Return each sucessive parent folder begining with the one in argument
      * @param MC the mapcatalog object for the connection
      * @param id_folder the folder you desire to get the path from
-     * @return
+     * @return The list of folders that builds the path to the chosen folder
      */
     public static List<Folder> getPath(MapCatalog MC, String id_folder) throws SQLException{
         String id = id_folder;

@@ -47,11 +47,11 @@ public class OWSContext {
     private Date date = null;
 
     /**
-     * Constructor
-     * @param id_root
-     * @param id_parent
-     * @param id_uploader
-     * @param title
+     * Constructor without primary key (usually when saving in database)
+     * @param id_root The id of the root workspace
+     * @param id_parent The id of the parent (null if there is none)
+     * @param id_uploader The id of the uploader
+     * @param title The title of the OWSContext
      */
     public OWSContext(String id_root, String id_parent, String id_uploader, String title) {
         this.id_root = id_root;
@@ -61,13 +61,13 @@ public class OWSContext {
     }
 
     /**
-     * Constructor with primary key
-     * @param id_owscontext
-     * @param id_root
-     * @param id_parent
-     * @param id_uploader
-     * @param title
-     * @param date
+     * Constructor with primary key (usually for select queries)
+     * @param id_owscontext The id of the context
+     * @param id_root The root workspace
+     * @param id_parent The parent folder (null if none)
+     * @param id_uploader The id of the uploader
+     * @param title The title of the context
+     * @param date The date of upload
      */
     public OWSContext(String id_owscontext, String id_root, String id_parent, String id_uploader, String title, Date date) {
         this.id_owscontext = id_owscontext;
@@ -96,8 +96,8 @@ public class OWSContext {
 
     /**
      * Gets an input stream for the xml content of a context in the database
-     * @param MC
-     * @return
+     * @param MC The instance of MapCatalog to get connection to database from
+     * @return An InputStream containing the XML content of a context
      * @throws SQLException
      */
     public InputStream getContent(MapCatalog MC) throws SQLException{
@@ -187,9 +187,9 @@ public class OWSContext {
         //preparation of the statement
         PreparedStatement stmt = MC.getConnection().prepareStatement(query);
         int j=1;
-        for(int i=0; i<values.length; i++){
-            if(values[i]!=null){
-                stmt.setString(j, values[i]);
+        for (String value : values) {
+            if (value != null) {
+                stmt.setString(j, value);
                 j++;
             }
         }
