@@ -60,8 +60,9 @@ public class MapCatalogC extends Controller{
      */
     public static Result index() {
         try {
-            List<Workspace> list = Workspace.page(MC);
-            return ok(mapCatalog.render(list));
+            List<Workspace> list = Workspace.page(MC,0);
+            int pages = (Workspace.pageCount(MC)-1)/10+1;
+            return ok(mapCatalog.render(list,1,pages));
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
         }
@@ -78,10 +79,14 @@ public class MapCatalogC extends Controller{
             String[] attributes = {"id_creator"};
             String id = session("id_user");
             String[] values = {id};
-            List<Workspace> list = Workspace.page(MC, attributes,values);
-            return ok(myWorkspaces.render(list, UserWorkspace.pageWithWorkspace(MC,id)));
+            int pagesCreated = (Workspace.pageCount(MC,attributes,values)-1)/10+1;
+            int pagesMonitored = (UserWorkspace.pageWithWorkspaceCount(MC, id)-1)/10+1;
+            List<Workspace> list = Workspace.page(MC, attributes,values,0);
+            HashMap<UserWorkspace,Workspace> hm = UserWorkspace.pageWithWorkspace(MC,id,0);
+            return ok(myWorkspaces.render(list,hm,pagesCreated,pagesMonitored));
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            e.printStackTrace();
         }
         return General.home();
     }
@@ -103,7 +108,7 @@ public class MapCatalogC extends Controller{
                 String[] values = {id_workspace, null};
                 List<Folder> listF = Folder.page(MC,attributes,values);
                 List<OWSContext> listC = OWSContext.page(MC, attributes, values);
-                boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||(wor.getAll_manage().equals("1")?true:false);
+                boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||(wor.getAll_manage().equals("1"));
                 return ok(workspace.render(listF,listC,wor,hasDeleteRights));
             }else{
                 flash("error", Message.ERROR_UNAUTHORIZED_WORKSPACE);
@@ -525,12 +530,15 @@ public class MapCatalogC extends Controller{
      * Search and return a specific list of workspaces
      * @return
      */
-    public static Result searchPublicWorkspaces(){
+    public static Result searchPublicWorkspaces(int offset){
         try {
             DynamicForm form = Form.form().bindFromRequest();
             String search = form.get("search");
-            List<Workspace> list = Workspace.search(MC,search);
-            return ok(mapCatalog.render(list));
+            List<Workspace> list = Workspace.search(MC,search, offset);
+            int pages = ((Workspace.searchCount(MC, search)-1)/10)+1;
+            int page = offset/10+1;
+            flash("search",search);
+            return ok(mapCatalog.render(list,page,pages));
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
         }
@@ -599,14 +607,30 @@ public class MapCatalogC extends Controller{
      * Search and return a specific list of workspaces for the page myWorkspaces
      * @return
      */
-    public static Result searchMyWorkspaces(){
+    public static Result searchMyWorkspaces(String choice, int offset){
         try {
             DynamicForm form = Form.form().bindFromRequest();
             String search = form.get("search");
             String id_user = session("id_user");
-            List<Workspace> list = Workspace.searchMyWorkspacesCreated(MC,search,id_user);
-            HashMap<UserWorkspace,Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC,search,id_user);
-            return ok(myWorkspaces.render(list, hm));
+            int pagesCreated = (Workspace.searchMyWorkspacesCreatedCount(MC,search,id_user)-1)/10+1;
+            int pagesMonitored = (UserWorkspace.searchMyWorkspacesMonitoredCount(MC,search,id_user)-1)/10+1;
+            int currentpage = offset/10+1;
+            flash("search",search);
+            if(choice.equals("created")){
+                List<Workspace> list = Workspace.searchMyWorkspacesCreated(MC,search,id_user,offset);
+                HashMap<UserWorkspace,Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC,search,id_user,0);
+                flash("created",Integer.toString(currentpage));
+                return ok(myWorkspaces.render(list, hm, pagesCreated, pagesMonitored));
+            }else if(choice.equals("monitored")){
+                List<Workspace> list = Workspace.searchMyWorkspacesCreated(MC,search,id_user,0);
+                HashMap<UserWorkspace,Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC,search,id_user,offset);
+                flash("monitored",Integer.toString(currentpage));
+                return ok(myWorkspaces.render(list, hm, pagesCreated, pagesMonitored));
+            }else{
+                List<Workspace> list = Workspace.searchMyWorkspacesCreated(MC,search,id_user,0);
+                HashMap<UserWorkspace,Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC,search,id_user,0);
+                return ok(myWorkspaces.render(list, hm, pagesCreated, pagesMonitored));
+            }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
         }
@@ -767,5 +791,65 @@ public class MapCatalogC extends Controller{
             flash("error", Message.ERROR_GENERAL);
         }
         return myWorkspaces();
+    }
+
+    /**
+     * Renders the MapCatalog Public page with result between offset and offset +10
+     * @return
+     */
+    public static Result indexOffset(int offset) {
+        try {
+            List<Workspace> list = Workspace.page(MC, offset);
+            int pages = ((Workspace.pageCount(MC)-1)/10)+1;
+            int page = offset/10+1;
+            return ok(mapCatalog.render(list,page,pages));
+        } catch (SQLException e) {
+            flash("error", Message.ERROR_GENERAL);
+        }
+        return General.home();
+    }
+
+    /**
+     * Renders the MapCatalog Myworkspace page with result between offset and offset +10
+     * @return
+     */
+    public static Result myWorkspacesCreatedOffset(int offset) {
+        try {
+            String[] attributes = {"id_creator"};
+            String id = session("id_user");
+            String[] values = {id};
+            List<Workspace> list = Workspace.page(MC, attributes,values,offset);
+            HashMap<UserWorkspace,Workspace> hm = UserWorkspace.pageWithWorkspace(MC,id,0);
+            int pagesCreated = (Workspace.pageCount(MC,attributes,values)-1)/10+1;
+            int pagesMonitored = (UserWorkspace.pageWithWorkspaceCount(MC, id)-1)/10+1;
+            int currentpage = offset/10+1;
+            flash("created",Integer.toString(currentpage));
+            return ok(myWorkspaces.render(list,hm,pagesCreated,pagesMonitored));
+        } catch (SQLException e) {
+            flash("error", Message.ERROR_GENERAL);
+        }
+        return General.home();
+    }
+
+    /**
+     * Renders the MapCatalog Myworkspace page with result between offset and offset +10
+     * @return
+     */
+    public static Result myWorkspacesMonitoredOffset(int offset) {
+        try {
+            String[] attributes = {"id_creator"};
+            String id = session("id_user");
+            String[] values = {id};
+            List<Workspace> list = Workspace.page(MC, attributes,values,0);
+            HashMap<UserWorkspace,Workspace> hm = UserWorkspace.pageWithWorkspace(MC,id,offset);
+            int pagesCreated = (Workspace.pageCount(MC,attributes,values)-1)/10+1;
+            int pagesMonitored = (UserWorkspace.pageWithWorkspaceCount(MC, id)-1)/10+1;
+            int currentpage = offset/10+1;
+            flash("monitored",Integer.toString(currentpage));
+            return ok(myWorkspaces.render(list,hm,pagesCreated,pagesMonitored));
+        } catch (SQLException e) {
+            flash("error", Message.ERROR_GENERAL);
+        }
+        return General.home();
     }
 }

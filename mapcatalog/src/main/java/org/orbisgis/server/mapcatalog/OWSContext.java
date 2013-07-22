@@ -241,7 +241,7 @@ public class OWSContext {
      * @return The list of workspaces corresponding to the search
      */
     public static List<OWSContext> search(MapCatalog MC, String id_root, String expression) throws SQLException{
-        String query = "SELECT * FROM FOLDER WHERE (LOWER(title) LIKE ?) AND (id_root = ?)";
+        String query = "SELECT * FROM OWSCONTEXT WHERE (LOWER(title) LIKE ?) AND (id_root = ?)";
         List<OWSContext> searched = new LinkedList<OWSContext>();
         expression = "%" + expression.toLowerCase() + "%";
         PreparedStatement stmt = MC.getConnection().prepareStatement(query);

@@ -1,4 +1,4 @@
-@(workspaces : List[org.orbisgis.server.mapcatalog.Workspace])
+@(workspaces : List[org.orbisgis.server.mapcatalog.Workspace], currentpage : Int, pagenumber : Int)
 
 @import helper.twitterBootstrap._
 
@@ -38,7 +38,7 @@
                 <a href="@routes.MapCatalogC.manageWorkspaces()"><button class="btn btn-danger">Manage my workspaces</button></a>
             <br/><br/>
             }
-            <form class="form-search" action="@routes.MapCatalogC.searchPublicWorkspaces()">
+            <form class="form-search" action="@routes.MapCatalogC.searchPublicWorkspaces(0)">
                 <input type="text" class="input-medium search-query" placeholder="Search a workspace" name="search">
                 <button type="submit" class="btn">Search</button>
             </form>
@@ -77,7 +77,7 @@
                     </tr>
                     @for(workspace <- workspaces){
                     <tr>
-                        <td >
+                        <td>
                             <a href="/mapcatalog/workspace/@workspace.getId_workspace()">
                                 <img src="@routes.Assets.at("images/icons/workspace.png")" alt="Map"/><h5 style="display:inline">@workspace.getName()</h5>
                             </a>
@@ -104,6 +104,20 @@
                 </table>
             </div>
             @if(workspaces.isEmpty()){There is no information to display}
+            <div class="pagination pagination-centered">
+                <ul>
+                    @if(!flash.contains("search")){
+                        @for(index <- 1 until pagenumber+1){
+                        <li @if(index==currentpage){class="active"}><a href="@routes.MapCatalogC.indexOffset((index-1)*10)">@index</a></li>
+                        }
+                    }
+                    @if(flash.contains("search")){
+                        @for(index <- 1 until pagenumber+1){
+                        <li @if(index==currentpage){class="active"}><a href="/mapcatalog/public/search/@{(index-1)*10}?search=@flash().get("search")">@index</a></li>
+                        }
+                    }
+                </ul>
+            </div>
         </div>
         <div class="span7" id="display" style="background-color:#70c265;">
             <h2>Display</h2>

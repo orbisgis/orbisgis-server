@@ -291,5 +291,6 @@ public class MapCatalog {
 
     public static void main(String[] args) throws Exception{
         System.out.println(hasher("thecakeisalie"));
+        System.out.println(1==Integer.parseInt(null));
     }
 }

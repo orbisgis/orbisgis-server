@@ -23,7 +23,7 @@
                 <table>
                     <tr>
                         <td>Name</td>
-                        <td>Public</td>
+                        <td>Default accesses</td>
                         <td>Action</td>
                     </tr>
                     @for(workspace <- workspacesCreated){
@@ -34,8 +34,10 @@
                             </a>
                         </td>
                         <td>
-                            @if((workspace.getAll_read().equals("1"))){Yes}
-                            @if(!(workspace.getAll_read().equals("1"))){No}
+                            @if(workspace.getAll_read().equals("1")){Read}
+                            @if(workspace.getAll_write().equals("1")){Write}
+                            @if(workspace.getAll_manage().equals("1")){Manage}
+                            @if(workspace.getAll_read().equals("0")&&workspace.getAll_write().equals("0")&&workspace.getAll_manage().equals("0")){None}
                         </td>
                         <td>
                             <a href="@routes.MapCatalogC.manageAWorkspace(workspace.getId_workspace)">
@@ -54,7 +56,7 @@
                 <table>
                     <tr>
                         <td>Name</td>
-                        <td>Public</td>
+                        <td>Default accesses</td>
                         <td>Action</td>
                     </tr>
                     @for(userworkspace <- workspacesMonitored.keySet()){
@@ -66,8 +68,10 @@
                                 </a>
                             </td>
                             <td>
-                                @if((workspace.getAll_read().equals("1"))){Yes}
-                                @if(!(workspace.getAll_read().equals("1"))){No}
+                                @if(workspace.getAll_read().equals("1")){Read}
+                                @if(workspace.getAll_write().equals("1")){Write}
+                                @if(workspace.getAll_manage().equals("1")){Manage}
+                                @if(workspace.getAll_read().equals("0")&&workspace.getAll_write().equals("0")&&workspace.getAll_manage().equals("0")){None}
                             </td>
                             <td>
                                 <a href="@routes.MapCatalogC.manageAWorkspace(workspace.getId_workspace)">

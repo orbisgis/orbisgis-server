@@ -112,6 +112,7 @@
         <div class="span7">
             <div id="display" style="background-color:#70c265;padding-left:10px; padding-bottom:10px">
                 <h3>@context.getTitle()</h3>
+                <h4>Date of upload : @context.getDate()</h4>
                 <img src="@routes.Assets.at("images/noPreview.jpg")" alt="no preview"/>
                 <a href="@routes.MapCatalogC.downloadContext(context.getId_owscontext())"><button class="btn btn-primary">download</button></a>
             </div>

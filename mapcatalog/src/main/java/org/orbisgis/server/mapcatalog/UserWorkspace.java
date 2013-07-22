@@ -170,6 +170,59 @@ public class UserWorkspace {
     }
 
     /**
+     * Method that queries the database for UserWorkspace relations, with a where clause, be careful, as only the values in the where clause will be checked for SQL injections
+     * @param MC the mapcatalog object for the connection
+     * @param attributes The attributes in the where clause, you should NEVER let the user bias this parameter, always hard code it.
+     * @param values The values of the attributes, this is totally SQL injection safe
+     * @return A list of UserWorkspace containing the result of the query
+     */
+    public static List<UserWorkspace> page(MapCatalog MC, String[] attributes, String[] values, int offset) throws SQLException{
+        String query = "SELECT * FROM user_workspace WHERE ";
+        List<UserWorkspace> paged = new LinkedList<UserWorkspace>();
+        //case argument invalid
+        if(attributes == null || values == null){
+            throw new IllegalArgumentException("Arguments cannot be null");
+        }
+        if(attributes.length != values.length){
+            throw new IllegalArgumentException("String arrays have to be of the same length");
+        }
+        //preparation of the query
+        query+=attributes[0]+" = ?";
+        for(int i=1; i<attributes.length; i++){
+            if(values[i]==null){
+                query += "AND "+attributes[i]+" IS NULL";
+            }else{
+                query += " AND "+attributes[i]+" = ?";
+            }
+        }
+        query+=" LIMIT '10' OFFSET ?";
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        int j=1;
+        for(int i=0; i<values.length; i++){
+            if(values[i]!=null){
+                stmt.setString(j, values[i]);
+                j++;
+            }
+        }
+        stmt.setInt(j+1, offset);
+        //Retrieving values
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_user = rs.getString("id_user");
+            String id_workspace = rs.getString("id_workspace");
+            String read = rs.getString("read");
+            String write = rs.getString("write");
+            String manageUser = rs.getString("manage_user");
+            UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
+            paged.add(usewor);
+        }
+        rs.close();
+        stmt.close();
+        return paged;
+    }
+
+    /**
      * Querys for a join from user_workspace and User, to get the information about each user linked to a workspace
      * @param MC the mapcatalog object for the connection
      * @param id
@@ -181,6 +234,42 @@ public class UserWorkspace {
         //preparation of the statement
         PreparedStatement stmt = MC.getConnection().prepareStatement(query);
         stmt.setString(1, id);
+        //Retrieving values
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_user = rs.getString("id_user");
+            String id_workspace = rs.getString("id_workspace");
+            String read = rs.getString("read");
+            String write = rs.getString("write");
+            String manageUser = rs.getString("manage_user");
+            UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
+            String name = rs.getString("name");
+            String email = rs.getString("email");
+            String password = rs.getString("password");
+            String location = rs.getString("location");
+            String profession = rs.getString("profession");
+            String additional = rs.getString("additional");
+            User use = new User(id_user, name, email, password, location,profession,additional);
+            paged.put(usewor,use);
+        }
+        rs.close();
+        stmt.close();
+        return paged;
+    }
+
+    /**
+     * Querys for a join from user_workspace and User, to get the information about each user linked to a workspace
+     * @param MC the mapcatalog object for the connection
+     * @param id
+     * @return
+     */
+    public static HashMap<UserWorkspace, User> pageWithUser(MapCatalog MC, String id, int offset) throws SQLException{
+        String query = "SELECT * FROM USER_WORKSPACE JOIN USER ON USER.ID_USER=USER_WORKSPACE.ID_USER WHERE USER_WORKSPACE.ID_WORKSPACE = ? LIMIT '10' OFFSET ?";
+        HashMap<UserWorkspace, User> paged = new HashMap<UserWorkspace, User>();
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, id);
+        stmt.setInt(2, offset);
         //Retrieving values
         ResultSet rs = stmt.executeQuery();
         while(rs.next()){
@@ -244,6 +333,41 @@ public class UserWorkspace {
      * @param id
      * @return
      */
+    public static HashMap<UserWorkspace, Workspace> pageWithWorkspaceManage(MapCatalog MC, String id, int offset) throws SQLException{
+        String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ? AND( ALL_MANAGE = 1 OR MANAGE_USER = 1) LIMIT '10' OFFSET ?";
+        HashMap<UserWorkspace, Workspace> paged = new HashMap<UserWorkspace, Workspace>();
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, id);
+        stmt.setInt(2, offset);
+        //Retrieving values
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_user = rs.getString("id_user");
+            String id_workspace = rs.getString("id_workspace");
+            String read = rs.getString("read");
+            String write = rs.getString("write");
+            String manageUser = rs.getString("manage_user");
+            UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
+            String name = rs.getString("name");
+            String all_read = rs.getString("all_read");
+            String all_write = rs.getString("all_write");
+            String all_manage = rs.getString("all_manage");
+            String description = rs.getString("description");
+            Workspace wor = new Workspace(id_workspace,id_user, name, all_read, all_write, all_manage, description);
+            paged.put(usewor,wor);
+        }
+        rs.close();
+        stmt.close();
+        return paged;
+    }
+
+    /**
+     * Querys for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
+     * @param MC the mapcatalog object for the connection
+     * @param id
+     * @return
+     */
     public static HashMap<UserWorkspace, Workspace> pageWithWorkspace(MapCatalog MC, String id) throws SQLException{
         String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ?";
         HashMap<UserWorkspace, Workspace> paged = new HashMap<UserWorkspace, Workspace>();
@@ -271,6 +395,64 @@ public class UserWorkspace {
         rs.close();
         stmt.close();
         return paged;
+    }
+
+    /**
+     * Querys for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
+     * @param MC the mapcatalog object for the connection
+     * @param id
+     * @return
+     */
+    public static HashMap<UserWorkspace, Workspace> pageWithWorkspace(MapCatalog MC, String id, int offset) throws SQLException{
+        String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ? LIMIT '10' OFFSET ?";
+        HashMap<UserWorkspace, Workspace> paged = new HashMap<UserWorkspace, Workspace>();
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, id);
+        stmt.setInt(2, offset);
+        //Retrieving values
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_user = rs.getString("id_user");
+            String id_workspace = rs.getString("id_workspace");
+            String read = rs.getString("read");
+            String write = rs.getString("write");
+            String manageUser = rs.getString("manage_user");
+            UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
+            String id_creator = rs.getString("id_creator");
+            String name = rs.getString("name");
+            String all_read = rs.getString("all_read");
+            String all_write = rs.getString("all_write");
+            String all_manage = rs.getString("all_manage");
+            String description = rs.getString("description");
+            Workspace wor = new Workspace(id_workspace, id_creator, name, all_read, all_write, all_manage, description);
+            paged.put(usewor,wor);
+        }
+        rs.close();
+        stmt.close();
+        return paged;
+    }
+
+    /**
+     * Querys for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
+     * @param MC the mapcatalog object for the connection
+     * @param id
+     * @return
+     */
+    public static int pageWithWorkspaceCount(MapCatalog MC, String id) throws SQLException{
+        String query = "SELECT COUNT(*) FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ?";
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, id);
+        //Retrieving values
+        ResultSet rs = stmt.executeQuery();
+        int count = 0;
+        if(rs.next()){
+            count = rs.getInt("COUNT(*)");
+        }
+        rs.close();
+        stmt.close();
+        return count;
     }
 
     /**
@@ -395,5 +577,71 @@ public class UserWorkspace {
         rs.close();
         stmt.close();
         return paged;
+    }
+
+    /**
+     * Querys for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
+     * @param MC the mapcatalog object for the connection
+     * @param expression the expression to look for in the name or description of the workspaces
+     * @param id
+     * @return
+     */
+    public static HashMap<UserWorkspace, Workspace> searchMyWorkspacesMonitored(MapCatalog MC, String expression, String id, int offset) throws SQLException{
+        String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ? AND ((LOWER(name) LIKE ?) OR (LOWER(description) LIKE ?)) LIMIT '10' OFFSET ?";
+        HashMap<UserWorkspace, Workspace> paged = new HashMap<UserWorkspace, Workspace>();
+        expression = "%" + expression.toLowerCase() + "%";
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, id);
+        stmt.setString(2, expression);
+        stmt.setString(3, expression);
+        stmt.setInt(4, offset);
+        //Retrieving values
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_user = rs.getString("id_user");
+            String id_workspace = rs.getString("id_workspace");
+            String read = rs.getString("read");
+            String write = rs.getString("write");
+            String manageUser = rs.getString("manage_user");
+            UserWorkspace usewor = new UserWorkspace(id_user,id_workspace,read,write,manageUser);
+            String id_creator = rs.getString("id_creator");
+            String name = rs.getString("name");
+            String all_read = rs.getString("all_read");
+            String all_write = rs.getString("all_write");
+            String all_manage = rs.getString("all_manage");
+            String description = rs.getString("description");
+            Workspace wor = new Workspace(id_workspace, id_creator, name, all_read, all_write, all_manage, description);
+            paged.put(usewor,wor);
+        }
+        rs.close();
+        stmt.close();
+        return paged;
+    }
+
+    /**
+     * Querys for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
+     * @param MC the mapcatalog object for the connection
+     * @param expression the expression to look for in the name or description of the workspaces
+     * @param id
+     * @return
+     */
+    public static int searchMyWorkspacesMonitoredCount(MapCatalog MC, String expression, String id) throws SQLException{
+        String query = "SELECT COUNT(*) FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ? AND ((LOWER(name) LIKE ?) OR (LOWER(description) LIKE ?))";
+        expression = "%" + expression.toLowerCase() + "%";
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, id);
+        stmt.setString(2, expression);
+        stmt.setString(3, expression);
+        //Retrieving values
+        ResultSet rs = stmt.executeQuery();
+        int count = 0;
+        if(rs.next()){
+            count = rs.getInt("COUNT(*)");
+        }
+        rs.close();
+        stmt.close();
+        return count;
     }
 }

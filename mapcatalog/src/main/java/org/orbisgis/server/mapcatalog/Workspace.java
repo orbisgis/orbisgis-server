@@ -203,6 +203,107 @@ public class Workspace {
     }
 
     /**
+     * Method that queries the database for workspaces, with a where clause, be careful, as only the values in the where clause will be checked for SQL injections
+     * @param MC the mapcatalog object for the connection
+     * @param attributes The attributes in the where clause, you should NEVER let the user bias this parameter, always hard code it.
+     * @param values The values of the attributes, this is totally SQL injection safe
+     * @return A list of Workspace containing the result of the query
+     */
+    public static List<Workspace> page(MapCatalog MC, String[] attributes, String[] values, int offset) throws SQLException{
+        String query = "SELECT * FROM workspace WHERE ";
+        List<Workspace> paged = new LinkedList<Workspace>();
+        //case argument invalid
+        if(attributes == null || values == null){
+            throw new IllegalArgumentException("Arguments cannot be null");
+        }
+        if(attributes.length != values.length){
+            throw new IllegalArgumentException("String arrays have to be of the same length");
+        }
+        //preparation of the query
+        query+=attributes[0]+" = ?";
+        for(int i=1; i<attributes.length; i++){
+            if(values[i]==null){
+                query += "AND "+attributes[i]+" IS NULL";
+            }else{
+                query += " AND "+attributes[i]+" = ?";
+            }
+        }
+        //Setting the offset and limit
+        query+=" LIMIT '10' OFFSET ?";
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        int j=1;
+        for(int i=0; i<values.length; i++){
+            if(values[i]!=null){
+                stmt.setString(j, values[i]);
+                j++;
+            }
+        }
+        stmt.setInt(j, offset);
+        //Retrieving values
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_workspace = rs.getString("id_workspace");
+            String id_creator = rs.getString("id_creator");
+            String name = rs.getString("name");
+            String all_read = rs.getString("all_read");
+            String all_write = rs.getString("all_write");
+            String all_manage = rs.getString("all_manage");
+            String description = rs.getString("description");
+            Workspace wor = new Workspace(id_workspace,id_creator,name,all_read,all_write,all_manage,description);
+            paged.add(wor);
+        }
+        rs.close();
+        stmt.close();
+        return paged;
+    }
+
+    /**
+     * Counts the number of workspace that matches the where clause
+     * @param MC the mapcatalog object for the connection
+     * @param attributes The attributes in the where clause, you should NEVER let the user bias this parameter, always hard code it.
+     * @param values The values of the attributes, this is totally SQL injection safe
+     * @return the number of workspaces
+     */
+    public static int pageCount(MapCatalog MC, String[] attributes, String[] values) throws SQLException{
+        String query = "SELECT COUNT(*) FROM workspace WHERE ";
+        //case argument invalid
+        if(attributes == null || values == null){
+            throw new IllegalArgumentException("Arguments cannot be null");
+        }
+        if(attributes.length != values.length){
+            throw new IllegalArgumentException("String arrays have to be of the same length");
+        }
+        //preparation of the query
+        query+=attributes[0]+" = ?";
+        for(int i=1; i<attributes.length; i++){
+            if(values[i]==null){
+                query += "AND "+attributes[i]+" IS NULL";
+            }else{
+                query += " AND "+attributes[i]+" = ?";
+            }
+        }
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        int j=1;
+        for(int i=0; i<values.length; i++){
+            if(values[i]!=null){
+                stmt.setString(j, values[i]);
+                j++;
+            }
+        }
+        //Retrieving values
+        ResultSet rs = stmt.executeQuery();
+        int count=0;
+        if(rs.next()){
+            count = rs.getInt("count(*)");
+        }
+        rs.close();
+        stmt.close();
+        return count;
+    }
+
+    /**
      * Method that sends a query to database SELECT * FROM Workspace
      * @param MC the mapcatalog object for the connection
      * @return A list of Workspace containing the result of the query
@@ -226,6 +327,51 @@ public class Workspace {
         rs.close();
         stmt.close();
         return paged;
+    }
+
+    /**
+     * Method that sends a query to database SELECT * FROM Workspace
+     * @param MC the mapcatalog object for the connection
+     * @return A list of Workspace containing the result of the query
+     */
+    public static List<Workspace> page(MapCatalog MC, int offset) throws SQLException{
+        String query = "SELECT * FROM workspace LIMIT '10' OFFSET ?";
+        List<Workspace> paged = new LinkedList<Workspace>();
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setInt(1, offset);
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_workspace = rs.getString("id_workspace");
+            String id_creator = rs.getString("id_creator");
+            String name = rs.getString("name");
+            String all_read = rs.getString("all_read");
+            String all_write = rs.getString("all_write");
+            String all_manage = rs.getString("all_manage");
+            String description = rs.getString("description");
+            Workspace wor = new Workspace(id_workspace,id_creator,name,all_read,all_write,all_manage,description);
+            paged.add(wor);
+        }
+        rs.close();
+        stmt.close();
+        return paged;
+    }
+
+    /**
+     * Returns the number of workspace in database
+     * @param MC the mapcatalog object for the connection
+     * @return
+     */
+    public static int pageCount(MapCatalog MC) throws SQLException{
+        String query = "SELECT COUNT(*) FROM workspace";
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        ResultSet rs = stmt.executeQuery();
+        int count=0;
+        if(rs.next()){
+            count = rs.getInt("count(*)");
+        }
+        rs.close();
+        stmt.close();
+        return count;
     }
 
     /**
@@ -294,6 +440,57 @@ public class Workspace {
     }
 
     /**
+     *Queries database to search for a workspace containing a certain expression in his name, or his description
+     * @param expression the String to run the search on, case insensitive
+     * @return The list of workspaces corresponding to the search
+     */
+    public static List<Workspace> search(MapCatalog MC, String expression, int offset) throws SQLException{
+        String query = "SELECT * FROM WORKSPACE WHERE (LOWER(name) LIKE ?) OR (LOWER(description) LIKE ?) LIMIT '10' OFFSET ?";
+        List<Workspace> searched = new LinkedList<Workspace>();
+        expression = "%" + expression.toLowerCase() + "%";
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, expression);
+        stmt.setString(2, expression);
+        stmt.setInt(3, offset);
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_workspace = rs.getString("id_workspace");
+            String id_creator = rs.getString("id_creator");
+            String name = rs.getString("name");
+            String all_read = rs.getString("all_read");
+            String all_write = rs.getString("all_write");
+            String all_manage = rs.getString("all_manage");
+            String description = rs.getString("description");
+            Workspace wor = new Workspace(id_workspace,id_creator,name,all_read,all_write,all_manage,description);
+            searched.add(wor);
+        }
+        rs.close();
+        stmt.close();
+        return searched;
+    }
+
+    /**
+     * Counts the number of workspaces corresponding with the search
+     * @param expression the String to run the search on, case insensitive
+     * @return The number of workspaces corresponding to the search
+     */
+    public static int searchCount(MapCatalog MC, String expression) throws SQLException{
+        String query = "SELECT COUNT(*) FROM WORKSPACE WHERE (LOWER(name) LIKE ?) OR (LOWER(description) LIKE ?)";
+        expression = "%" + expression.toLowerCase() + "%";
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, expression);
+        stmt.setString(2, expression);
+        ResultSet rs = stmt.executeQuery();
+        int count=0;
+        if(rs.next()){
+            count = rs.getInt("COUNT(*)");
+        }
+        rs.close();
+        stmt.close();
+        return count;
+    }
+
+    /**
      *Queries database to search for a workspace containing a certain expression in his name, or his description, with a specific creator
      * @param expression the String to run the search on, case insensitive
      * @param id_user The creator of the workspace
@@ -322,5 +519,60 @@ public class Workspace {
         rs.close();
         stmt.close();
         return searched;
+    }
+
+    /**
+     *Queries database to search for a workspace containing a certain expression in his name, or his description, with a specific creator
+     * @param expression the String to run the search on, case insensitive
+     * @param id_user The creator of the workspace
+     * @return The list of workspaces corresponding to the search
+     */
+    public static List<Workspace> searchMyWorkspacesCreated(MapCatalog MC, String expression, String id_user, int offset) throws SQLException{
+        String query = "SELECT * FROM WORKSPACE WHERE ((LOWER(name) LIKE ?) OR (LOWER(description) LIKE ?)) AND id_creator= ? LIMIT '10' OFFSET ?";
+        List<Workspace> searched = new LinkedList<Workspace>();
+        expression = "%" + expression.toLowerCase() + "%";
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, expression);
+        stmt.setString(2, expression);
+        stmt.setString(3, id_user);
+        stmt.setInt(4, offset);
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_workspace = rs.getString("id_workspace");
+            String id_creator = rs.getString("id_creator");
+            String name = rs.getString("name");
+            String all_read = rs.getString("all_read");
+            String all_write = rs.getString("all_write");
+            String all_manage = rs.getString("all_manage");
+            String description = rs.getString("description");
+            Workspace wor = new Workspace(id_workspace,id_creator,name,all_read,all_write,all_manage,description);
+            searched.add(wor);
+        }
+        rs.close();
+        stmt.close();
+        return searched;
+    }
+
+    /**
+     * Counts the number of workspace created by a certain user
+     * @param expression the String to run the search on, case insensitive
+     * @param id_user The creator of the workspace
+     * @return The list of workspaces corresponding to the search
+     */
+    public static int searchMyWorkspacesCreatedCount(MapCatalog MC, String expression, String id_user) throws SQLException{
+        String query = "SELECT COUNT(*) FROM WORKSPACE WHERE ((LOWER(name) LIKE ?) OR (LOWER(description) LIKE ?)) AND id_creator= ?";
+        expression = "%" + expression.toLowerCase() + "%";
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, expression);
+        stmt.setString(2, expression);
+        stmt.setString(3, id_user);
+        ResultSet rs = stmt.executeQuery();
+        int count=0;
+        if(rs.next()){
+            count = rs.getInt("count(*)");
+        }
+        rs.close();
+        stmt.close();
+        return count;
     }
 }

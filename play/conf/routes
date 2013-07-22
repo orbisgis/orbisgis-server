@@ -70,7 +70,13 @@ GET /home                                                                   cont
 
 GET /mapcatalog/public                                                      controllers.MapCatalogC.index
 
+GET /mapcatalog/public/:offset                                              controllers.MapCatalogC.indexOffset(offset: Int)
+
 GET /mapcatalog/myworkspaces                                                controllers.MapCatalogC.myWorkspaces
+
+GET /mapcatalog/myworkspaces/created/:offset                                controllers.MapCatalogC.myWorkspacesCreatedOffset(offset: Int)
+
+GET /mapcatalog/myworkspaces/monitored/:offset                              controllers.MapCatalogC.myWorkspacesMonitoredOffset(offset: Int)
 
 GET /mapcatalog/workspace/:id_workspace                                     controllers.MapCatalogC.viewWorkspace(id_workspace : String)
 
@@ -102,13 +108,13 @@ POST /mapcatalog/workspace/:id_workspace/addcontext                         cont
 
 POST /mapcatalog/workspace/:id_workspace/folder/:id_folder/addcontext       controllers.MapCatalogC.addMapContextFromParent(id_workspace : String, id_folder : String)
 
-GET /mapcatalog/public/search                                               controllers.MapCatalogC.searchPublicWorkspaces()
+GET /mapcatalog/public/search/:offset                                       controllers.MapCatalogC.searchPublicWorkspaces(offset : Int)
 
 GET /mapcatalog/workspace/:id_workspace/search                              controllers.MapCatalogC.searchFromRoot(id_workspace : String)
 
 GET /mapcatalog/workspace/:id_workspace/folder/:id_folder/search            controllers.MapCatalogC.searchFromParent(id_workspace : String, id_folder : String)
 
-GET /mapcatalog/myworkspaces/search                                         controllers.MapCatalogC.searchMyWorkspaces()
+GET /mapcatalog/myworkspaces/search/:choice/:offset                         controllers.MapCatalogC.searchMyWorkspaces(choice:String, offset : Int)
 
 GET /mapcatalog/workspace/:id_workspace/folder/:id_folder/context/:id_owscontext   controllers.MapCatalogC.viewOWSFromParent(id_workspace, id_folder, id_owscontext)
 

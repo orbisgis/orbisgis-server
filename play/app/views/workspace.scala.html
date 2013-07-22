@@ -36,7 +36,7 @@
                 </li>
             </ul>
             <form class="form-search" action="@routes.MapCatalogC.searchFromRoot(root.getId_workspace())">
-                <input type="text" class="input-medium search-query" placeholder="Search in this workspace">
+                <input type="text" class="input-medium search-query" name="search" placeholder="Search in this workspace">
                 <button type="submit" class="btn">Search</button>
             </form>
             <div class="well well-small" style="margin-right:2%">
@@ -54,7 +54,7 @@
                 <li><a href="@routes.MapCatalogC.viewWorkspace(root.getId_workspace())">@root.getName()</a><span class="divider">/</span></li>
             </ul>
             <div class="CSSworktable" style="width:98%;margin-bottom:1%">
-                <table >
+                <table>
                     <tr>
                         <td>Name</td>
                         <td>Action</td>
