@@ -55,7 +55,7 @@ public class MapCatalogC extends Controller{
     }
 
     /**
-     * Renders the MapCatalog Public page
+     * Renders the MapCatalog Public page (the first ten of all workspaces)
      * @return
      */
     public static Result index() {
@@ -70,7 +70,7 @@ public class MapCatalogC extends Controller{
     }
 
     /**
-     * Renders the MapCatalog MyWorkspace page
+     * Renders the MapCatalog MyWorkspace page (the first ten of each created and monitored workspaces)
      * @return
      */
     @Security.Authenticated(Secured.class)
@@ -276,7 +276,7 @@ public class MapCatalogC extends Controller{
     }
 
     /**
-     * Displays the management page for a particular workspace, checks if the sender of the http request has rights
+     * Displays the management page for a particular workspace
      * @param id_workspace the id of the workspace
      * @return
      */
@@ -302,7 +302,7 @@ public class MapCatalogC extends Controller{
     }
 
     /**
-     * Changes the right of a user for a specific workspace, checks if the sender of the http request has rights
+     * Changes the right of a user for a specific workspace
      * @param id_workspace
      * @param id_user
      * @return
@@ -334,7 +334,7 @@ public class MapCatalogC extends Controller{
     }
 
     /**
-     * Delete a workspace, checks if the sender of the http request has rights
+     * Delete a workspace
      * @param id_workspace
      * @return
      */
@@ -358,7 +358,7 @@ public class MapCatalogC extends Controller{
     }
 
     /**
-     * Update information about a workspace, checks if the sender of the http request has rights
+     * Update information about a workspace
      * @param id_workspace
      * @return
      */
@@ -392,7 +392,7 @@ public class MapCatalogC extends Controller{
     }
 
     /**
-     * Casts out a user from a workspace, all_manage parameter is not taken into account here for access rights
+     * Casts out a user from a workspace, all_manage parameter is not taken into account here for access rights (only
      * @param id_workspace
      * @param id_user
      * @return
@@ -797,6 +797,7 @@ public class MapCatalogC extends Controller{
      * Renders the MapCatalog Public page with result between offset and offset +10
      * @return
      */
+    @Security.Authenticated(Secured.class)
     public static Result indexOffset(int offset) {
         try {
             List<Workspace> list = Workspace.page(MC, offset);
@@ -813,6 +814,7 @@ public class MapCatalogC extends Controller{
      * Renders the MapCatalog Myworkspace page with result between offset and offset +10
      * @return
      */
+    @Security.Authenticated(Secured.class)
     public static Result myWorkspacesCreatedOffset(int offset) {
         try {
             String[] attributes = {"id_creator"};
@@ -835,6 +837,7 @@ public class MapCatalogC extends Controller{
      * Renders the MapCatalog Myworkspace page with result between offset and offset +10
      * @return
      */
+    @Security.Authenticated(Secured.class)
     public static Result myWorkspacesMonitoredOffset(int offset) {
         try {
             String[] attributes = {"id_creator"};
@@ -847,6 +850,32 @@ public class MapCatalogC extends Controller{
             int currentpage = offset/10+1;
             flash("monitored",Integer.toString(currentpage));
             return ok(myWorkspaces.render(list,hm,pagesCreated,pagesMonitored));
+        } catch (SQLException e) {
+            flash("error", Message.ERROR_GENERAL);
+        }
+        return General.home();
+    }
+
+    @Security.Authenticated(Secured.class)
+    public static Result handOverCreation(String id_workspace, String id_user) {
+        try{
+            String id_logged = session("id_user");
+            if(Workspace.isCreator(MC, id_workspace, id_logged)){
+                //Giving creator status
+                String[] attributes = {"id_workspace"};
+                String[] values = {id_workspace};
+                Workspace wor = Workspace.page(MC, attributes,values).get(0);
+                Workspace updated = new Workspace(id_workspace, id_user, wor.getName(), wor.getAll_read(), wor.getAll_write(), wor.getAll_manage(), wor.getDescription());
+                updated.update(MC);
+                //Making the previous creator as monitoring with all rights (if already monitoring,just change the rights
+                UserWorkspace usewor = new UserWorkspace(id_logged, id_workspace, "1", "1", "1");
+                if(UserWorkspace.isMonitoring(MC, id_workspace, id_logged)){
+                    usewor.update(MC);
+                }else{
+                    usewor.save(MC);
+                }
+                return manageAWorkspace(id_workspace);
+            }else{flash("error", Message.ERROR_UNAUTHORIZED_WORKSPACE);}
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
         }

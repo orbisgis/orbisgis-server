@@ -24,6 +24,9 @@
                         <td>Manage</td>
                         <td>Change rights</td>
                         <td>Remove</td>
+                        @if(session().get("id_user").equals(wor.getId_creator())){
+                        <td>Hand over creator status</td>
+                        }
                     </tr>
                     @for(user <- users.keySet()){
                     <tr>
@@ -51,12 +54,15 @@
                                 </select>
                             </td>
                             <td>
-                                <button type="submit" class="btn">Submit</button>
+                                <button type="submit" class="btn">Submit rights changes</button>
                             </td>
                         </form>
                         <td>
                             <a href="@routes.MapCatalogC.castOut(wor.getId_workspace, user.getId_user())"><button class="btn btn-danger">Cast Out</button></a>
                         </td>
+                        @if(session().get("id_user").equals(wor.getId_creator())){
+                        <td><a href="@routes.MapCatalogC.handOverCreation(wor.getId_workspace, user.getId_user)"><button class="btn btn-danger">!</button></a></td>
+                        }
                     </tr>
                     }
                 </table>
@@ -79,7 +85,7 @@
                 <br><br>
                 <div class="alert alert-info">
                     <h4>Info :</h4>
-                    You can set your workspace to be visible or editable for all connected users by setting the default acesses.
+                    You can set your workspace to be visible or editable for all connected users by setting the default accesses.
                 </div>
                 <form action="@routes.MapCatalogC.updateWorkspace(wor.getId_workspace())">
                     <fieldset>

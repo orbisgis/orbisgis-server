@@ -126,6 +126,10 @@ GET /mapcatalog/workspace/:id_workspace/deleteContext/:id_owscontext        cont
 
 GET /mapcatalog/workspace/:id_workspace/stopMonitoring                      controllers.MapCatalogC.stopMonitoring(id_workspace)
 
+GET /mapcatalog/manageWorkspace/workspace/:id_workspace/Creator/:id_user    controllers.MapCatalogC.handOverCreation(id_workspace, id_user)
+
+# Profile
+
 GET /profile                                                                controllers.General.profilePage()
 
 GET /changeprofile                                                          controllers.General.changeProfile()
