@@ -626,26 +626,22 @@ public class MapCatalogC extends Controller{
             int pagesMonitored = (UserWorkspace.searchMyWorkspacesMonitoredCount(MC,search,id_user)-1)/10+1;
             int currentpage = offset/10+1;
             flash("search",search);
-            switch (choice) {
-                case "created": {
-                    List<Workspace> list = Workspace.searchMyWorkspacesCreated(MC, search, id_user, offset);
-                    HashMap<UserWorkspace, Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC, search, id_user, 0);
-                    flash("created", Integer.toString(currentpage));
-                    return ok(myWorkspaces.render(list, hm, pagesCreated, pagesMonitored));
-                }
-                case "monitored": {
-                    List<Workspace> list = Workspace.searchMyWorkspacesCreated(MC, search, id_user, 0);
-                    HashMap<UserWorkspace, Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC, search, id_user, offset);
-                    flash("monitored", Integer.toString(currentpage));
-                    return ok(myWorkspaces.render(list, hm, pagesCreated, pagesMonitored));
-                }
-                default: {
-                    List<Workspace> list = Workspace.searchMyWorkspacesCreated(MC, search, id_user, 0);
-                    HashMap<UserWorkspace, Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC, search, id_user, 0);
-                    return ok(myWorkspaces.render(list, hm, pagesCreated, pagesMonitored));
-                }
+            if(choice.equals("created")){
+                List<Workspace> list = Workspace.searchMyWorkspacesCreated(MC,search,id_user,offset);
+                HashMap<UserWorkspace,Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC,search,id_user,0);
+                flash("created",Integer.toString(currentpage));
+                return ok(myWorkspaces.render(list, hm, pagesCreated, pagesMonitored));
+            }else if(choice.equals("monitored")){
+                List<Workspace> list = Workspace.searchMyWorkspacesCreated(MC,search,id_user,0);
+                HashMap<UserWorkspace,Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC,search,id_user,offset);
+                flash("monitored",Integer.toString(currentpage));
+                return ok(myWorkspaces.render(list, hm, pagesCreated, pagesMonitored));
+            }else{
+                List<Workspace> list = Workspace.searchMyWorkspacesCreated(MC,search,id_user,0);
+                HashMap<UserWorkspace,Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC,search,id_user,0);
+                return ok(myWorkspaces.render(list, hm, pagesCreated, pagesMonitored));
             }
-        } catch (SQLException e) {
+            } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
         }
         return General.home();
