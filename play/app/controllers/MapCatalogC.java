@@ -50,13 +50,17 @@ public class MapCatalogC extends Controller{
 
     private static MapCatalog MC = Global.mc();
 
+    /**
+     * Getter of current session of MapCatalog
+     * @return The current MapCatalog
+     */
     public static MapCatalog getMapCatalog(){
         return MC;
     }
 
     /**
      * Renders the MapCatalog Public page (the first ten of all workspaces)
-     * @return
+     * @return The index page with the list of first 10 results of all workspaces
      */
     public static Result index() {
         try {
@@ -71,7 +75,7 @@ public class MapCatalogC extends Controller{
 
     /**
      * Renders the MapCatalog MyWorkspace page (the first ten of each created and monitored workspaces)
-     * @return
+     * @return The page myworkspace with a list of created workspaces, and monitored workspaces (first 10 results of each)
      */
     @Security.Authenticated(Secured.class)
     public static Result myWorkspaces(){
@@ -94,7 +98,7 @@ public class MapCatalogC extends Controller{
     /**
      * Renders the view that represent the inside of a workspace
      * @param id_workspace the id of the workspace
-     * @return
+     * @return The view corresponding to the selected workspace
      */
     @Security.Authenticated(Secured.class)
     public static Result viewWorkspace(String id_workspace){
@@ -124,7 +128,7 @@ public class MapCatalogC extends Controller{
      * Renders the view that represents the inside of a folder
      * @param id_workspace the root of the folder
      * @param id_folder the id of the folder
-     * @return
+     * @return The view corresponding to the selected folder
      */
     @Security.Authenticated(Secured.class)
     public static Result viewFolder(String id_workspace, String id_folder){
@@ -139,7 +143,7 @@ public class MapCatalogC extends Controller{
                 List<Folder> listF = Folder.page(MC,attributes,values);
                 List<OWSContext> listC = OWSContext.page(MC, attributes, values);
                 List<Folder> path = Folder.getPath(MC, id_folder);
-                boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||(wor.getAll_manage().equals("1")?true:false);
+                boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||wor.getAll_manage().equals("1");
                 return ok(folder.render(listF,listC,path,wor,hasDeleteRights));
             }else{
                 flash("error", Message.ERROR_UNAUTHORIZED_WORKSPACE);
@@ -153,7 +157,7 @@ public class MapCatalogC extends Controller{
 
     /**
      * Creates a workspace in the database from a form
-     * @return
+     * @return The workspace page of the created workspace
      */
     @Security.Authenticated(Secured.class)
     public static Result createWorkspace(){
@@ -176,7 +180,8 @@ public class MapCatalogC extends Controller{
 
     /**
      * Create a folder in the database from a form when inside the Workspace.html page
-     * @return
+     * @param id_root The root of the folder to be created
+     * @return The folder page of the created folder
      */
     @Security.Authenticated(Secured.class)
     public static Result createFolderFromRoot(String id_root){
@@ -204,7 +209,9 @@ public class MapCatalogC extends Controller{
 
     /**
      * Create a folder in the database from a form when inside the Folder.html page
-     * @return
+     * @param id_root The root of the folder to be created
+     * @param id_parent the parent of the folder to be created
+     * @return The folder page of the created folder
      */
     @Security.Authenticated(Secured.class)
     public static Result createFolderFromParent(String id_root, String id_parent){
@@ -232,8 +239,8 @@ public class MapCatalogC extends Controller{
 
     /**
      * allow user to monitor a workspace
-     * @param id_workspace
-     * @return
+     * @param id_workspace the workspace to be monitored
+     * @return The myWorkspace page with a message info if success, or home if error
      */
     @Security.Authenticated(Secured.class)
     public static Result monitor(String id_workspace){
@@ -256,7 +263,7 @@ public class MapCatalogC extends Controller{
 
     /**
      * Renders the management page of workspaces
-     * @return
+     * @return The page with the list of workspaces manageable, or home if error
      */
     @Security.Authenticated(Secured.class)
     public static Result manageWorkspaces(){
@@ -277,8 +284,8 @@ public class MapCatalogC extends Controller{
 
     /**
      * Displays the management page for a particular workspace
-     * @param id_workspace the id of the workspace
-     * @return
+     * @param id_workspace the id of the workspace to be managed
+     * @return The management page of the workspace, or home if error
      */
     @Security.Authenticated(Secured.class)
     public static Result manageAWorkspace(String id_workspace){
@@ -303,9 +310,9 @@ public class MapCatalogC extends Controller{
 
     /**
      * Changes the right of a user for a specific workspace
-     * @param id_workspace
-     * @param id_user
-     * @return
+     * @param id_workspace The workspace where the rights are valid
+     * @param id_user The user concerned by the new rights
+     * @return The management page, or home page if error
      */
     @Security.Authenticated(Secured.class)
     public static Result changeRights(String id_workspace, String id_user){
@@ -335,8 +342,8 @@ public class MapCatalogC extends Controller{
 
     /**
      * Delete a workspace
-     * @param id_workspace
-     * @return
+     * @param id_workspace The workspace to be deleted
+     * @return The mapCatalog index if success, or the home page if error
      */
     @Security.Authenticated(Secured.class)
     public static Result deleteWorkspace(String id_workspace){
@@ -359,8 +366,8 @@ public class MapCatalogC extends Controller{
 
     /**
      * Update information about a workspace
-     * @param id_workspace
-     * @return
+     * @param id_workspace The workspace to be updated
+     * @return The management page, or the home page if errors
      */
     @Security.Authenticated(Secured.class)
     public static Result updateWorkspace(String id_workspace){
@@ -393,9 +400,9 @@ public class MapCatalogC extends Controller{
 
     /**
      * Casts out a user from a workspace, all_manage parameter is not taken into account here for access rights (only
-     * @param id_workspace
-     * @param id_user
-     * @return
+     * @param id_workspace The workspace that is currently monitored by the chosen user
+     * @param id_user The chosen user to be casted out of the workspace
+     * @return The management page, or home page if error
      */
     @Security.Authenticated(Secured.class)
     public static Result castOut(String id_workspace, String id_user){
@@ -419,7 +426,7 @@ public class MapCatalogC extends Controller{
      * Deletes a folder from a workspace
      * @param id_root   The workspace parent
      * @param id_folder The folder to delete
-     * @return
+     * @return The workspace page with info message if success, or error message if error
      */
     @Security.Authenticated(Secured.class)
     public static Result deleteFolder(String id_root, String id_folder){
@@ -445,8 +452,8 @@ public class MapCatalogC extends Controller{
 
     /**
      * Adds a map context in database with current workspace as root
-     * @param id_root
-     * @return
+     * @param id_root The workspace chosen as root for the context
+     * @return The workspace page with a info message if success, or error message if error
      */
     @Security.Authenticated(Secured.class)
     public static Result addMapContextFromRoot(String id_root){
@@ -486,9 +493,9 @@ public class MapCatalogC extends Controller{
 
     /**
      * Adds a map context with current folder as parent
-     * @param id_root
-     * @param id_parent
-     * @return
+     * @param id_root The workspace chosen as root for the context
+     * @param id_parent The folder chosen as parent for the context
+     * @return The workspace page, with a info message if success, or error message if error.
      */
     @Security.Authenticated(Secured.class)
     public static Result addMapContextFromParent(String id_root, String id_parent){
@@ -527,8 +534,9 @@ public class MapCatalogC extends Controller{
     }
 
     /**
-     * Search and return a specific list of workspaces
-     * @return
+     * Search and return a specific list of workspaces from all workspaces
+     * @param offset The pagination of the searched workspaces
+     * @return The mapCatalog index page with a list of workspaces between offset and offset+10, corresponding to the search query
      */
     public static Result searchPublicWorkspaces(int offset){
         try {
@@ -546,9 +554,9 @@ public class MapCatalogC extends Controller{
     }
 
     /**
-     * Search and return a specific list of folders and ows from the root of the worksapce
-     * @param id_root
-     * @return
+     * Search and return a specific list of folders and ows from the root of the workspace
+     * @param id_root The workspace where the search query is asked
+     * @return The workspace page, with a list of folder and context contained in this workspace, corresponding to the query
      */
     public static Result searchFromRoot(String id_root){
         try {
@@ -561,7 +569,7 @@ public class MapCatalogC extends Controller{
                 String search = form.get("search");
                 List<Folder> listF = Folder.search(MC,id_root,search);
                 List<OWSContext> listC = OWSContext.search(MC,id_root,search);
-                boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_root, id_user)||(wor.getAll_manage().equals("1")?true:false);
+                boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_root, id_user)||wor.getAll_manage().equals("1");
                 return ok(workspace.render(listF,listC,wor,hasDeleteRights));
             }else{
                 flash("error",Message.ERROR_UNAUTHORIZED_WORKSPACE);
@@ -575,9 +583,9 @@ public class MapCatalogC extends Controller{
 
     /**
      * Search and return a specific list of folders and ows from the root of the workspace
-     * @param id_root
-     * @param id_folder
-     * @return
+     * @param id_root the root of the folder
+     * @param id_folder the folder in which the user is
+     * @return The root workspace page
      */
     public static Result searchFromParent(String id_root, String id_folder){
         try {
@@ -591,7 +599,7 @@ public class MapCatalogC extends Controller{
                 List<Folder> listF = Folder.search(MC,id_root,search);
                 List<OWSContext> listC = OWSContext.search(MC,id_root,search);
                 List<Folder> path = Folder.getPath(MC, id_folder);
-                boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_root, id_user)||(wor.getAll_manage().equals("1")?true:false);
+                boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_root, id_user)||wor.getAll_manage().equals("1");
                 return ok(folder.render(listF,listC,path,wor,hasDeleteRights));
             }else{
                 flash("error",Message.ERROR_UNAUTHORIZED_WORKSPACE);
@@ -604,8 +612,10 @@ public class MapCatalogC extends Controller{
     }
 
     /**
-     * Search and return a specific list of workspaces for the page myWorkspaces
-     * @return
+     * Search and return a specific list of workspaces for the page myWorkspaces with pagination(offset)
+     * @param choice the page that is displayed, if none where chosen, both are displayed with 0 offset
+     * @param offset the number of the page that needs to be displayed
+     * @return MyWorkspace page with lists of workspaces Created and Monitored conrresponding to the pagination, and the search query
      */
     public static Result searchMyWorkspaces(String choice, int offset){
         try {
@@ -616,20 +626,24 @@ public class MapCatalogC extends Controller{
             int pagesMonitored = (UserWorkspace.searchMyWorkspacesMonitoredCount(MC,search,id_user)-1)/10+1;
             int currentpage = offset/10+1;
             flash("search",search);
-            if(choice.equals("created")){
-                List<Workspace> list = Workspace.searchMyWorkspacesCreated(MC,search,id_user,offset);
-                HashMap<UserWorkspace,Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC,search,id_user,0);
-                flash("created",Integer.toString(currentpage));
-                return ok(myWorkspaces.render(list, hm, pagesCreated, pagesMonitored));
-            }else if(choice.equals("monitored")){
-                List<Workspace> list = Workspace.searchMyWorkspacesCreated(MC,search,id_user,0);
-                HashMap<UserWorkspace,Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC,search,id_user,offset);
-                flash("monitored",Integer.toString(currentpage));
-                return ok(myWorkspaces.render(list, hm, pagesCreated, pagesMonitored));
-            }else{
-                List<Workspace> list = Workspace.searchMyWorkspacesCreated(MC,search,id_user,0);
-                HashMap<UserWorkspace,Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC,search,id_user,0);
-                return ok(myWorkspaces.render(list, hm, pagesCreated, pagesMonitored));
+            switch (choice) {
+                case "created": {
+                    List<Workspace> list = Workspace.searchMyWorkspacesCreated(MC, search, id_user, offset);
+                    HashMap<UserWorkspace, Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC, search, id_user, 0);
+                    flash("created", Integer.toString(currentpage));
+                    return ok(myWorkspaces.render(list, hm, pagesCreated, pagesMonitored));
+                }
+                case "monitored": {
+                    List<Workspace> list = Workspace.searchMyWorkspacesCreated(MC, search, id_user, 0);
+                    HashMap<UserWorkspace, Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC, search, id_user, offset);
+                    flash("monitored", Integer.toString(currentpage));
+                    return ok(myWorkspaces.render(list, hm, pagesCreated, pagesMonitored));
+                }
+                default: {
+                    List<Workspace> list = Workspace.searchMyWorkspacesCreated(MC, search, id_user, 0);
+                    HashMap<UserWorkspace, Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC, search, id_user, 0);
+                    return ok(myWorkspaces.render(list, hm, pagesCreated, pagesMonitored));
+                }
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
@@ -639,10 +653,10 @@ public class MapCatalogC extends Controller{
 
     /**
      * Displays the page for OWS context from a folder
-     * @param id_workspace
-     * @param id_folder
-     * @param id_owscontext
-     * @return
+     * @param id_workspace the root of the context
+     * @param id_folder the parent of the context
+     * @param id_owscontext the context
+     * @return A page that displays the preview and comments about a context
      */
     @Security.Authenticated(Secured.class)
     public static Result viewOWSFromParent(String id_workspace, String id_folder, String id_owscontext){
@@ -658,15 +672,15 @@ public class MapCatalogC extends Controller{
                 List<OWSContext> listC = OWSContext.page(MC, attributes, values);
                 List<Folder> path = Folder.getPath(MC, id_folder);
                 OWSContext theContext = null;
-                for(int i = 0; i<listC.size(); i++){
-                    if(listC.get(i).getId_owscontext().equals(id_owscontext)){
-                        theContext = listC.get(i);
+                for (OWSContext aListC : listC) {
+                    if (aListC.getId_owscontext().equals(id_owscontext)) {
+                        theContext = aListC;
                         break;
                     }
                 }
                 if(theContext!=null){
 
-                    boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||(wor.getAll_manage().equals("1")?true:false);
+                    boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||wor.getAll_manage().equals("1");
                     return ok(contextFolder.render(listF,listC,path,wor,theContext,hasDeleteRights));
                 }else{
                     flash("error",Message.ERROR_GENERAL);
@@ -684,9 +698,9 @@ public class MapCatalogC extends Controller{
 
     /**
      * Display the page for OWS context from a workspace
-     * @param id_workspace
-     * @param id_owscontext
-     * @return
+     * @param id_workspace The root workspace of the ows context
+     * @param id_owscontext The id of the ows to display
+     * @return The page where a preview and comments are displayed about the context
      */
     @Security.Authenticated(Secured.class)
     public static Result viewOWSFromRoot(String id_workspace, String id_owscontext){
@@ -701,15 +715,15 @@ public class MapCatalogC extends Controller{
                 List<Folder> listF = Folder.page(MC,attributes,values);
                 List<OWSContext> listC = OWSContext.page(MC, attributes, values);
                 OWSContext theContext = null;
-                for(int i = 0; i<listC.size(); i++){
-                    if(listC.get(i).getId_owscontext().equals(id_owscontext)){
-                        theContext = listC.get(i);
+                for (OWSContext aListC : listC) {
+                    if (aListC.getId_owscontext().equals(id_owscontext)) {
+                        theContext = aListC;
                         break;
                     }
                 }
                 if(theContext!=null){
 
-                    boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||(wor.getAll_manage().equals("1")?true:false);
+                    boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||wor.getAll_manage().equals("1");
                     return ok(contextWorkspace.render(listF,listC,wor,theContext,hasDeleteRights));
                 }else{
                     flash("error",Message.ERROR_GENERAL);
@@ -726,9 +740,9 @@ public class MapCatalogC extends Controller{
     }
 
     /**
-     * Sends the ows context
+     * Sends the OWScontext to the user
      * @param id the id of the context
-     * @return
+     * @return The OWScontext to download
      */
     @Security.Authenticated(Secured.class)
     public static Result downloadContext(String id){
@@ -751,8 +765,8 @@ public class MapCatalogC extends Controller{
     /**
      * deletes a context from database
      * @param id_root the root of the context
-     * @param id_owscontext the id of the context
-     * @return
+     * @param id_owscontext the id of the context to be deleted
+     * @return The view of the root workspace, or the home page if errors.
      */
     @Security.Authenticated(Secured.class)
     public static Result deleteContext(String id_root, String id_owscontext){
@@ -778,8 +792,8 @@ public class MapCatalogC extends Controller{
 
     /**
      * delete the relation UserWorkspace corresponding to the monitoring action of a user in a workspace
-     * @param id_workspace
-     * @return
+     * @param id_workspace the workspace which will not be monitored anymore
+     * @return the page MyWorkspaces with either an info of success, or an error message
      */
     @Security.Authenticated(Secured.class)
     public static Result stopMonitoring(String id_workspace){
@@ -795,7 +809,8 @@ public class MapCatalogC extends Controller{
 
     /**
      * Renders the MapCatalog Public page with result between offset and offset +10
-     * @return
+     * @param offset The beginning of workspaces to display
+     * @return The mapCatalog index page with workspaces beginning at an offset
      */
     @Security.Authenticated(Secured.class)
     public static Result indexOffset(int offset) {
@@ -812,7 +827,8 @@ public class MapCatalogC extends Controller{
 
     /**
      * Renders the MapCatalog Myworkspace page with result between offset and offset +10
-     * @return
+     * @param offset The beginning of workspaces to display
+     * @return The MyWorkspace page with Created workspaces beginning at an offset (pagination)
      */
     @Security.Authenticated(Secured.class)
     public static Result myWorkspacesCreatedOffset(int offset) {
@@ -835,7 +851,8 @@ public class MapCatalogC extends Controller{
 
     /**
      * Renders the MapCatalog Myworkspace page with result between offset and offset +10
-     * @return
+     * @param offset The beginning of workspaces to display
+     * @return The MyWorkspace page with Monitored workspaces beginning at an offset (pagination)
      */
     @Security.Authenticated(Secured.class)
     public static Result myWorkspacesMonitoredOffset(int offset) {
@@ -856,6 +873,12 @@ public class MapCatalogC extends Controller{
         return General.home();
     }
 
+    /**
+     * Gives the creator status to another user. The previous creator is given all rights in this workspace
+     * @param id_workspace The workspace that needs its creator changed
+     * @param id_user The new creator
+     * @return The management page, or home if errors
+     */
     @Security.Authenticated(Secured.class)
     public static Result handOverCreation(String id_workspace, String id_user) {
         try{
