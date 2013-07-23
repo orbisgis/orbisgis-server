@@ -113,12 +113,12 @@
                 <ul>
                     @if(!flash.contains("search")){
                         @for(index <- 1 until pagesCreated+1){
-                        <li @if(Integer.toString(index).equals(flash().get("created"))){class="active"}><a href="@routes.MapCatalogC.myWorkspacesCreatedOffset((index-1)*10)">@index</a></li>
+                        <li @if(Integer.toString(index).equals(flash().get("created"))||(flash().get("created")==null&&index==1)){class="active"}><a href="@routes.MapCatalogC.myWorkspacesCreatedOffset((index-1)*10)">@index</a></li>
                         }
                     }
                     @if(flash.contains("search")){
                         @for(index <- 1 until pagesCreated+1){
-                        <li @if(Integer.toString(index).equals(flash().get("created"))){class="active"}><a href="/mapcatalog/myworkspaces/search/created/@{(index-1)*10}?search=@flash().get("search")">@index</a></li>
+                        <li @if(Integer.toString(index).equals(flash().get("created"))||(flash().get("created")==null&&index==1)){class="active"}><a href="/mapcatalog/myworkspaces/search/created/@{(index-1)*10}?search=@flash().get("search")">@index</a></li>
                         }
                     }
                 </ul>
@@ -173,12 +173,12 @@
                 <ul>
                     @if(!flash.contains("search")){
                         @for(index <- 1 until pagesMonitored+1){
-                        <li @if(Integer.toString(index).equals(flash().get("monitored"))){class="active"}><a href="@routes.MapCatalogC.myWorkspacesMonitoredOffset((index-1)*10)">@index</a></li>
+                        <li @if(Integer.toString(index).equals(flash().get("monitored"))||(flash().get("monitored")==null&&index==1)){class="active"}><a href="@routes.MapCatalogC.myWorkspacesMonitoredOffset((index-1)*10)">@index</a></li>
                         }
                     }
                     @if(flash.contains("search")){
                         @for(index <- 1 until pagesMonitored+1){
-                        <li @if(Integer.toString(index).equals(flash().get("monitored"))){class="active"}><a href="/mapcatalog/myworkspaces/search/monitored/@{(index-1)*10}?search=@flash().get("search")">@index</a></li>
+                        <li @if(Integer.toString(index).equals(flash().get("monitored"))||(flash().get("monitored")==null&&index==1)){class="active"}><a href="/mapcatalog/myworkspaces/search/monitored/@{(index-1)*10}?search=@flash().get("search")">@index</a></li>
                         }
                     }
                 </ul>
