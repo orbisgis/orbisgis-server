@@ -120,6 +120,10 @@ GET /mapcatalog/workspace/:id_workspace/folder/:id_folder/context/:id_owscontext
 
 GET /mapcatalog/workspace/:id_workspace/context/:id_owscontext              controllers.MapCatalogC.viewOWSFromRoot(id_workspace, id_owscontext)
 
+GET /mapcatalog/workspace/:id_workspace/folder/:id_folder/context/:id_owscontext/:offset   controllers.MapCatalogC.viewOWSFromParentOffset(id_workspace, id_folder, id_owscontext, offset : Int)
+
+GET /mapcatalog/workspace/:id_workspace/context/:id_owscontext/:offset              controllers.MapCatalogC.viewOWSFromRootOffset(id_workspace, id_owscontext, offset : Int)
+
 GET /mapcatalog/context/download/:id_owscontext                             controllers.MapCatalogC.downloadContext(id_owscontext)
 
 GET /mapcatalog/workspace/:id_workspace/deleteContext/:id_owscontext        controllers.MapCatalogC.deleteContext(id_workspace, id_owscontext)
@@ -127,6 +131,16 @@ GET /mapcatalog/workspace/:id_workspace/deleteContext/:id_owscontext        cont
 GET /mapcatalog/workspace/:id_workspace/stopMonitoring                      controllers.MapCatalogC.stopMonitoring(id_workspace)
 
 GET /mapcatalog/manageWorkspace/workspace/:id_workspace/Creator/:id_user    controllers.MapCatalogC.handOverCreation(id_workspace, id_user)
+
+POST /mapcatalog/workspace/:id_workspace/context/:id_owscontext/addcomment   controllers.MapCatalogC.addCommentFromRoot(id_workspace, id_owscontext)
+
+POST /mapcatalog/workspace/:id_workspace/folder/:id_folder/context/:id_owscontext/addcomment   controllers.MapCatalogC.addCommentFromParent(id_workspace, id_folder, id_owscontext)
+
+GET /mapcatalog/workspace/:id_workspace/comment/:id_comment/delete          controllers.MapCatalogC.deleteComment(id_workspace, id_comment)
+
+GET /mapcatalog/editcomment/:id_comment                                     controllers.MapCatalogC.viewEditComment(id_comment)
+
+POST /mapcatalog/editedcomment/:id_comment                                    controllers.MapCatalogC.editComment(id_comment)
 
 # Profile
 

@@ -1,6 +1,7 @@
-@(folders : List[org.orbisgis.server.mapcatalog.Folder], contexts : List[org.orbisgis.server.mapcatalog.OWSContext], root : org.orbisgis.server.mapcatalog.Workspace, context : org.orbisgis.server.mapcatalog.OWSContext, hasDeleteRights: Boolean)
+@(folders : List[org.orbisgis.server.mapcatalog.Folder], contexts : List[org.orbisgis.server.mapcatalog.OWSContext], root : org.orbisgis.server.mapcatalog.Workspace, context : org.orbisgis.server.mapcatalog.OWSContext, hasDeleteRights: Boolean, commentUser : SortedMap[org.orbisgis.server.mapcatalog.Comment,org.orbisgis.server.mapcatalog.User], MC : org.orbisgis.server.mapcatalog.MapCatalog, pages : Int)
 
 @import helper.twitterBootstrap._
+@import org.apache.commons.io.IOUtils
 
 @javamain("MapCatalog","OrbisGIS services") {
 <div class="container">
@@ -54,7 +55,7 @@
                 <li><a href="@routes.MapCatalogC.viewWorkspace(root.getId_workspace())">@root.getName()</a><span class="divider">/</span></li>
             </ul>
             <div class="CSSworktable" style="width:98%;margin-bottom:1%">
-                <table >
+                <table>
                     <tr>
                         <td>Name</td>
                         <td>Action</td>
@@ -118,7 +119,58 @@
             </div>
             <br>
             <div class="commentBox">
-                <h3>Comments :</h3>
+                <h3>Comments about @context.getTitle() :</h3><br/>
+                @for((comment, user) <- commentUser){
+                    @if(user.getId_user().equals(session().get("id_user"))){
+                        <a href="@routes.MapCatalogC.viewEditComment(comment.getId_comment())"><img alt="edit" title="edit" src="@routes.Assets.at("images/icons/edit-3.png")"/></a>
+                        <a href="@routes.MapCatalogC.deleteComment(root.getId_workspace(), comment.getId_comment())"><img alt="delete" title="delete" src="@routes.Assets.at("images/icons/delete.png")"/></a>
+                    }
+                    @if(comment.getId_comment().equals(flash().get("edit"))){
+                    <form action="@routes.MapCatalogC.editComment(comment.getId_comment())" method="post">
+                    }
+                    <table class="table table-bordered" id="@comment.getId_comment()">
+                        <tr>
+                            <th>@user.getName()</th>
+                            <th>@if(!comment.getId_comment().equals(flash().get("edit"))){@comment.getTitle()}
+                                @if(comment.getId_comment().equals(flash().get("edit"))){
+                                    <input type="text" name="title" value="@comment.getTitle()">
+                                }
+                            </th>
+                        </tr>
+                        <tr>
+                            <td>@user.getEmail()</br>
+                                Posted the :<br/>
+                                @comment.getDate().format("yyyy.MM.dd HH:mm:ss z")</td>
+                            <td>@if(!comment.getId_comment().equals(flash().get("edit"))){@IOUtils.toString(comment.getContent(MC), "UTF-8")}
+                                @if(comment.getId_comment().equals(flash().get("edit"))){
+                                <textarea style="width:100%" maxlength="2000" name="content" rows="3">@IOUtils.toString(comment.getContent(MC), "UTF-8")</textarea>
+                                }
+                            </td>
+                        </tr>
+                    </table>
+                    @if(comment.getId_comment().equals(flash().get("edit"))){
+                    <button type="submit" class="btn">Submit</button>
+                    </form>
+                    }
+                }
+                <div class="pagination pagination-centered">
+                    <ul>
+                        @for(index <- 1 until pages+1){
+                            <li @if(Integer.toString(index).equals(flash().get("page"))||(flash().get("page")==null&&index==1)){class="active"}><a href="@routes.MapCatalogC.viewOWSFromRootOffset(root.getId_workspace(), context.getId_owscontext(),(index-1)*10)">@index</a></li>
+                        }
+                    </ul>
+                </div>
+                <div class="well well-small">
+                    <h3>Add a comment :</h3>
+                    <form style="margin-left:2%" action="@routes.MapCatalogC.addCommentFromRoot(root.getId_workspace(), context.getId_owscontext())" method="post">
+                        <h4>Title</h4>
+                        <input type="text" name="title">
+                        <br>
+                        <h4>Comment</h4>
+                        <textarea style="width:100%" maxlength="2000" name="content" rows="3"></textarea>
+                        <button type="submit" class="btn">Submit</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

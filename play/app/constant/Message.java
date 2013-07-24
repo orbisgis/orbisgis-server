@@ -43,6 +43,7 @@ public class Message {
     public static final String ERROR_PASSWORD_MATCH = "The passwords don't match";
     public static final String ERROR_PASSWORD_LENGTH = "New password is too short (at least 6 characters)";
     public static final String ERROR_PASSWORD_INVALID = "You typed the current password wrong";
+    public static final String ERROR_UNAUTHORIZED_USER = "You are not authorized to proceed";
 
     //Info
     public static final String INFO_WORKSPACE_CREATED = "You successfully created a workspace!";
@@ -54,4 +55,6 @@ public class Message {
     public static final String INFO_OWS_DELETED = "You successfully deleted an OWS Context";
     public static final String INFO_STOP_MONITORING = "You are no longer monitoring this workspace";
     public static final String INFO_PASSWORD_UPDATED = "Password successfully changed";
+    public static final String INFO_COMMENT_CREATED = "Your comment was successfully created";
+    public static final String INFO_COMMENT_DELETED = "You deleted your comment";
 }

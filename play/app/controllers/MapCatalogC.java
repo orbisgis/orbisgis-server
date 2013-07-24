@@ -37,11 +37,14 @@ import org.orbisgis.server.mapcatalog.*;
 import play.mvc.Http.MultipartFormData;
 import play.mvc.Http.MultipartFormData.FilePart;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.SortedMap;
 
 import csp.ContentSecurityPolicy;
 
@@ -675,9 +678,10 @@ public class MapCatalogC extends Controller{
                     }
                 }
                 if(theContext!=null){
-
+                    SortedMap<Comment, User> hm = Comment.pageWithMap(MC, id_owscontext, 0);
                     boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||wor.getAll_manage().equals("1");
-                    return ok(contextFolder.render(listF,listC,path,wor,theContext,hasDeleteRights));
+                    int count = (Comment.pageWithMapCount(MC, id_owscontext)-1)/10+1;
+                    return ok(contextFolder.render(listF,listC,path,wor,theContext,hasDeleteRights,hm,MC,count));
                 }else{
                     flash("error",Message.ERROR_GENERAL);
                     return viewFolder(id_workspace,id_folder);
@@ -718,9 +722,10 @@ public class MapCatalogC extends Controller{
                     }
                 }
                 if(theContext!=null){
-
+                    SortedMap<Comment, User> hm = Comment.pageWithMap(MC, id_owscontext, 0);
                     boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||wor.getAll_manage().equals("1");
-                    return ok(contextWorkspace.render(listF,listC,wor,theContext,hasDeleteRights));
+                    int count = (Comment.pageWithMapCount(MC, id_owscontext)-1)/10+1;
+                    return ok(contextWorkspace.render(listF,listC,wor,theContext,hasDeleteRights,hm, MC, count));
                 }else{
                     flash("error",Message.ERROR_GENERAL);
                     return viewWorkspace(id_workspace);
@@ -896,6 +901,213 @@ public class MapCatalogC extends Controller{
                 return manageAWorkspace(id_workspace);
             }else{flash("error", Message.ERROR_UNAUTHORIZED_WORKSPACE);}
         } catch (SQLException e) {
+            flash("error", Message.ERROR_GENERAL);
+        }
+        return General.home();
+    }
+
+    @Security.Authenticated(Secured.class)
+    public static Result addCommentFromRoot(String id_workspace, String id_owscontext) {
+        try{
+            String id_logged = session("id_user");
+            String[] attributes2 = {"id_workspace"};
+            String[] values2 = {id_workspace};
+            Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
+            if(wor.getAll_write().equals("1") || Workspace.isCreator(MC,id_workspace,id_logged) || UserWorkspace.hasWriteRight(MC, id_workspace, id_logged)){
+                DynamicForm form = Form.form().bindFromRequest();
+                String title = form.get("title");
+                InputStream content = new ByteArrayInputStream(form.get("content").getBytes());
+                Comment com = new Comment(id_logged, id_owscontext, title);
+                com.save(MC,content);
+                flash("info", Message.INFO_COMMENT_CREATED);
+                return viewOWSFromRoot(id_workspace, id_owscontext);
+            }else{flash("error", Message.ERROR_UNAUTHORIZED_WORKSPACE);}
+        }catch (SQLException e) {
+            flash("error", Message.ERROR_GENERAL);
+        }
+        return General.home();
+    }
+
+    @Security.Authenticated(Secured.class)
+    public static Result addCommentFromParent(String id_workspace, String id_folder, String id_owscontext) {
+        try{
+            String id_logged = session("id_user");
+            String[] attributes2 = {"id_workspace"};
+            String[] values2 = {id_workspace};
+            Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
+            if(wor.getAll_write().equals("1") || Workspace.isCreator(MC,id_workspace,id_logged) || UserWorkspace.hasWriteRight(MC, id_workspace, id_logged)){
+                DynamicForm form = Form.form().bindFromRequest();
+                String title = form.get("title");
+                InputStream content = new ByteArrayInputStream(form.get("content").getBytes());
+                Comment com = new Comment(id_logged, id_owscontext, title);
+                com.save(MC,content);
+                flash("info", Message.INFO_COMMENT_CREATED);
+                return viewOWSFromParent(id_workspace, id_folder, id_owscontext);
+            }else{flash("error", Message.ERROR_UNAUTHORIZED_WORKSPACE);}
+        }catch (SQLException e) {
+            flash("error", Message.ERROR_GENERAL);
+        }
+        return General.home();
+    }
+
+    /**
+     * Displays the page for OWS context from a folder with an offset to pagination
+     * @param id_workspace the root of the context
+     * @param id_folder the parent of the context
+     * @param id_owscontext the context
+     * @param offset the number of comments to skip
+     * @return A page that displays the preview and comments about a context
+     */
+    @Security.Authenticated(Secured.class)
+    public static Result viewOWSFromParentOffset(String id_workspace, String id_folder, String id_owscontext, int offset){
+        try {
+            String[] attributes2 = {"id_workspace"};
+            String[] values2 = {id_workspace};
+            Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
+            String id_user = session().get("id_user");
+            if(wor.getAll_read().equals("1") || Workspace.isCreator(MC,id_workspace,id_user) || UserWorkspace.hasReadRight(MC, id_workspace, id_user)){
+                String[] attributes = {"id_parent"};
+                String[] values = {id_folder};
+                List<Folder> listF = Folder.page(MC,attributes,values);
+                List<OWSContext> listC = OWSContext.page(MC, attributes, values);
+                List<Folder> path = Folder.getPath(MC, id_folder);
+                OWSContext theContext = null;
+                for (OWSContext aListC : listC) {
+                    if (aListC.getId_owscontext().equals(id_owscontext)) {
+                        theContext = aListC;
+                        break;
+                    }
+                }
+                if(theContext!=null){
+                    SortedMap<Comment, User> hm = Comment.pageWithMap(MC, id_owscontext, offset);
+                    flash("page", Integer.toString(offset / 10 + 1));
+                    int count = (Comment.pageWithMapCount(MC, id_owscontext)-1)/10+1;
+                    boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||wor.getAll_manage().equals("1");
+                    return ok(contextFolder.render(listF,listC,path,wor,theContext,hasDeleteRights,hm,MC,count));
+                }else{
+                    flash("error",Message.ERROR_GENERAL);
+                    return viewFolder(id_workspace,id_folder);
+                }
+            }else{
+                flash("error",Message.ERROR_UNAUTHORIZED_WORKSPACE);
+                return index();
+            }
+        } catch (SQLException e) {
+            flash("error", Message.ERROR_GENERAL);
+        }
+        return General.home();
+    }
+
+    /**
+     * Display the page for OWS context from a workspace
+     * @param id_workspace The root workspace of the ows context
+     * @param id_owscontext The id of the ows to display
+     * @return The page where a preview and comments are displayed about the context
+     */
+    @Security.Authenticated(Secured.class)
+    public static Result viewOWSFromRootOffset(String id_workspace, String id_owscontext, int offset){
+        try {
+            String[] attributes2 = {"id_workspace"};
+            String[] values2 = {id_workspace};
+            Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
+            String id_user = session().get("id_user");
+            if(wor.getAll_read().equals("1") || Workspace.isCreator(MC,id_workspace,id_user) || UserWorkspace.hasReadRight(MC, id_workspace, id_user)){
+                String[] attributes = {"id_root", "id_parent"};
+                String[] values = {id_workspace, null};
+                List<Folder> listF = Folder.page(MC,attributes,values);
+                List<OWSContext> listC = OWSContext.page(MC, attributes, values);
+                OWSContext theContext = null;
+                for (OWSContext aListC : listC) {
+                    if (aListC.getId_owscontext().equals(id_owscontext)) {
+                        theContext = aListC;
+                        break;
+                    }
+                }
+                if(theContext!=null){
+                    SortedMap<Comment, User> hm = Comment.pageWithMap(MC, id_owscontext, offset);
+                    flash("page", Integer.toString(offset/10+1));
+                    int count = (Comment.pageWithMapCount(MC, id_owscontext)-1)/10+1;
+                    boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||wor.getAll_manage().equals("1");
+                    return ok(contextWorkspace.render(listF,listC,wor,theContext,hasDeleteRights,hm, MC, count));
+                }else{
+                    flash("error",Message.ERROR_GENERAL);
+                    return viewWorkspace(id_workspace);
+                }
+            }else{
+                flash("error",Message.ERROR_UNAUTHORIZED_WORKSPACE);
+                return index();
+            }
+        } catch (SQLException e) {
+            flash("error", Message.ERROR_GENERAL);
+        }
+        return General.home();
+    }
+
+    @Security.Authenticated(Secured.class)
+    public static Result deleteComment(String id_workspace, String id_comment){
+        try{
+            String id_logged = session("id_user");
+            String[] attributes = {"id_comment"};
+            String[] values = {id_comment};
+            Comment com = Comment.page(MC, attributes,values).get(0);
+            if(com.getId_writer().equals(id_logged)){
+                Comment.delete(MC, Long.valueOf(id_comment));
+                flash("info", Message.INFO_COMMENT_DELETED);
+                return viewWorkspace(id_workspace);
+            }else{flash("error", Message.ERROR_UNAUTHORIZED_USER);}
+        }catch (SQLException e){
+            flash("error", Message.ERROR_GENERAL);
+        }
+        return General.home();
+    }
+
+    @Security.Authenticated(Secured.class)
+    public static Result viewEditComment(String id_comment){
+        try{
+            String id_logged = session("id_user");
+            String[] attributes = {"id_comment"};
+            String[] values = {id_comment};
+            Comment com = Comment.page(MC, attributes,values).get(0);
+            attributes[0] = "id_owscontext";
+            values[0] = com.getId_map();
+            OWSContext map = OWSContext.page(MC, attributes, values).get(0);
+            if(com.getId_writer().equals(id_logged)){
+                flash("edit", id_comment);
+                if(map.getId_parent()==null){
+                    return redirect("/mapcatalog/workspace/"+map.getId_root()+"/context/"+map.getId_owscontext()+"#"+com.getId_comment());
+                }else{
+                    return redirect("/mapcatalog/workspace/"+map.getId_root()+"/folder/"+map.getId_parent()+"/context/"+map.getId_owscontext()+"#"+com.getId_comment());
+                }
+            }else{flash("error", Message.ERROR_UNAUTHORIZED_USER);}
+        }catch (SQLException e){
+            flash("error", Message.ERROR_GENERAL);
+        }
+        return General.home();
+    }
+
+    @Security.Authenticated(Secured.class)
+    public static Result editComment(String id_comment){
+        try{
+            String id_logged = session("id_user");
+            String[] attributes = {"id_comment"};
+            String[] values = {id_comment};
+            Comment com = Comment.page(MC, attributes,values).get(0);
+            attributes[0] = "id_owscontext";
+            values[0] = com.getId_map();
+            OWSContext map = OWSContext.page(MC, attributes, values).get(0);
+            if(com.getId_writer().equals(id_logged)){
+                DynamicForm form = Form.form().bindFromRequest();
+                String title = form.get("title");
+                InputStream content = new ByteArrayInputStream(form.get("content").getBytes());
+                Comment updated = new Comment(id_comment,null,null,title,null);
+                updated.update(MC, content);
+                if(map.getId_parent()==null){
+                    return redirect("/mapcatalog/workspace/"+map.getId_root()+"/context/"+map.getId_owscontext()+"#"+com.getId_comment());
+                }else{
+                    return redirect("/mapcatalog/workspace/"+map.getId_root()+"/folder/"+map.getId_parent()+"/context/"+map.getId_owscontext()+"#"+com.getId_comment());
+                }
+            }else{flash("error", Message.ERROR_UNAUTHORIZED_USER);}
+        }catch (SQLException e){
             flash("error", Message.ERROR_GENERAL);
         }
         return General.home();

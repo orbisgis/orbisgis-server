@@ -1,6 +1,7 @@
-@(folders : List[org.orbisgis.server.mapcatalog.Folder], contexts : List[org.orbisgis.server.mapcatalog.OWSContext], path : List[org.orbisgis.server.mapcatalog.Folder], root : org.orbisgis.server.mapcatalog.Workspace, context : org.orbisgis.server.mapcatalog.OWSContext, hasDeleteRights: Boolean)
+@(folders : List[org.orbisgis.server.mapcatalog.Folder], contexts : List[org.orbisgis.server.mapcatalog.OWSContext], path : List[org.orbisgis.server.mapcatalog.Folder], root : org.orbisgis.server.mapcatalog.Workspace, context : org.orbisgis.server.mapcatalog.OWSContext, hasDeleteRights: Boolean,  commentUser : SortedMap[org.orbisgis.server.mapcatalog.Comment,org.orbisgis.server.mapcatalog.User], MC : org.orbisgis.server.mapcatalog.MapCatalog, pages : Int)
 
 @import helper.twitterBootstrap._
+@import org.apache.commons.io.IOUtils
 
 @javamain("MapCatalog","OrbisGIS services") {
 <div class="container">
@@ -113,16 +114,52 @@
                 </form>
             </div>
         </div>
-        <div class="span7">
+        <div class="span7" style="height:100%">
             <div id="display" style="background-color:#70c265;padding-left:10px; padding-bottom:10px">
                 <h3>@context.getTitle()</h3>
                 <h4>Date of upload : @context.getDate()</h4>
                 <img src="@routes.Assets.at("images/noPreview.jpg")" alt="no preview"/>
                 <a href="@routes.MapCatalogC.downloadContext(context.getId_owscontext())"><button class="btn btn-primary">download</button></a>
             </div>
-            <br>
-            <div class="commentBox">
-                <h3>Comments :</h3>
+        </div>
+        <br/>
+        <div class="commentBox">
+            <h3>Comments about @context.getTitle() :</h3><br/>
+            @for((comment, user) <- commentUser){
+            <table class="table table-bordered">
+                <tr>
+                    <th>@user.getName()</th>
+                    <th>@comment.getTitle()</th>
+                    @if(user.getId_user().equals(session().get("id_user"))){
+                    <a href=""><img alt="edit" title="edit" src="@routes.Assets.at("images/icons/edit-3.png")"/></a>
+                    <a href=""><img alt="delete" title="delete" src="@routes.Assets.at("images/icons/delete.png")"/></a>
+                    }
+                </tr>
+                <tr>
+                    <td>Posted the :<br/>@comment.getDate().format("yyyy.MM.dd HH:mm:ss z")</td>
+                    <td>
+                        @IOUtils.toString(comment.getContent(MC), "UTF-8")
+                    </td>
+                </tr>
+            </table>
+            }
+            <div class="pagination pagination-centered">
+            <ul>
+                @for(index <- 1 until pages+1){
+                <li @if(Integer.toString(index).equals(flash().get("page"))||(flash().get("page")==null&&index==1)){class="active"}><a href="@routes.MapCatalogC.viewOWSFromParentOffset(root.getId_workspace(), path.get(path.size()-1).getId_folder(), context.getId_owscontext(),(index-1)*10)">@index</a></li>
+                }
+            </ul>
+        </div>
+            <div class="well well-small">
+                <h3>Add a comment :</h3>
+                <form style="margin-left:2%" action="@routes.MapCatalogC.addCommentFromParent(root.getId_workspace(), path.get(path.size()-1).getId_folder(), context.getId_owscontext())" method="post">
+                    <h4>Title</h4>
+                    <input type="text" name="title">
+                    <br>
+                    <h4>Comment</h4>
+                    <textarea style="width:100%" maxlength="2000" name="content" rows="3"></textarea>
+                    <button type="submit" class="btn">Submit</button>
+                </form>
             </div>
         </div>
     </div>

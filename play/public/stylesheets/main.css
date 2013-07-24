@@ -120,7 +120,7 @@ border-radius:10px;
 
 div.commentBox {
     border-style:solid;
-    border-color:black;
+    border-color:#BBBBBB;
     border-width:5px;
     border-radius:10px;
     background-color:white;
@@ -128,4 +128,16 @@ div.commentBox {
     padding-bottom:10px;
     padding-left:10px;
     padding-right:10px;
+}
+
+div.commentBox table.table th{
+    background-color:#DDDDDD;
+}
+
+div.commentBox table.table th:first-child{
+    width:20%;
+}
+
+div.commentBox table.table {
+
 }
