@@ -32,6 +32,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Java model of the table UserWorkspace
@@ -226,9 +227,9 @@ public class UserWorkspace {
      * Querys for a join from user_workspace and User, to get the information about each user linked to a workspace
      * @param MC the mapcatalog object for the connection
      * @param id The id of the user
-     * @return A hashmap containing, for each Workspace, the relation as key, and the workspace as value
+     * @return A map containing, for each Workspace, the relation as key, and the workspace as value
      */
-    public static HashMap<UserWorkspace, User> pageWithUser(MapCatalog MC, String id) throws SQLException{
+    public static Map<UserWorkspace, User> pageWithUser(MapCatalog MC, String id) throws SQLException{
         String query = "SELECT * FROM USER_WORKSPACE JOIN USER ON USER.ID_USER=USER_WORKSPACE.ID_USER WHERE USER_WORKSPACE.ID_WORKSPACE = ?";
         HashMap<UserWorkspace, User> paged = new HashMap<UserWorkspace, User>();
         //preparation of the statement
@@ -264,7 +265,7 @@ public class UserWorkspace {
      * @param offset The number of workspace to skip
      * @return A hashmap containing, for each Workspace, the relation as key, and the workspace as value
      */
-    public static HashMap<UserWorkspace, User> pageWithUser(MapCatalog MC, String id, int offset) throws SQLException{
+    public static Map<UserWorkspace, User> pageWithUser(MapCatalog MC, String id, int offset) throws SQLException{
         String query = "SELECT * FROM USER_WORKSPACE JOIN USER ON USER.ID_USER=USER_WORKSPACE.ID_USER WHERE USER_WORKSPACE.ID_WORKSPACE = ? LIMIT '10' OFFSET ?";
         HashMap<UserWorkspace, User> paged = new HashMap<UserWorkspace, User>();
         //preparation of the statement
@@ -300,7 +301,7 @@ public class UserWorkspace {
      * @param id The id of the user
      * @return A hashmap containing, for each Workspace, the relation as key, and the workspace as value were the user has management right
      */
-    public static HashMap<UserWorkspace, Workspace> pageWithWorkspaceManage(MapCatalog MC, String id) throws SQLException{
+    public static Map<UserWorkspace, Workspace> pageWithWorkspaceManage(MapCatalog MC, String id) throws SQLException{
         String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ? AND( ALL_MANAGE = 1 OR MANAGE_USER = 1)";
         HashMap<UserWorkspace, Workspace> paged = new HashMap<UserWorkspace, Workspace>();
         //preparation of the statement
@@ -334,7 +335,7 @@ public class UserWorkspace {
      * @param id The id of the user
      * @return A hashmap containing, for each Workspace, the relation as key, and the workspace as value were the user has management right
      */
-    public static HashMap<UserWorkspace, Workspace> pageWithWorkspaceManage(MapCatalog MC, String id, int offset) throws SQLException{
+    public static Map<UserWorkspace, Workspace> pageWithWorkspaceManage(MapCatalog MC, String id, int offset) throws SQLException{
         String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ? AND( ALL_MANAGE = 1 OR MANAGE_USER = 1) LIMIT '10' OFFSET ?";
         HashMap<UserWorkspace, Workspace> paged = new HashMap<UserWorkspace, Workspace>();
         //preparation of the statement
@@ -369,7 +370,7 @@ public class UserWorkspace {
      * @param id The id of the user
      * @return A hashmap containing, for each Workspace, the relation as key, and the workspace as value
      */
-    public static HashMap<UserWorkspace, Workspace> pageWithWorkspace(MapCatalog MC, String id) throws SQLException{
+    public static Map<UserWorkspace, Workspace> pageWithWorkspace(MapCatalog MC, String id) throws SQLException{
         String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ?";
         HashMap<UserWorkspace, Workspace> paged = new HashMap<UserWorkspace, Workspace>();
         //preparation of the statement
@@ -404,7 +405,7 @@ public class UserWorkspace {
      * @param id The id of the user
      * @return A hashmap containing, for each Workspace, the relation as key, and the workspace as value were the user has management right
      */
-    public static HashMap<UserWorkspace, Workspace> pageWithWorkspace(MapCatalog MC, String id, int offset) throws SQLException{
+    public static Map<UserWorkspace, Workspace> pageWithWorkspace(MapCatalog MC, String id, int offset) throws SQLException{
         String query = "SELECT * FROM USER_WORKSPACE JOIN WORKSPACE ON WORKSPACE.ID_WORKSPACE=USER_WORKSPACE.ID_WORKSPACE WHERE USER_WORKSPACE.ID_USER = ? LIMIT '10' OFFSET ?";
         HashMap<UserWorkspace, Workspace> paged = new HashMap<UserWorkspace, Workspace>();
         //preparation of the statement

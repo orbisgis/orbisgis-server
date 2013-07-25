@@ -45,6 +45,7 @@ import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 
 import csp.ContentSecurityPolicy;
@@ -91,7 +92,7 @@ public class MapCatalogC extends Controller{
             int pagesCreated = (Workspace.pageCount(MC,attributes,values)-1)/10+1;
             int pagesMonitored = (UserWorkspace.pageWithWorkspaceCount(MC, id)-1)/10+1;
             List<Workspace> list = Workspace.page(MC, attributes,values,0);
-            HashMap<UserWorkspace,Workspace> hm = UserWorkspace.pageWithWorkspace(MC,id,0);
+            Map<UserWorkspace,Workspace> hm = UserWorkspace.pageWithWorkspace(MC,id,0);
             return ok(myWorkspaces.render(list,hm,pagesCreated,pagesMonitored));
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
@@ -285,7 +286,7 @@ public class MapCatalogC extends Controller{
             String[] values = {id_user};
             List<Workspace> listCreated = Workspace.page(MC, attributes,values);
             //List of workspaces monitored and with right access
-            HashMap<UserWorkspace,Workspace> listMonitored = UserWorkspace.pageWithWorkspaceManage(MC, id_user);
+            Map<UserWorkspace,Workspace> listMonitored = UserWorkspace.pageWithWorkspaceManage(MC, id_user);
             return ok(manageWorkspace.render(listCreated, listMonitored));
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
@@ -308,7 +309,7 @@ public class MapCatalogC extends Controller{
             Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
             String id_user = session().get("id_user");
             if(wor.getAll_manage().equals("1") || UserWorkspace.hasManageRight(MC, id_workspace,id_user) || Workspace.isCreator(MC, id_workspace,id_user)){
-                HashMap list = UserWorkspace.pageWithUser(MC,id_workspace);
+                Map list = UserWorkspace.pageWithUser(MC,id_workspace);
                 return ok(userManagement.render(list,wor));
             }else{
                 flash("error",Message.ERROR_UNAUTHORIZED_WORKSPACE);
@@ -652,17 +653,17 @@ public class MapCatalogC extends Controller{
             flash("search",search);
             if(choice.equals("created")){
                 List<Workspace> list = Workspace.searchMyWorkspacesCreated(MC,search,id_user,offset);
-                HashMap<UserWorkspace,Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC,search,id_user,0);
+                Map<UserWorkspace,Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC,search,id_user,0);
                 flash("created",Integer.toString(currentpage));
                 return ok(myWorkspaces.render(list, hm, pagesCreated, pagesMonitored));
             }else if(choice.equals("monitored")){
                 List<Workspace> list = Workspace.searchMyWorkspacesCreated(MC,search,id_user,0);
-                HashMap<UserWorkspace,Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC,search,id_user,offset);
+                Map<UserWorkspace,Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC,search,id_user,offset);
                 flash("monitored",Integer.toString(currentpage));
                 return ok(myWorkspaces.render(list, hm, pagesCreated, pagesMonitored));
             }else{
                 List<Workspace> list = Workspace.searchMyWorkspacesCreated(MC,search,id_user,0);
-                HashMap<UserWorkspace,Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC,search,id_user,0);
+                Map<UserWorkspace,Workspace> hm = UserWorkspace.searchMyWorkspacesMonitored(MC,search,id_user,0);
                 return ok(myWorkspaces.render(list, hm, pagesCreated, pagesMonitored));
             }
             } catch (SQLException e) {
@@ -866,7 +867,7 @@ public class MapCatalogC extends Controller{
             String id = session("id_user");
             String[] values = {id};
             List<Workspace> list = Workspace.page(MC, attributes,values,offset);
-            HashMap<UserWorkspace,Workspace> hm = UserWorkspace.pageWithWorkspace(MC,id,0);
+            Map<UserWorkspace,Workspace> hm = UserWorkspace.pageWithWorkspace(MC,id,0);
             int pagesCreated = (Workspace.pageCount(MC,attributes,values)-1)/10+1;
             int pagesMonitored = (UserWorkspace.pageWithWorkspaceCount(MC, id)-1)/10+1;
             int currentpage = offset/10+1;
@@ -891,7 +892,7 @@ public class MapCatalogC extends Controller{
             String id = session("id_user");
             String[] values = {id};
             List<Workspace> list = Workspace.page(MC, attributes,values,0);
-            HashMap<UserWorkspace,Workspace> hm = UserWorkspace.pageWithWorkspace(MC,id,offset);
+            Map<UserWorkspace,Workspace> hm = UserWorkspace.pageWithWorkspace(MC,id,offset);
             int pagesCreated = (Workspace.pageCount(MC,attributes,values)-1)/10+1;
             int pagesMonitored = (UserWorkspace.pageWithWorkspaceCount(MC, id)-1)/10+1;
             int currentpage = offset/10+1;
