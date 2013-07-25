@@ -43,7 +43,6 @@ public class Secured extends Security.Authenticator {
     @Override
     public Result onUnauthorized(Context ctx) {
         String url = ctx._requestHeader().uri();
-        System.out.println(url);
         return redirect(routes.General.login(url));
     }
 }

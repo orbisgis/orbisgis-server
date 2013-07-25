@@ -140,7 +140,7 @@ GET /mapcatalog/workspace/:id_workspace/comment/:id_comment/delete          cont
 
 GET /mapcatalog/editcomment/:id_comment                                     controllers.MapCatalogC.viewEditComment(id_comment)
 
-POST /mapcatalog/editedcomment/:id_comment                                    controllers.MapCatalogC.editComment(id_comment)
+POST /mapcatalog/editedcomment/:id_comment                                  controllers.MapCatalogC.editComment(id_comment)
 
 # Profile
 
@@ -148,38 +148,38 @@ GET /profile                                                                cont
 
 GET /changeprofile                                                          controllers.General.changeProfile()
 
-POST /changepass                                                             controllers.General.changePass()
+POST /changepass                                                            controllers.General.changePass()
 
 # Authentification
 
-GET /login/:uri                                             controllers.General.login(uri : String)
+GET /login                                                                  controllers.General.login(uri ?="/home")
 
-GET /logout                                                 controllers.General.logout
+GET /logout                                                                 controllers.General.logout
 
-POST /login/uri                                                 controllers.General.authenticate(uri: String)
+POST /login                                                                 controllers.General.authenticate(uri ?="/home")
 
-GET /signin                                                 controllers.General.signin
+GET /signin                                                                 controllers.General.signin
 
-POST /signin                                                controllers.General.signedin
+POST /signin                                                                controllers.General.signedin
 
-GET /profile/delete                                         controllers.General.deleteAccount
+GET /profile/delete                                                         controllers.General.deleteAccount
 
 #API REST
 
-GET /mapcatalogapi/workspaces                                       controllers.MapCatalogAPI.listWorkspaces
+GET /mapcatalogapi/workspaces                                               controllers.MapCatalogAPI.listWorkspaces
 
-GET /mapcatalogapi/workspaces/:id_workspace/contexts                controllers.MapCatalogAPI.listContexts(id_workspace)
+GET /mapcatalogapi/workspaces/:id_workspace/contexts                        controllers.MapCatalogAPI.listContexts(id_workspace)
 
-GET /mapcatalogapi/workspaces/:id_workspace/contexts/:id_context    controllers.MapCatalogAPI.getContext(id_workspace, id_context)
+GET /mapcatalogapi/workspaces/:id_workspace/contexts/:id_context            controllers.MapCatalogAPI.getContext(id_workspace, id_context)
 
-DELETE /mapcatalogapi/workspaces/:id_workspace/contexts/:id_context controllers.MapCatalogAPI.deleteContext(id_workspace, id_context)
+DELETE /mapcatalogapi/workspaces/:id_workspace/contexts/:id_context         controllers.MapCatalogAPI.deleteContext(id_workspace, id_context)
 
-POST /mapcatalogapi/workspaces/:id_workspace/contexts               controllers.MapCatalogAPI.addContextFromRoot(id_workspace)
+POST /mapcatalogapi/workspaces/:id_workspace/contexts                       controllers.MapCatalogAPI.addContextFromRoot(id_workspace)
 
-POST /mapcatalogapi/workspaces/:id_workspace/folder/id_folder       controllers.MapCatalogAPI.addContextFromParent(id_workspace, id_folder)
+POST /mapcatalogapi/workspaces/:id_workspace/folder/id_folder               controllers.MapCatalogAPI.addContextFromParent(id_workspace, id_folder)
 
-POST /mapcatalogapi/workspaces/:id_workspace/contexts/:id_context   controllers.MapCatalogAPI.updateContext(id_workspace, id_context)
+POST /mapcatalogapi/workspaces/:id_workspace/contexts/:id_context           controllers.MapCatalogAPI.updateContext(id_workspace, id_context)
 
 #404 not found
 
-GET /notFound                                                       controllers.General.PageNotFound()
+GET /notFound                                                               controllers.General.PageNotFound()
