@@ -29,6 +29,7 @@ package controllers;
  */
 
 import constant.Message;
+import play.Logger;
 import play.data.*;
 import views.html.*;
 import play.mvc.*;
@@ -54,18 +55,20 @@ public class General extends Controller{
 
     /**
      * Renders the login page
+     * @param uri The last uri the user used
      * @return
      */
-    public static Result login() {
-        return ok(login.render(""));
+    public static Result login(String uri) {
+        return ok(login.render("",uri));
     }
 
     /**
      * Checks if the login form is correct, and logs in the user
+     * @param uri The last uri the user used
      * @return The home page if success, the login page with error if error.
      * @throws Exception
      */
-    public static Result authenticate() {
+    public static Result authenticate(String uri) {
         String error="";
         try {
             DynamicForm form = Form.form().bindFromRequest();
@@ -79,15 +82,17 @@ public class General extends Controller{
                     session().clear();
                     session("email", email);
                     session("id_user", list.get(0).getId_user());
-                    return ok(home.render());
+                    return redirect(uri);
                 }else{error= Message.ERROR_LOGIN;}
             }
         } catch (NoSuchAlgorithmException e) {
             error= Message.ERROR_GENERAL;
+            Logger.error("Hashing algorithm failed", e);
         } catch (SQLException e) {
             error= Message.ERROR_GENERAL;
+            Logger.error("", e);
         }
-        return badRequest(login.render(error));
+        return badRequest(login.render(error, uri));
     }
 
     /**
@@ -96,7 +101,7 @@ public class General extends Controller{
      */
     public static Result logout(){
         session().clear();
-        return redirect(routes.General.login());
+        return redirect(routes.General.login("/home"));
     }
 
     /**
@@ -114,7 +119,6 @@ public class General extends Controller{
     /**
      * Saves the user that just signed in
      * @return
-     * @throws NoSuchAlgorithmException
      */
     public static Result signedin() {
         String error="";
@@ -159,6 +163,7 @@ public class General extends Controller{
             return ok(profile.render(use));
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return home();
 
@@ -184,6 +189,7 @@ public class General extends Controller{
             return profilePage();
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return home();
     }
@@ -207,6 +213,7 @@ public class General extends Controller{
             return signin();
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return home();
     }
@@ -239,8 +246,10 @@ public class General extends Controller{
             return profilePage();
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         } catch (NoSuchAlgorithmException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("Hasher algorithm failed to execute", e);
         }
         return home();
     }

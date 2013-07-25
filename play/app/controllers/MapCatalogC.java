@@ -30,6 +30,7 @@ package controllers;
 
 import config.Global;
 import constant.Message;
+import play.Logger;
 import play.data.*;
 import views.html.*;
 import play.mvc.*;
@@ -72,6 +73,7 @@ public class MapCatalogC extends Controller{
             return ok(mapCatalog.render(list,1,pages));
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -93,7 +95,7 @@ public class MapCatalogC extends Controller{
             return ok(myWorkspaces.render(list,hm,pagesCreated,pagesMonitored));
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
-            e.printStackTrace();
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -123,6 +125,7 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -154,6 +157,7 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -177,6 +181,7 @@ public class MapCatalogC extends Controller{
             return viewWorkspace(id.toString());
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -206,6 +211,7 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -236,6 +242,7 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -260,6 +267,7 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -281,6 +289,7 @@ public class MapCatalogC extends Controller{
             return ok(manageWorkspace.render(listCreated, listMonitored));
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -307,6 +316,7 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -339,6 +349,7 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -363,6 +374,7 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -397,6 +409,7 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -421,6 +434,7 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -449,6 +463,7 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -476,7 +491,8 @@ public class MapCatalogC extends Controller{
                         OWSContext ows = new OWSContext(id_root,null,id_logged,title);
                         ows.save(MC,context);
                     }catch(FileNotFoundException e){
-                        e.printStackTrace(); //unreachable code
+                        flash("error", Message.ERROR_GENERAL);
+                        Logger.error("OWSContext was not uploaded correctly", e);
                     }
                     flash("info", Message.INFO_OWS_CREATED);
                     return viewWorkspace(id_root);
@@ -490,6 +506,7 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -518,7 +535,7 @@ public class MapCatalogC extends Controller{
                         OWSContext ows = new OWSContext(id_root,id_parent,id_logged,title);
                         ows.save(MC,context);
                     }catch(FileNotFoundException e){
-                        e.printStackTrace(); //unreachable code
+                        Logger.error("OWSContext was not uploaded correctly", e);
                     }
                     flash("info", Message.INFO_OWS_CREATED);
                     return viewWorkspace(id_root);
@@ -532,6 +549,7 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -552,6 +570,7 @@ public class MapCatalogC extends Controller{
             return ok(mapCatalog.render(list,page,pages));
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -580,6 +599,7 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -610,6 +630,7 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -646,6 +667,7 @@ public class MapCatalogC extends Controller{
             }
             } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -692,6 +714,7 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -736,6 +759,7 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -759,6 +783,7 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -787,6 +812,7 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -804,6 +830,7 @@ public class MapCatalogC extends Controller{
             flash("info", Message.INFO_STOP_MONITORING);
         }catch (SQLException e){
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return myWorkspaces();
     }
@@ -822,6 +849,7 @@ public class MapCatalogC extends Controller{
             return ok(mapCatalog.render(list,page,pages));
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -846,6 +874,7 @@ public class MapCatalogC extends Controller{
             return ok(myWorkspaces.render(list,hm,pagesCreated,pagesMonitored));
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -870,6 +899,7 @@ public class MapCatalogC extends Controller{
             return ok(myWorkspaces.render(list,hm,pagesCreated,pagesMonitored));
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -902,10 +932,17 @@ public class MapCatalogC extends Controller{
             }else{flash("error", Message.ERROR_UNAUTHORIZED_WORKSPACE);}
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
 
+    /**
+     * Transform the form from a root workspace view to a comment and saves it in database
+     * @param id_workspace The root workspace
+     * @param id_owscontext The map which contains the comment
+     * @return the previous page (owscontext view)
+     */
     @Security.Authenticated(Secured.class)
     public static Result addCommentFromRoot(String id_workspace, String id_owscontext) {
         try{
@@ -924,10 +961,18 @@ public class MapCatalogC extends Controller{
             }else{flash("error", Message.ERROR_UNAUTHORIZED_WORKSPACE);}
         }catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
 
+    /**
+     * Transform the form from a parent folder view to a comment and saves the comment in database
+     * @param id_workspace the root workspace
+     * @param id_folder The parent folder
+     * @param id_owscontext The map which contains the comment
+     * @return the previous page (owscontext view)
+     */
     @Security.Authenticated(Secured.class)
     public static Result addCommentFromParent(String id_workspace, String id_folder, String id_owscontext) {
         try{
@@ -946,6 +991,7 @@ public class MapCatalogC extends Controller{
             }else{flash("error", Message.ERROR_UNAUTHORIZED_WORKSPACE);}
         }catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -994,6 +1040,7 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
@@ -1039,10 +1086,17 @@ public class MapCatalogC extends Controller{
             }
         } catch (SQLException e) {
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
 
+    /**
+     * Deletes a comment from database, after checking if the user logged is the one who created it
+     * @param id_workspace The root workspace of the map
+     * @param id_comment The map which contains the comments
+     * @return if success : the root page, if error : the home page
+     */
     @Security.Authenticated(Secured.class)
     public static Result deleteComment(String id_workspace, String id_comment){
         try{
@@ -1057,10 +1111,16 @@ public class MapCatalogC extends Controller{
             }else{flash("error", Message.ERROR_UNAUTHORIZED_USER);}
         }catch (SQLException e){
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
 
+    /**
+     * displays the OWS context view with the possibility to edit the selected comment
+     * @param id_comment The comment ot edit
+     * @return The owscontext page with a form
+     */
     @Security.Authenticated(Secured.class)
     public static Result viewEditComment(String id_comment){
         try{
@@ -1081,10 +1141,16 @@ public class MapCatalogC extends Controller{
             }else{flash("error", Message.ERROR_UNAUTHORIZED_USER);}
         }catch (SQLException e){
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }
 
+    /**
+     * Takes data from the edit comment form, and updates the form in database
+     * @param id_comment the comment edited
+     * @return the page where the comment was edited
+     */
     @Security.Authenticated(Secured.class)
     public static Result editComment(String id_comment){
         try{
@@ -1109,6 +1175,7 @@ public class MapCatalogC extends Controller{
             }else{flash("error", Message.ERROR_UNAUTHORIZED_USER);}
         }catch (SQLException e){
             flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
         }
         return General.home();
     }

@@ -152,11 +152,11 @@ POST /changepass                                                             con
 
 # Authentification
 
-GET /login                                                  controllers.General.login
+GET /login/:uri                                             controllers.General.login(uri : String)
 
 GET /logout                                                 controllers.General.logout
 
-POST /login                                                 controllers.General.authenticate
+POST /login/uri                                                 controllers.General.authenticate(uri: String)
 
 GET /signin                                                 controllers.General.signin
 

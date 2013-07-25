@@ -1,4 +1,4 @@
-@(error: String)
+@(error: String, uri: String)
 
 @import helper.twitterBootstrap._
 
@@ -13,7 +13,7 @@
         @error
     </div>
     }
-    <form action="@routes.General.authenticate()" method="post">
+    <form action="@routes.General.authenticate(uri)" method="post">
         <div class="control-group">
             <label class="control-label" for="inputEmail">Email</label>
             <div class="controls">
@@ -28,7 +28,7 @@
             </div>
         </div>
     </form>
-    <a href="@controllers.routes.General.signin">You don't have an account yet ? Sign in !</a>
+    <a href="@controllers.routes.General.signin()">You don't have an account yet ? Sign in !</a>
 
 </div>
 }
