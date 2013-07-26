@@ -40,7 +40,7 @@
             <div class="alert alert-info">
                 <button type="button" class="close" data-dismiss="alert">&times;</button>
                 <h4>Info :</h4>
-                You can delete your workspace and manage its users by clicking on this button :
+                You can delete your workspaces and manage its users by clicking on "Manage my workspaces" :
             </div>
             <a href="@routes.MapCatalogC.manageWorkspaces()"><button class="btn btn-danger">Manage my workspaces</button></a>
             <br/><br/>
@@ -50,7 +50,7 @@
                 <button type="submit" class="btn">Search</button>
             </form>
             <div class="well well-small">
-                <img id="imgtoggle" src="@routes.Assets.at("images/icons/add.png")" alt="add"> create my own workspace</img>
+                <img id="imgtoggle" src="@routes.Assets.at("images/icons/add.png")" alt="add"> Create a new workspace</img>
                 <form id="addtoggle" style="margin-left:2%;padding-bottom:2px;display:none" action="@routes.MapCatalogC.createWorkspace()">
                     <fieldset>
                         <label>Name</label>
@@ -190,8 +190,8 @@
             @for(workspace <- workspaceCreated){
             <div class="Info" id="@workspace.getId_workspace()" style="display:none">
                 <div class="well well-small">
+                    <h3>@workspace.getName()</h3>
                     <p>
-                        <h3>@workspace.getName()</h3>
                         @workspace.getDescription()
                     </p>
                 </div>

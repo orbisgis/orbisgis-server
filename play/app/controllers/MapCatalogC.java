@@ -118,8 +118,9 @@ public class MapCatalogC extends Controller{
                 String[] values = {id_workspace, null};
                 List<Folder> listF = Folder.page(MC,attributes,values);
                 List<OWSContext> listC = OWSContext.page(MC, attributes, values);
-                boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||(wor.getAll_manage().equals("1"));
-                return ok(workspace.render(listF,listC,wor,hasDeleteRights));
+                boolean hasDeleteRights = UserWorkspace.hasWriteRight(MC, id_workspace, id_user)||(wor.getAll_write().equals("1"))|| Workspace.isCreator(MC,id_workspace,id_user);
+                boolean hasManageRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user) || (wor.getAll_manage().equals("1"))|| Workspace.isCreator(MC,id_workspace,id_user);
+                return ok(workspace.render(listF,listC,wor,hasDeleteRights,hasManageRights));
             }else{
                 flash("error", Message.ERROR_UNAUTHORIZED_WORKSPACE);
                 return index();
@@ -150,7 +151,7 @@ public class MapCatalogC extends Controller{
                 List<Folder> listF = Folder.page(MC,attributes,values);
                 List<OWSContext> listC = OWSContext.page(MC, attributes, values);
                 List<Folder> path = Folder.getPath(MC, id_folder);
-                boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||wor.getAll_manage().equals("1");
+                boolean hasDeleteRights = UserWorkspace.hasWriteRight(MC, id_workspace, id_user)||wor.getAll_write().equals("1")|| Workspace.isCreator(MC,id_workspace,id_user);
                 return ok(folder.render(listF,listC,path,wor,hasDeleteRights));
             }else{
                 flash("error", Message.ERROR_UNAUTHORIZED_WORKSPACE);
@@ -454,7 +455,7 @@ public class MapCatalogC extends Controller{
             String[] values2 = {id_root};
             Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
             String id_logged = session().get("id_user");
-            if(wor.getAll_manage().equals("1") || UserWorkspace.hasManageRight(MC, id_root,id_logged) || Workspace.isCreator(MC, id_root,id_logged)){
+            if(wor.getAll_write().equals("1") || UserWorkspace.hasWriteRight(MC, id_root,id_logged) || Workspace.isCreator(MC, id_root,id_logged)){
                 Folder.delete(MC, Long.valueOf(id_folder));
                 flash("info",Message.INFO_FOLDER_DELETED);
                 return viewWorkspace(id_root);
@@ -592,8 +593,9 @@ public class MapCatalogC extends Controller{
                 String search = form.get("search");
                 List<Folder> listF = Folder.search(MC,id_root,search);
                 List<OWSContext> listC = OWSContext.search(MC,id_root,search);
-                boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_root, id_user)||wor.getAll_manage().equals("1");
-                return ok(workspace.render(listF,listC,wor,hasDeleteRights));
+                boolean hasDeleteRights = UserWorkspace.hasWriteRight(MC, id_root, id_user)||wor.getAll_write().equals("1")|| Workspace.isCreator(MC,id_root,id_user);
+                boolean hasManageRights = UserWorkspace.hasManageRight(MC, id_root, id_user) || (wor.getAll_manage().equals("1"))|| Workspace.isCreator(MC,id_root,id_user);
+                return ok(workspace.render(listF,listC,wor,hasDeleteRights, hasManageRights));
             }else{
                 flash("error",Message.ERROR_UNAUTHORIZED_WORKSPACE);
                 return index();
@@ -623,7 +625,7 @@ public class MapCatalogC extends Controller{
                 List<Folder> listF = Folder.search(MC,id_root,search);
                 List<OWSContext> listC = OWSContext.search(MC,id_root,search);
                 List<Folder> path = Folder.getPath(MC, id_folder);
-                boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_root, id_user)||wor.getAll_manage().equals("1");
+                boolean hasDeleteRights = UserWorkspace.hasWriteRight(MC, id_root, id_user)||wor.getAll_write().equals("1")|| Workspace.isCreator(MC,id_root,id_user);
                 return ok(folder.render(listF,listC,path,wor,hasDeleteRights));
             }else{
                 flash("error",Message.ERROR_UNAUTHORIZED_WORKSPACE);
@@ -702,7 +704,7 @@ public class MapCatalogC extends Controller{
                 }
                 if(theContext!=null){
                     SortedMap<Comment, User> hm = Comment.pageWithMap(MC, id_owscontext, 0);
-                    boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||wor.getAll_manage().equals("1");
+                    boolean hasDeleteRights = UserWorkspace.hasWriteRight(MC, id_workspace, id_user)||wor.getAll_write().equals("1")|| Workspace.isCreator(MC,id_workspace,id_user);
                     int count = (Comment.pageWithMapCount(MC, id_owscontext)-1)/10+1;
                     return ok(contextFolder.render(listF,listC,path,wor,theContext,hasDeleteRights,hm,MC,count));
                 }else{
@@ -747,7 +749,7 @@ public class MapCatalogC extends Controller{
                 }
                 if(theContext!=null){
                     SortedMap<Comment, User> hm = Comment.pageWithMap(MC, id_owscontext, 0);
-                    boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||wor.getAll_manage().equals("1");
+                    boolean hasDeleteRights = UserWorkspace.hasWriteRight(MC, id_workspace, id_user)||wor.getAll_write().equals("1")|| Workspace.isCreator(MC,id_workspace,id_user);
                     int count = (Comment.pageWithMapCount(MC, id_owscontext)-1)/10+1;
                     return ok(contextWorkspace.render(listF,listC,wor,theContext,hasDeleteRights,hm, MC, count));
                 }else{
@@ -803,7 +805,7 @@ public class MapCatalogC extends Controller{
             String[] values2 = {id_root};
             Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
             String id_logged = session().get("id_user");
-            if(wor.getAll_manage().equals("1") || UserWorkspace.hasManageRight(MC, id_root,id_logged) || Workspace.isCreator(MC, id_root,id_logged)){
+            if(wor.getAll_write().equals("1") || UserWorkspace.hasWriteRight(MC, id_root,id_logged) || Workspace.isCreator(MC, id_root,id_logged)){
                 OWSContext.delete(MC, Long.valueOf(id_owscontext));
                 flash("info",Message.INFO_OWS_DELETED);
                 return viewWorkspace(id_root);
@@ -1029,7 +1031,7 @@ public class MapCatalogC extends Controller{
                     SortedMap<Comment, User> hm = Comment.pageWithMap(MC, id_owscontext, offset);
                     flash("page", Integer.toString(offset / 10 + 1));
                     int count = (Comment.pageWithMapCount(MC, id_owscontext)-1)/10+1;
-                    boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||wor.getAll_manage().equals("1");
+                    boolean hasDeleteRights = UserWorkspace.hasWriteRight(MC, id_workspace, id_user)||wor.getAll_write().equals("1")|| Workspace.isCreator(MC,id_workspace,id_user);
                     return ok(contextFolder.render(listF,listC,path,wor,theContext,hasDeleteRights,hm,MC,count));
                 }else{
                     flash("error",Message.ERROR_GENERAL);
@@ -1075,7 +1077,7 @@ public class MapCatalogC extends Controller{
                     SortedMap<Comment, User> hm = Comment.pageWithMap(MC, id_owscontext, offset);
                     flash("page", Integer.toString(offset/10+1));
                     int count = (Comment.pageWithMapCount(MC, id_owscontext)-1)/10+1;
-                    boolean hasDeleteRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user)||wor.getAll_manage().equals("1");
+                    boolean hasDeleteRights = UserWorkspace.hasWriteRight(MC, id_workspace, id_user)||wor.getAll_write().equals("1")|| Workspace.isCreator(MC,id_workspace,id_user);
                     return ok(contextWorkspace.render(listF,listC,wor,theContext,hasDeleteRights,hm, MC, count));
                 }else{
                     flash("error",Message.ERROR_GENERAL);
