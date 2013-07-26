@@ -250,7 +250,10 @@ public class UserWorkspace {
             String location = rs.getString("location");
             String profession = rs.getString("profession");
             String additional = rs.getString("additional");
-            User use = new User(id_user, name, email, password, location,profession,additional);
+            String admin_wms = rs.getString("admin_wms");
+            String admin_mapcatalog = rs.getString("admin_mapcatalog");
+            String admin_wps = rs.getString("admin_wps");
+            User use = new User(id_user, name, email, password, location,profession,additional, admin_wms, admin_mapcatalog, admin_wps);
             paged.put(usewor,use);
         }
         rs.close();
@@ -287,7 +290,10 @@ public class UserWorkspace {
             String location = rs.getString("location");
             String profession = rs.getString("profession");
             String additional = rs.getString("additional");
-            User use = new User(id_user, name, email, password, location,profession,additional);
+            String admin_wms = rs.getString("admin_wms");
+            String admin_mapcatalog = rs.getString("admin_mapcatalog");
+            String admin_wps = rs.getString("admin_wps");
+            User use = new User(id_user, name, email, password, location,profession,additional, admin_wms, admin_mapcatalog, admin_wps);
             paged.put(usewor,use);
         }
         rs.close();

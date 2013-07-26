@@ -70,7 +70,7 @@ public class UserTest {
 
     @Test
     public void update() throws SQLException, NoSuchAlgorithmException {
-        User use = new User("1","name","mail","","location2","profession","additionnal");
+        User use = new User("1","name","mail","","location2","profession","additionnal","30","30","30");
         use.update(MC);
         //Obtaining of the user
         String[] attributes = {"id_user"};

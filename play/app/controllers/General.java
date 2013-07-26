@@ -184,7 +184,7 @@ public class General extends Controller{
             String profession = form.get("profession");
             String additional = form.get("additional");
             session("email",email);
-            User use = new User(id_user,name,email,"",location,profession,additional);
+            User use = new User(id_user,name,email,"",location,profession,additional,null,null,null);
             use.update(MC);
             return profilePage();
         } catch (SQLException e) {
@@ -237,7 +237,7 @@ public class General extends Controller{
             if(newpass.equals(newpass2)){
                 if(newpass.length()>=6){
                     if(MapCatalog.hasher(currentpass).equals(use.getPassword())){
-                        User newUse = new User(id_user,"","",MapCatalog.hasher(newpass),"","","");
+                        User newUse = new User(id_user,null,null,MapCatalog.hasher(newpass),null,null,null,null,null,null);
                         newUse.updatePass(MC);
                         flash("info", Message.INFO_PASSWORD_UPDATED);
                     }else{flash("error", Message.ERROR_PASSWORD_INVALID);}

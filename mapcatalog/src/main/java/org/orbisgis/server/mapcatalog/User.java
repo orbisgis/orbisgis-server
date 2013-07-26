@@ -45,9 +45,12 @@ public class User {
     private String location = "";
     private String profession = "";
     private String additional = "";
+    private String admin_wms = "30";
+    private String admin_mapcatalog = "30";
+    private String admin_wps = "30";
 
     /**
-     * Constructor that hashes the password of the user (used for saving into database)
+     * Constructor that hashes the password of the user (used for saving into database when signing in)
      * @param name The name of the user
      * @param email the email of the user
      * @param passwordtohash The password, not hashed
@@ -69,8 +72,11 @@ public class User {
      * @param location The location of the user
      * @param profession The profession of the user
      * @param additional The additional information about a user
+     * @param admin_wms The level of accreditation of the user in the wms branch
+     * @param admin_mapcatalog The level of accreditation of the user in the mapcatalog branch
+     * @param admin_wps The level of accreditation of the user in the wps branch
      */
-    public User(String id_user, String name, String email, String password, String location, String profession, String additional) {
+    public User(String id_user, String name, String email, String password, String location, String profession, String additional, String admin_wms, String admin_mapcatalog, String admin_wps) {
         this.id_user = id_user;
         this.name = name;
         this.email = email;
@@ -78,6 +84,9 @@ public class User {
         this.location = location;
         this.profession = profession;
         this.additional = additional;
+        this.admin_wms = admin_wms;
+        this.admin_mapcatalog = admin_mapcatalog;
+        this.admin_wps = admin_wps;
     }
 
     public String getId_user() {
@@ -106,6 +115,18 @@ public class User {
 
     public String getProfession() {
         return profession;
+    }
+
+    public String getAdmin_wms() {
+        return admin_wms;
+    }
+
+    public String getAdmin_mapcatalog() {
+        return admin_mapcatalog;
+    }
+
+    public String getAdmin_wps() {
+        return admin_wps;
     }
 
     /**
@@ -191,7 +212,10 @@ public class User {
             String location = rs.getString("location");
             String profession = rs.getString("profession");
             String additional =rs.getString("additional");
-            User use = new User(id_user,name,email,password,location,profession,additional);
+            String admin_wms = rs.getString("admin_wms");
+            String admin_mapcatalog = rs.getString("admin_mapcatalog");
+            String admin_wps = rs.getString("admin_wps");
+            User use = new User(id_user,name,email,password,location,profession,additional, admin_wms, admin_mapcatalog, admin_wps);
             paged.add(use);
         }
         rs.close();
@@ -217,7 +241,10 @@ public class User {
             String location = rs.getString("location");
             String profession = rs.getString("profession");
             String additional =rs.getString("additional");
-            User use = new User(id_user,name,email,password,location,profession,additional);
+            String admin_wms = rs.getString("admin_wms");
+            String admin_mapcatalog = rs.getString("admin_mapcatalog");
+            String admin_wps = rs.getString("admin_wps");
+            User use = new User(id_user,name,email,password,location,profession,additional, admin_wms, admin_mapcatalog, admin_wps);
             paged.add(use);
         }
         rs.close();
@@ -257,4 +284,22 @@ public class User {
         stmt.executeUpdate();
         stmt.close();
     }
+
+    /**
+     * Executes a UPDATE query in the database for a specified user, and updates only the admin rights (only the attributes id_user and admin_* are used)
+     * @param MC The current instantiation of MapCatalog to get connection to database from
+     * @throws SQLException
+     */
+    public void updateAdminRights(MapCatalog MC) throws SQLException{
+        String query = "UPDATE user SET admin_wms = ?, admin_mapcatalog = ?, admin_wps = ? WHERE id_user = ?;";
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, admin_wms);
+        stmt.setString(2, admin_mapcatalog);
+        stmt.setString(3, admin_wps);
+        stmt.setString(4, id_user);
+        stmt.executeUpdate();
+        stmt.close();
+    }
+
 }
