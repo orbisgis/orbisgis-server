@@ -129,6 +129,18 @@ public class User {
         return admin_wps;
     }
 
+    public void setAdmin_wms(String admin_wms) {
+        this.admin_wms = admin_wms;
+    }
+
+    public void setAdmin_mapcatalog(String admin_mapcatalog) {
+        this.admin_mapcatalog = admin_mapcatalog;
+    }
+
+    public void setAdmin_wps(String admin_wps) {
+        this.admin_wps = admin_wps;
+    }
+
     /**
      * Method that saves a instantiated User into database. Handles SQL injections.
      * @param MC the mapcatalog object for the connection
@@ -253,6 +265,56 @@ public class User {
     }
 
     /**
+     * Method that sends a query to database SELECT * FROM USER with a limit of 10 result, and an offset of @offset
+     * @param MC the mapcatalog object for the connection
+     * @param offset The offset of the query
+     * @return A list of user containing the result of the query
+     */
+    public static List<User> pageOffset(MapCatalog MC, int offset) throws SQLException{
+        String query = "SELECT * FROM user LIMIT 10 OFFSET ?";
+        List<User> paged = new LinkedList<User>();
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setInt(1, offset);
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_user = rs.getString("id_user");
+            String name = rs.getString("name");
+            String email = rs.getString("email");
+            String password = rs.getString("password");
+            String location = rs.getString("location");
+            String profession = rs.getString("profession");
+            String additional =rs.getString("additional");
+            String admin_wms = rs.getString("admin_wms");
+            String admin_mapcatalog = rs.getString("admin_mapcatalog");
+            String admin_wps = rs.getString("admin_wps");
+            User use = new User(id_user,name,email,password,location,profession,additional, admin_wms, admin_mapcatalog, admin_wps);
+            paged.add(use);
+        }
+        rs.close();
+        stmt.close();
+        return paged;
+    }
+
+    /**
+     * Method that sends a query to database SELECT COUNT(*) FROM USER to get the number of result
+     * @param MC the mapcatalog object for the connection
+     * @return A list of user containing the result of the query
+     */
+    public static int pageCount(MapCatalog MC) throws SQLException{
+        String query = "SELECT COUNT(*) FROM user";
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        ResultSet rs = stmt.executeQuery();
+        int count=0;
+        if(rs.next()){
+            count = rs.getInt("count(*)");
+        }
+        rs.close();
+        stmt.close();
+        return count;
+    }
+
+
+    /**
      * Execute a query "UPDATE" in the database, password is not updated, so it can be set to whatever.
      * @param MC the mapcatalog used for database connection
      */
@@ -301,5 +363,4 @@ public class User {
         stmt.executeUpdate();
         stmt.close();
     }
-
 }

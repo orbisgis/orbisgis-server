@@ -28,6 +28,10 @@
                 <li class="divider-vertical"></li>
                 <li @if(page=="Processing"){class="active"}><a href="@controllers.routes.WPS.manage">Processing</a></li>
                 <li class="divider-vertical"></li>
+                @if(session.get("admin")!=null){
+                <li @if(page=="admin"){class="active"}><a href="@controllers.routes.Admin.admin">Administration panel</a></li>
+                <li class="divider-vertical"></li>
+                }
             </ul>
             <ul class="nav" style="margin-left:70%;position:absolute">
                 <li><a href="@controllers.routes.General.profilePage()">@session.get("email")</a></li>

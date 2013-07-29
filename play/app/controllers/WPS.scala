@@ -37,7 +37,7 @@ import java.io.File
 import java.util.Calendar
 import org.apache.commons.io.{FileUtils => FU}
 
-object WPS extends Controller with Secured2{
+object WPS extends Controller with SecuredWPS{
 
   var wpsMain: WPSMain = _
 
@@ -129,11 +129,7 @@ object WPS extends Controller with Secured2{
   }
 
   def manage = withAuth { username => implicit request =>
-    if(username=="admin@admin.com"){
       Ok(views.html.wpsmanage(wpsMain.processes.values))
-    }else{
-      Redirect("/home").flashing("error" -> "access denied")
-    }
   }
 
   def tempResource(req: String) = Action { implicit request =>

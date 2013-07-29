@@ -36,7 +36,7 @@ import play.api.data._
 import play.api.data.Forms._
 import org.apache.commons.io.{FilenameUtils => FNU}
 
-object Application extends Controller with Secured2{
+object Application extends Controller with SecuredWMS{
 
   // current SourceManager
   lazy val sm = Services.getService(classOf[DataManager]).getSourceManager()
@@ -50,11 +50,7 @@ object Application extends Controller with Secured2{
     val layers = ss.map(s ⇒ sm.getSource(s)).collect{ case s if !s.isSystemTableSource && s.isFileSource() ⇒ (s.getName(), s.getFile()) }
     if (!WMS.styleDir.exists()) WMS.styleDir.mkdirs()
     val styles = WMS.styleDir.listFiles().toSeq
-    if(username=="admin@admin.com"){
-      Ok(views.html.index(styles, layers, fileForm, WMS.styleForm))
-    }else{
-      Redirect("/home").flashing("error" -> "access denied")
-    }
+    Ok(views.html.index(styles, layers, fileForm, WMS.styleForm))
   }
 
   val fileForm = Form(

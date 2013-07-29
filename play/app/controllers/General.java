@@ -79,9 +79,13 @@ public class General extends Controller{
                 String[] values = {email,MapCatalog.hasher(password)};
                 List<User> list = User.page(MC, attributes, values);
                 if(!list.isEmpty()){
+                    User user = list.get(0);
                     session().clear();
                     session("email", email);
-                    session("id_user", list.get(0).getId_user());
+                    session("id_user", user.getId_user());
+                    if(Integer.valueOf(user.getAdmin_mapcatalog())<=10||Integer.valueOf(user.getAdmin_wms())<=10||Integer.valueOf(user.getAdmin_wps())<=10){
+                        session("admin","yes");
+                    }
                     return redirect(uri);
                 }else{error= Message.ERROR_LOGIN;}
             }

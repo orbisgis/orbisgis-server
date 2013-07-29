@@ -1,7 +1,5 @@
 package controllers
 
-import play.api.mvc._
-
 /**
  * OrbisGIS is a GIS application dedicated to scientific spatial simulation.
  * This cross-platform GIS is developed at French IRSTV institute and is able to
@@ -30,15 +28,73 @@ import play.api.mvc._
  * directly: info_at_ orbisgis.org
  */
 
-/**
- * Trait to verify if a user is connected or not
- */
-trait Secured2 {
+import play.api.mvc._
+import org.orbisgis.server.mapcatalog.MapCatalog
+import org.orbisgis.server.mapcatalog.User
+import config.Global
 
-  def username(request: RequestHeader) = {request.session.get("email")
+/**
+ * Trait to verify if a user can access WMS manage
+ */
+trait SecuredWMS {
+
+  private val MC: MapCatalog = Global.mc
+
+  def username(request: RequestHeader): Option[String] = {
+    val id_user : Option[String] = request.session.get("id_user")
+    val attributes = Array("id_user")
+    if(id_user!=None){
+      val values = Array(id_user.get)
+      val isAdmin = User.page(MC, attributes, values).get(0).getAdmin_wms
+      isAdmin match {
+        case "0" =>
+          request.session.get("email")
+        case "10" =>
+          request.session.get("email")
+        case _ =>
+          None
+      }
+    }else{
+      None
+    }
   }
 
-  def onUnauthorized(request: RequestHeader) = Results.Redirect(routes.General.login("/home"))
+  def onUnauthorized(request: RequestHeader) = Results.Redirect(routes.General.home()).flashing("error" -> "access denied")
+
+  def withAuth(f: => String => Request[AnyContent] => Result) = {
+    Security.Authenticated(username, onUnauthorized) { user =>
+      Action(request => f(user)(request))
+    }
+  }
+}
+
+/**
+ * Trait to verify if a user can access WPS manage
+ */
+trait SecuredWPS {
+
+  private val MC: MapCatalog = Global.mc
+
+  def username(request: RequestHeader): Option[String] = {
+    val id_user : Option[String] = request.session.get("id_user")
+    val attributes = Array("id_user")
+    if(id_user!=None){
+      val values = Array(id_user.get)
+      val isAdmin = User.page(MC, attributes, values).get(0).getAdmin_wps
+      isAdmin match {
+        case "0" =>
+          request.session.get("email")
+        case "10" =>
+          request.session.get("email")
+        case _ =>
+          None
+      }
+    }else{
+      None
+    }
+  }
+
+  def onUnauthorized(request: RequestHeader) = Results.Redirect(routes.General.home()).flashing("error" -> "access denied")
 
   def withAuth(f: => String => Request[AnyContent] => Result) = {
     Security.Authenticated(username, onUnauthorized) { user =>

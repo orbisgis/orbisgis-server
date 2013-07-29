@@ -1,0 +1,68 @@
+@(user : org.orbisgis.server.mapcatalog.User,allUsers : List[org.orbisgis.server.mapcatalog.User], currentPage : Int, pageNumber : Int)
+
+@import helper.twitterBootstrap._
+
+@adminmain("mapcatalog",user) {
+    @if(allUsers==null){
+    <p>Click on a button to access the admin panel to a specific service</p>
+    }else{
+        <table class="table table-bordered">
+            <tr style="background-color:LightBlue">
+                <th>name</th>
+                <th>email</th>
+                <th>profession</th>
+                <th>admin level MapCatalog</th>
+                <th>Actions</th>
+            </tr>
+            @for(anUser <-allUsers){
+                <tr>
+                    <td>@anUser.getName()</td>
+                    <td>@anUser.getEmail()</td>
+                    <td>@anUser.getProfession()</td>
+                    <td>
+                        @if(!anUser.getAdmin_mapcatalog().equals("0")){
+                        <form action="@routes.Admin.changeMapCatalogRight(anUser.getId_user())" method="post">
+                            <select name="admin">
+                                <option value="30"@if(anUser.getAdmin_mapcatalog().equals("30")){ selected}>User</option>
+                                <option value="20"@if(anUser.getAdmin_mapcatalog().equals("20")){ selected}>Moderator</option>
+                                <option value="10"@if(anUser.getAdmin_mapcatalog().equals("10")){ selected}>Administrator</option>
+                                @if(user.getAdmin_wps.equals("0")){
+                                <option value="0">Super admin</option>
+                                }
+                            </select>
+                            <button class="btn" type="submit">Submit changes</button>
+                        </form>
+                        }else{
+                        Super Admin
+                        }
+                    </td>
+                    <td>
+                        @if(!anUser.getAdmin_mapcatalog().equals("0")){
+                        <form action="@routes.Admin.deleteUser(anUser.getId_user(), "mapcatalog")">
+                            <div class="message">
+                                <h1>
+                                    You are going to delete this user, this action is irreversible, are you sure ?
+                                </h1>
+                                <button type="submit" class="btn btn-large btn-danger" style="margin-left:35%">Confirm</button>
+                                <button type="reset" class="btn btn-large btn-info removePopup2"  style="margin-left:15%">Cancel</button>
+                            </div>
+                        </form>
+                        <button class="btn btn-danger removePopup">Delete this user</button>
+                        }else{
+                        None
+                        }
+                    </td>
+                </tr>
+            }
+        </table>
+    <div class="pagination pagination-centered">
+        <ul>
+        @if(!flash.contains("search")){
+            @for(index <- 1 until pageNumber+1){
+            <li @if(index==currentPage){class="active"}><a href="@routes.Admin.adminMapCatalog((index-1)*10)">@index</a></li>
+            }
+        }
+        </ul>
+    </div>
+    }
+}

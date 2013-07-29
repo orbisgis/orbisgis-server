@@ -164,6 +164,24 @@ POST /signin                                                                cont
 
 GET /profile/delete                                                         controllers.General.deleteAccount
 
+# Admin
+
+GET /admin                                                                  controllers.Admin.admin()
+
+GET /admin/wms                                                              controllers.Admin.adminWMS(offset : Int ?=0)
+
+GET /admin/mapcatalog                                                       controllers.Admin.adminMapCatalog(offset : Int ?=0)
+
+GET /admin/wps                                                              controllers.Admin.adminWPS(offset : Int ?=0)
+
+POST /admin/mapcatalog/change                                               controllers.Admin.changeMapCatalogRight(id_user : String)
+
+POST /admin/wms/change                                                      controllers.Admin.changeWMSRight(id_user : String)
+
+POST /admin/wps/change                                                      controllers.Admin.changeWPSRight(id_user : String)
+
+GET /admin/deleteUser/:id_userToDelete/from/:url                            controllers.Admin.deleteUser(id_userToDelete, url)
+
 #API REST
 
 GET /mapcatalogapi/workspaces                                               controllers.MapCatalogAPI.listWorkspaces
