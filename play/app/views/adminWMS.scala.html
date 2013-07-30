@@ -6,6 +6,10 @@
     @if(allUsers==null){
     <p>Click on a button to access the admin panel to a specific service</p>
     }else{
+    <form class="form-search" action="@routes.Admin.searchAdminWMS(0)">
+        <input type="text" class="input-medium search-query" placeholder="Search a user" name="search">
+        <button type="submit" class="btn">Search</button>
+    </form>
     <table class="table table-bordered">
         <tr style="background-color:LightBlue">
             <th>name</th>
@@ -21,7 +25,7 @@
                 <td>@anUser.getProfession()</td>
                 <td>
                     @if((!anUser.getAdmin_wms().equals("0"))){
-                    <form action="@routes.Admin.changeWMSRight(anUser.getId_user())" method="post">
+                    <form action="@routes.Admin.changeWMSRight(anUser.getId_user())" method="post" class="form-inline">
                         <select name="admin">
                             <option value="30"@if(anUser.getAdmin_wms().equals("30")){ selected}>User</option>
                             <option value="20"@if(anUser.getAdmin_wms().equals("20")){ selected}>Moderator</option>
@@ -38,7 +42,7 @@
                 </td>
                 <td>
                     @if(!anUser.getAdmin_mapcatalog().equals("0")){
-                    <form action="@routes.Admin.deleteUser(anUser.getId_user(), "wms")">
+                    <form action="@routes.Admin.deleteUser(anUser.getId_user(), "wms")" style="margin-top:1%">
                         <div class="message">
                             <h1>
                                 You are going to delete this user, this action is irreversible, are you sure ?

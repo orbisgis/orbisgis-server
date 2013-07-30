@@ -271,7 +271,7 @@ public class User {
      * @return A list of user containing the result of the query
      */
     public static List<User> pageOffset(MapCatalog MC, int offset) throws SQLException{
-        String query = "SELECT * FROM user LIMIT 10 OFFSET ?";
+        String query = "SELECT * FROM user LIMIT '10' OFFSET ?";
         List<User> paged = new LinkedList<User>();
         PreparedStatement stmt = MC.getConnection().prepareStatement(query);
         stmt.setInt(1, offset);
@@ -362,5 +362,59 @@ public class User {
         stmt.setString(4, id_user);
         stmt.executeUpdate();
         stmt.close();
+    }
+
+    /**
+     *Queries database to search for a user containing a certain expression in his name
+     * @param expression the String to run the search on, case insensitive
+     * @return The list of workspaces corresponding to the search
+     */
+    public static List<User> search(MapCatalog MC, String expression, int offset) throws SQLException{
+        String query = "SELECT * FROM user WHERE ((LOWER(name) LIKE ?) OR (LOWER(email) LIKE ?)) LIMIT '10' OFFSET ?;";
+        List<User> searched = new LinkedList<User>();
+        expression = "%" + expression.toLowerCase() + "%";
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, expression);
+        stmt.setString(2, expression);
+        stmt.setInt(3, offset);
+        ResultSet rs = stmt.executeQuery();
+        while(rs.next()){
+            String id_user = rs.getString("id_user");
+            String name = rs.getString("name");
+            String email = rs.getString("email");
+            String password = rs.getString("password");
+            String location = rs.getString("location");
+            String profession = rs.getString("profession");
+            String additional =rs.getString("additional");
+            String admin_wms = rs.getString("admin_wms");
+            String admin_mapcatalog = rs.getString("admin_mapcatalog");
+            String admin_wps = rs.getString("admin_wps");
+            User use = new User(id_user,name,email,password,location,profession,additional, admin_wms, admin_mapcatalog, admin_wps);
+            searched.add(use);
+        }
+        rs.close();
+        stmt.close();
+        return searched;
+    }
+
+    /**
+     *Queries database to search for a user containing a certain expression in his name
+     * @param expression the String to run the search on, case insensitive
+     * @return The list of workspaces corresponding to the search
+     */
+    public static int searchCount(MapCatalog MC, String expression) throws SQLException{
+        String query = "SELECT COUNT(*) FROM user WHERE ((LOWER(name) LIKE ?) OR (LOWER(email) LIKE ?));";
+        expression = "%" + expression.toLowerCase() + "%";
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, expression);
+        stmt.setString(2, expression);
+        ResultSet rs = stmt.executeQuery();
+        int count=0;
+        if(rs.next()){
+            count= rs.getInt("count(*)");
+        }
+        rs.close();
+        stmt.close();
+        return count;
     }
 }

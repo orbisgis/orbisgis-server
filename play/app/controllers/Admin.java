@@ -290,4 +290,85 @@ public class Admin extends Controller{
         }
         return General.home();
     }
+
+    /**
+     * Search and return a specific list of users
+     * @return The wms page with searched users
+     */
+    public static Result searchAdminWMS(int offset){
+        try {
+            String id_user = session().get("id_user");
+            String[] attributes = {"id_user"};
+            String[] values = {id_user};
+            User user = User.page(MC, attributes, values).get(0);
+            if(Integer.valueOf(user.getAdmin_wms())<=10){
+                DynamicForm form = Form.form().bindFromRequest();
+                String search = form.get("search");
+                List<User> allUsers = User.search(MC,search, offset);
+                int pageNumber = (User.searchCount(MC, search)-1)/10+1;
+                int currentPage = (offset)/10+1;
+                return ok(adminWMS.render(user,allUsers, currentPage, pageNumber));
+            }else{
+                flash("error",Message.ERROR_UNAUTHORIZED_USER);
+            }
+        } catch (SQLException e) {
+            flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
+        }
+        return General.home();
+    }
+
+    /**
+     * Search and return a specific list of users
+     * @return The wps page with searched users
+     */
+    public static Result searchAdminWPS(int offset){
+        try {
+            String id_user = session().get("id_user");
+            String[] attributes = {"id_user"};
+            String[] values = {id_user};
+            User user = User.page(MC, attributes, values).get(0);
+            if(Integer.valueOf(user.getAdmin_wms())<=10){
+                DynamicForm form = Form.form().bindFromRequest();
+                String search = form.get("search");
+                List<User> allUsers = User.search(MC,search, offset);
+                int pageNumber = (User.searchCount(MC, search)-1)/10+1;
+                int currentPage = (offset)/10+1;
+                return ok(adminWPS.render(user,allUsers, currentPage, pageNumber));
+            }else{
+                flash("error",Message.ERROR_UNAUTHORIZED_USER);
+            }
+        } catch (SQLException e) {
+            flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
+        }
+        return General.home();
+    }
+
+    /**
+     * Search and return a specific list of users
+     * @return The wps page with searched users
+     */
+    public static Result searchAdminMapCatalog(int offset){
+        try {
+            String id_user = session().get("id_user");
+            String[] attributes = {"id_user"};
+            String[] values = {id_user};
+            User user = User.page(MC, attributes, values).get(0);
+            if(Integer.valueOf(user.getAdmin_wms())<=10){
+                DynamicForm form = Form.form().bindFromRequest();
+                String search = form.get("search");
+                List<User> allUsers = User.search(MC,search, offset);
+                int pageNumber = (User.searchCount(MC, search)-1)/10+1;
+                int currentPage = (offset)/10+1;
+                return ok(adminMapCatalog.render(user,allUsers, currentPage, pageNumber));
+            }else{
+                flash("error",Message.ERROR_UNAUTHORIZED_USER);
+            }
+        } catch (SQLException e) {
+            flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
+        }
+        return General.home();
+    }
 }

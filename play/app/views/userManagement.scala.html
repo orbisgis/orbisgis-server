@@ -31,7 +31,7 @@
                     @for(user <- users.keySet()){
                     <tr>
                         <td>
-                            <a href="">@users.get(user).getName()</a>
+                            @users.get(user).getName()
                         </td>
                         <td>@users.get(user).getEmail()</td>
                         <form action="@routes.MapCatalogC.changeRights(user.getId_workspace(), user.getId_user())">

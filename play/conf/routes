@@ -182,6 +182,12 @@ POST /admin/wps/change                                                      cont
 
 GET /admin/deleteUser/:id_userToDelete/from/:url                            controllers.Admin.deleteUser(id_userToDelete, url)
 
+GET /admin/wms/search                                                       controllers.Admin.searchAdminWMS(offset : Int ?=0)
+
+GET /admin/mapcatalog/search                                                controllers.Admin.searchAdminMapCatalog(offset : Int ?=0)
+
+GET /admin/wps/search                                                       controllers.Admin.searchAdminWPS(offset : Int ?=0)
+
 #API REST
 
 GET /mapcatalogapi/workspaces                                               controllers.MapCatalogAPI.listWorkspaces

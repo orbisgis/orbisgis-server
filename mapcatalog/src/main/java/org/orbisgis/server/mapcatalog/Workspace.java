@@ -411,7 +411,7 @@ public class Workspace {
      * @return The list of workspaces corresponding to the search
      */
     public static List<Workspace> search(MapCatalog MC, String expression) throws SQLException{
-        String query = "SELECT * FROM WORKSPACE WHERE (LOWER(name) LIKE ?) OR (LOWER(description) LIKE ?)";
+        String query = "SELECT * FROM WORKSPACE WHERE ((LOWER(name) LIKE ?) OR (LOWER(description)) LIKE ?)";
         List<Workspace> searched = new LinkedList<Workspace>();
         expression = "%" + expression.toLowerCase() + "%";
         PreparedStatement stmt = MC.getConnection().prepareStatement(query);
@@ -440,7 +440,7 @@ public class Workspace {
      * @return The list of workspaces corresponding to the search
      */
     public static List<Workspace> search(MapCatalog MC, String expression, int offset) throws SQLException{
-        String query = "SELECT * FROM WORKSPACE WHERE (LOWER(name) LIKE ?) OR (LOWER(description) LIKE ?) LIMIT '10' OFFSET ?";
+        String query = "SELECT * FROM WORKSPACE WHERE ((LOWER(name) LIKE ?) OR (LOWER(description) LIKE ?)) LIMIT '10' OFFSET ?";
         List<Workspace> searched = new LinkedList<Workspace>();
         expression = "%" + expression.toLowerCase() + "%";
         PreparedStatement stmt = MC.getConnection().prepareStatement(query);
@@ -470,7 +470,7 @@ public class Workspace {
      * @return The number of workspaces corresponding to the search
      */
     public static int searchCount(MapCatalog MC, String expression) throws SQLException{
-        String query = "SELECT COUNT(*) FROM WORKSPACE WHERE (LOWER(name) LIKE ?) OR (LOWER(description) LIKE ?)";
+        String query = "SELECT COUNT(*) FROM WORKSPACE WHERE ((LOWER(name) LIKE ?) OR (LOWER(description)) LIKE ?)";
         expression = "%" + expression.toLowerCase() + "%";
         PreparedStatement stmt = MC.getConnection().prepareStatement(query);
         stmt.setString(1, expression);
