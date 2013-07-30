@@ -295,6 +295,7 @@ public class Admin extends Controller{
      * Search and return a specific list of users
      * @return The wms page with searched users
      */
+    @Security.Authenticated(Secured.class)
     public static Result searchAdminWMS(int offset){
         try {
             String id_user = session().get("id_user");
@@ -322,6 +323,7 @@ public class Admin extends Controller{
      * Search and return a specific list of users
      * @return The wps page with searched users
      */
+    @Security.Authenticated(Secured.class)
     public static Result searchAdminWPS(int offset){
         try {
             String id_user = session().get("id_user");
@@ -349,6 +351,7 @@ public class Admin extends Controller{
      * Search and return a specific list of users
      * @return The wps page with searched users
      */
+    @Security.Authenticated(Secured.class)
     public static Result searchAdminMapCatalog(int offset){
         try {
             String id_user = session().get("id_user");
