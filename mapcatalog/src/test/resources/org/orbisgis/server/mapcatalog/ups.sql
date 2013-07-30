@@ -6,6 +6,9 @@ create table IF NOT EXISTS user (
   location			varchar(255),
   profession        varchar(255),
   additional        varchar(1000),
+  admin_wms         tinyint default 30,
+  admin_mapcatalog  tinyint default 30,
+  admin_wps         tinyint default 30,
   constraint pk_user primary key (id_user)
 );
 
@@ -31,7 +34,7 @@ create table IF NOT EXISTS folder (
 create table IF NOT EXISTS comment (
   id_comment			bigint auto_increment not null,
   id_writer			    bigint,
-  id_map			    bigint,
+  id_map			    bigint not null,
   content			    clob,
   title                 varchar(255),
   date                  timestamp default CURRENT_TIMESTAMP,
