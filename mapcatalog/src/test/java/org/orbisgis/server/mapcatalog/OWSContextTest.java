@@ -53,7 +53,6 @@ public class OWSContextTest {
 
     @Test
     public void creation() throws SQLException {
-
         //Creation of the ows
         OWSContext ows = new OWSContext("1",null,"1","title");
         InputStream is = getClass().getResourceAsStream("MaCarte.ows");
@@ -72,35 +71,37 @@ public class OWSContextTest {
 
     @Test
     public void update() throws SQLException {
-        Folder fol = new Folder("1","1",null,"name2");
-        fol.update(MC);
+        OWSContext ows = new OWSContext("1","1",null,"1","title2",null);
+        ows.update(MC);
         //Obtaining of the ows
-        String[] attributes = {"id_folder"};
+        String[] attributes = {"id_owscontext"};
         String[] values = {"1"};
-        List<Folder> list= Folder.page(MC, attributes,values);
+        List<OWSContext> list= OWSContext.page(MC, attributes,values);
         Assert.assertTrue(
-                list.get(0).getId_root().equals("1")
-                        && list.get(0).getId_parent()==null
-                        && list.get(0).getName().equals("name2")
+                           list.get(0).getId_root().equals("1")
+                        && list.get(0).getId_parent() == null
+                        && list.get(0).getId_uploader().equals("1")
+                        && list.get(0).getTitle().equals("title2")
         );
     }
 
     @Test
     public void deletion() throws SQLException {
-        Folder.delete(MC,Long.valueOf("1"));
-        String[] attributes = {"id_folder"};
-        String[] values = {"1"};
-        List<Folder> list= Folder.page(MC, attributes,values);
+        OWSContext.delete(MC,Long.valueOf("2"));
+        String[] attributes = {"id_owscontext"};
+        String[] values = {"2"};
+        List<OWSContext> list= OWSContext.page(MC, attributes,values);
         Assert.assertTrue(list.isEmpty());
     }
 
     @Test
     public void searching() throws SQLException {
-        List<Folder> list = Folder.search(MC, "1","namesrc");
+        List<OWSContext> list = OWSContext.search(MC, "1","tyui");
         Assert.assertTrue(
-                list.get(0).getId_root().equals("1")
-                        && list.get(0).getId_parent()==null
-                        && list.get(0).getName().equals("namesrc")
+                           list.get(0).getId_root().equals("1")
+                        && list.get(0).getId_parent() == null
+                        && list.get(0).getId_uploader().equals("1")
+                        && list.get(0).getTitle().equals("tyui")
         );
     }
 

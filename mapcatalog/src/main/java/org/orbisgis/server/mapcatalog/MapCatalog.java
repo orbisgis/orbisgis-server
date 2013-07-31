@@ -114,7 +114,7 @@ public class MapCatalog {
             mc.updateVersion(dbVersion);
             dbVersion = mc.getVersion();
         }
-        //Admin creation
+        //Admin creation, default password is thecakeisalie
         String[] attributes = {"email"};
         String[] values = {"admin@admin.com"};
         List<User> list = User.page(mc, attributes, values);

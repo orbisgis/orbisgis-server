@@ -47,7 +47,7 @@ public class General extends Controller{
 
     /**
      * Renders the home page
-     * @return
+     * @return the home page rendered
      */
     public static Result home() {
         return ok(home.render());
@@ -56,7 +56,7 @@ public class General extends Controller{
     /**
      * Renders the login page
      * @param uri The last uri the user used
-     * @return
+     * @return the login page rendered
      */
     public static Result login(String uri) {
         return ok(login.render("",uri));
@@ -66,7 +66,6 @@ public class General extends Controller{
      * Checks if the login form is correct, and logs in the user
      * @param uri The last uri the user used
      * @return The home page if success, the login page with error if error.
-     * @throws Exception
      */
     public static Result authenticate(String uri) {
         String error="";
@@ -110,7 +109,7 @@ public class General extends Controller{
 
     /**
      * Renders the sign in page only if no one is logged in
-     * @return
+     * @return Thr signin page rendered
      */
     public static Result signin(){
         if(session().get("email")!=null){
@@ -122,10 +121,10 @@ public class General extends Controller{
 
     /**
      * Saves the user that just signed in
-     * @return
+     * @return the home page, of the sign in page with errors
      */
     public static Result signedin() {
-        String error="";
+        String error;
         try {
             DynamicForm form = Form.form().bindFromRequest();
             String email = form.get("email");
@@ -155,7 +154,7 @@ public class General extends Controller{
 
     /**
      * Generates the profile page
-     * @return
+     * @return the profile page, or home if errors
      */
     @Security.Authenticated(Secured.class)
     public static Result profilePage() {
@@ -175,7 +174,7 @@ public class General extends Controller{
 
     /**
      * Update the profile of a user
-     * @return
+     * @return The profile page or home if errors
      */
     @Security.Authenticated(Secured.class)
     public static Result changeProfile() {
@@ -200,7 +199,7 @@ public class General extends Controller{
 
     /**
      * Generates the page not found
-     * @return
+     * @return the page not found
      */
     public static Result PageNotFound(){
         return notFound(notFound.render());
@@ -208,6 +207,7 @@ public class General extends Controller{
 
     /**
      * Deletes the account of the connected user
+     * @return the sign in page, or home page if errors
      */
     public static Result deleteAccount(){
         try {
@@ -224,7 +224,7 @@ public class General extends Controller{
 
     /**
      * Change the password of a user
-     * @return
+     * @return the profile page
      */
     @Security.Authenticated(Secured.class)
     public static Result changePass() {

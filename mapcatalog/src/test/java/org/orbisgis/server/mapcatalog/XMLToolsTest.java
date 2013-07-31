@@ -27,35 +27,25 @@ package org.orbisgis.server.mapcatalog;
  * For more information, please consult: <http://www.orbisgis.org/> or contact
  * directly: info_at_ orbisgis.org
  */
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
 
+import org.junit.*;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.util.HashMap;
 
-/**
- * Some tools to parse OWS contexts
- */
-public class XMLTools {
-    /**
-     * This method looks into a doc to find the couples namespace uri that can be found in a owscontext
-     * @param dom The XML document (ows context)
-     * @return A hashmap containing the namespaces associated to URI
-     */
-    public static HashMap<String, String> getNameSpacesMap(Document dom){
-        NamedNodeMap nm = dom.getDocumentElement().getAttributes();
-        HashMap<String, String> hm = new HashMap<String, String>();
-        for(int i=0;i<nm.getLength();i++){
-            hm.put(nm.item(i).getChildNodes().item(0).getTextContent(),nm.item(i).getNodeName());
-        }
-        return hm;
-    }
-
-    /**
-     * this method returns the namespace that contains the Title of a OWScontext
-     * @param hm The hashmap containing Namespaces and URI
-     * @return The namespace where the Title can be found
-     */
-    public static String getTitleNameSpace(HashMap hm){
-        return hm.get("http://www.opengis.net/ows/2.0").toString().trim().split(":")[1];
+public class XMLToolsTest {
+    @Test
+    public void NameSpaceTest() throws ParserConfigurationException, IOException, SAXException {
+        DocumentBuilder dBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        Document doc = dBuilder.parse(XMLToolsTest.class.getResourceAsStream("MaCarte.ows"));
+        doc.getDocumentElement().normalize();
+        HashMap hm = XMLTools.getNameSpacesMap(doc);
+        String namespace = XMLTools.getTitleNameSpace(hm);
+        Assert.assertEquals(namespace, "ns1");
     }
 }

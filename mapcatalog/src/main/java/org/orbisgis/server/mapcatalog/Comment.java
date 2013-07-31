@@ -46,9 +46,9 @@ public class Comment implements Comparable{
 
     /**
      * Constructor without primary key, usually when saving in database
-     * @param id_writer
-     * @param id_map
-     * @param title
+     * @param id_writer The id of the user who wrote this
+     * @param id_map the id of the map where this is stocked
+     * @param title the title of this
      */
     public Comment(String id_writer, String id_map, String title) {
         this.id_writer = id_writer;
@@ -58,11 +58,11 @@ public class Comment implements Comparable{
 
     /**
      * Constructor with primary key, usually for SELECT queries
-     * @param id_comment
-     * @param id_writer
-     * @param id_map
-     * @param title
-     * @param date
+     * @param id_comment The primary key of this
+     * @param id_writer The id of the user who wrote this
+     * @param id_map the id of the map where this is stocked
+     * @param title the title of this
+     * @param date the date of posting
      */
     public Comment(String id_comment, String id_writer, String id_map, String title, Timestamp date) {
         this.id_comment = id_comment;
@@ -114,7 +114,7 @@ public class Comment implements Comparable{
         if(!(object instanceof Comment)){
             throw  new ClassCastException("compareTo method can only be applied to Comment");
         }else{
-            return this.id_comment.compareTo(((Comment)object).id_comment);
+            return Integer.valueOf(this.getId_comment())-Integer.valueOf(((Comment) object).getId_comment());
         }
     }
 
@@ -238,7 +238,7 @@ public class Comment implements Comparable{
      * @throws SQLException
      */
     public static SortedMap<Comment, User> pageWithMap(MapCatalog MC, String id_owscontext, int offset) throws SQLException {
-        String query = "SELECT * FROM comment JOIN user ON comment.id_writer=user.id_user WHERE comment.id_map=? ORDER BY id_comment ASC NULLS LAST LIMIT '10' offset ?";
+        String query = "SELECT * FROM comment JOIN user ON comment.id_writer=user.id_user WHERE comment.id_map=? ORDER BY id_comment DESC NULLS LAST LIMIT '10' offset ?";
         TreeMap<Comment, User> paged = new TreeMap<Comment,User>();
         PreparedStatement stmt = MC.getConnection().prepareStatement(query);
         stmt.setString(1, id_owscontext);
