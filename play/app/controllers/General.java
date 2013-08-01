@@ -257,4 +257,19 @@ public class General extends Controller{
         }
         return home();
     }
+
+    @Security.Authenticated(Secured.class)
+    public static Result userView(String id_user){
+        try{
+            String[] attributes = {"id_user"};
+            String[] values = {id_user};
+            User user = User.page(MC, attributes,values).get(0);
+            return ok(userView.render(user));
+
+        }catch (SQLException e){
+            flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
+        }
+        return General.home();
+    }
 }

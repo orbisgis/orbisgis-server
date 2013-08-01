@@ -128,7 +128,7 @@
             @for((comment, user) <- commentUser){
             <table class="table table-bordered">
                 <tr>
-                    <th>@user.getName()</th>
+                    <th><a href="@routes.General.userView(user.getId_user())">@user.getName()</a></th>
                     <th>@comment.getTitle()</th>
                     @if(user.getId_user().equals(session().get("id_user"))){
                     <a href=""><img alt="edit" title="edit" src="@routes.Assets.at("images/icons/edit-3.png")"/></a>

@@ -130,7 +130,7 @@
                     }
                     <table class="table table-bordered" id="@comment.getId_comment()">
                         <tr>
-                            <th>@user.getName()</th>
+                            <th><a href="@routes.General.userView(user.getId_user())">@user.getName()</a></th>
                             <th>@if(!comment.getId_comment().equals(flash().get("edit"))){@comment.getTitle()}
                                 @if(comment.getId_comment().equals(flash().get("edit"))){
                                     <input type="text" name="title" value="@comment.getTitle()">

@@ -1,0 +1,64 @@
+@(user : org.orbisgis.server.mapcatalog.User)
+
+@import helper.twitterBootstrap._
+@import utils.MD5Util
+
+@javamain("Profile","Profile") {
+
+@if(!(flash.get("error")==null)){
+<div class="alert alert-error" style="width:30%;margin-left:30%">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    <h4>Error :</h4>
+    @flash.get("error")
+</div>
+}
+@if(flash.get("info")!=null){
+<div class="alert alert-info" style="width:30%;margin-left:30%">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    <h4>Info :</h4>
+    @flash.get("info")
+</div>
+}
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="span6" id="navigate" style="padding-left:5px;padding-bottom:5px;padding-top:5px;padding-right:5px">
+            @defining(MD5Util.md5Hex(user.getEmail())){icon =>
+            <a href="http://www.gravatar.com"><img src="https://www.gravatar.com/avatar/@icon?s=80&amp;d=identicon"></a>
+            }
+            <h2 style="display:inline">Personal information</h2>
+            <div class="well well-small">
+                <h3>Name</h3>
+                @user.getName()
+            </div>
+            <div class="well well-small">
+                <h3>Location</h3>
+                @user.getLocation
+            </div>
+            <div class="well well-small">
+                <h3>Profession</h3>
+                @user.getProfession()
+            </div>
+            <div class="well well-small">
+                <h3>Additional info</h3>
+                @user.getAdditional()
+             </div>
+            @if(Long.valueOf(user.getAdmin_wps())<=10){
+            <div class="span3" style="background-color:Gold; color:Maroon;border-style:inset;">
+                <h3 style="margin-left:2%">Admin of WPS</h3>
+            </div>
+            }
+            @if(Long.valueOf(user.getAdmin_wms())<=10){
+            <div class="span3" style="background-color:Gold; color:Maroon;border-style:inset;">
+                <h3 style="margin-left:2%">Admin of WMS</h3>
+            </div>
+            }
+            @if(Long.valueOf(user.getAdmin_mapcatalog())<=10){
+            <div class="span4" style="background-color:Gold; color:Maroon;border-style:inset;">
+                <h3 style="margin-left:2%">Admin of MapCatalog</h3>
+            </div>
+            }
+        </div>
+    </div>
+</div>
+<script src="@routes.Assets.at("javascripts/main.js")" type="text/javascript"></script>
+}

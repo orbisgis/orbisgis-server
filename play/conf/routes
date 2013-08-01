@@ -150,6 +150,10 @@ GET /changeprofile                                                          cont
 
 POST /changepass                                                            controllers.General.changePass()
 
+GET /profile/delete                                                         controllers.General.deleteAccount
+
+GET /user/profile/:id_user                                                  controllers.General.userView(id_user)
+
 # Authentification
 
 GET /login                                                                  controllers.General.login(uri ?="/home")
@@ -161,8 +165,6 @@ POST /login                                                                 cont
 GET /signin                                                                 controllers.General.signin
 
 POST /signin                                                                controllers.General.signedin
-
-GET /profile/delete                                                         controllers.General.deleteAccount
 
 # Admin
 
@@ -188,7 +190,7 @@ GET /admin/mapcatalog/search                                                cont
 
 GET /admin/wps/search                                                       controllers.Admin.searchAdminWPS(offset : Int ?=0)
 
-#API REST
+#API REST for orbisgis
 
 GET /mapcatalogapi/workspaces                                               controllers.MapCatalogAPI.listWorkspaces
 

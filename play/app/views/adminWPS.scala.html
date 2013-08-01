@@ -20,7 +20,7 @@
         </tr>
         @for(anUser <-allUsers){
             <tr>
-                <td>@anUser.getName()</td>
+                <td><a href="@routes.General.userView(anUser.getId_user())">@anUser.getName()</a></td>
                 <td>@anUser.getEmail()</td>
                 <td>@anUser.getProfession()</td>
                 <td>
