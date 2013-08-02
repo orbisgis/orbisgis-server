@@ -31,6 +31,7 @@ package controllers;
 import constant.Message;
 import play.Logger;
 import play.data.*;
+import utils.MailHelper;
 import views.html.*;
 import play.mvc.*;
 import org.orbisgis.server.mapcatalog.*;
@@ -78,14 +79,16 @@ public class General extends Controller{
                 String[] values = {email,MapCatalog.hasher(password)};
                 List<User> list = User.page(MC, attributes, values);
                 if(!list.isEmpty()){
-                    User user = list.get(0);
-                    session().clear();
-                    session("email", email);
-                    session("id_user", user.getId_user());
-                    if(Integer.valueOf(user.getAdmin_mapcatalog())<=10||Integer.valueOf(user.getAdmin_wms())<=10||Integer.valueOf(user.getAdmin_wps())<=10){
-                        session("admin","yes");
-                    }
-                    return redirect(uri);
+                    if(list.get(0).getVerification()==null){
+                        User user = list.get(0);
+                        session().clear();
+                        session("email", email);
+                        session("id_user", user.getId_user());
+                        if(Integer.valueOf(user.getAdmin_mapcatalog())<=10||Integer.valueOf(user.getAdmin_wms())<=10||Integer.valueOf(user.getAdmin_wps())<=10){
+                            session("admin","yes");
+                        }
+                        return redirect(uri);
+                    }else{error= "You haven't validated your account";}
                 }else{error= Message.ERROR_LOGIN;}
             }
         } catch (NoSuchAlgorithmException e) {
@@ -139,7 +142,13 @@ public class General extends Controller{
                 if(password.equals(password2)){
                     if(user.isEmpty()){ //check if user mail is used
                         User usr = new User(name, email, password, location);
+                        usr.setVerification(MC);
                         usr.save(MC);
+                        MailHelper mail = new MailHelper();
+                        String URL = "http://www.services-dev.orbisgis.org/validate/"+usr.getVerification();
+                        mail.setContent(URL);
+                        mail.SendMail();
+                        flash("info","You have created an account, please validate it with the email that was sent to you");
                         return ok(home.render());
                     }else{error= Message.ERROR_EMAIL_USED;}
                 }else{error= Message.ERROR_PASSWORD_MATCH;}
@@ -187,7 +196,7 @@ public class General extends Controller{
             String profession = form.get("profession");
             String additional = form.get("additional");
             session("email",email);
-            User use = new User(id_user,name,email,"",location,profession,additional,null,null,null);
+            User use = new User(id_user,name,email,"",location,profession,additional,null,null,null, null);
             use.update(MC);
             return profilePage();
         } catch (SQLException e) {
@@ -241,7 +250,7 @@ public class General extends Controller{
             if(newpass.equals(newpass2)){
                 if(newpass.length()>=6){
                     if(MapCatalog.hasher(currentpass).equals(use.getPassword())){
-                        User newUse = new User(id_user,null,null,MapCatalog.hasher(newpass),null,null,null,null,null,null);
+                        User newUse = new User(id_user,null,null,newpass,null,null,null,null,null,null,null);
                         newUse.updatePass(MC);
                         flash("info", Message.INFO_PASSWORD_UPDATED);
                     }else{flash("error", Message.ERROR_PASSWORD_INVALID);}
@@ -266,6 +275,22 @@ public class General extends Controller{
             User user = User.page(MC, attributes,values).get(0);
             return ok(userView.render(user));
 
+        }catch (SQLException e){
+            flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
+        }
+        return General.home();
+    }
+
+    public static Result validateAccount(String verification){
+        try{
+            String[] attributes = {"verification"};
+            String[] values = {verification};
+            List<User> users =User.page(MC, attributes, values);
+            if(!users.isEmpty()){
+                users.get(0).resetVerification(MC);
+                flash("info", "You successfuly validated your account, you can now login");
+            }
         }catch (SQLException e){
             flash("error", Message.ERROR_GENERAL);
             Logger.error("", e);

@@ -51,7 +51,7 @@ import java.util.List;
  */
 public class MapCatalog {
 
-    private static final int VERSION = 3;
+    private static final int VERSION = 4;
     static {
         try
         {
@@ -110,7 +110,7 @@ public class MapCatalog {
         mc.executeSQL("ups.sql");
         //Verification of version
         int dbVersion = mc.getVersion();
-        while(dbVersion!=VERSION){
+        while(dbVersion<VERSION){
             mc.updateVersion(dbVersion);
             dbVersion = mc.getVersion();
         }
@@ -226,7 +226,7 @@ public class MapCatalog {
      * @param content The map context
      * @return the title and the lang
      */
-    public static String[] getTitleLang(InputStream content) throws SQLException, ParserConfigurationException, IOException, SAXException {
+    public static String[] getTitleLang(InputStream content) throws ParserConfigurationException, IOException, SAXException {
         DocumentBuilder dBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document doc = dBuilder.parse(content);
         doc.getDocumentElement().normalize();
@@ -240,14 +240,14 @@ public class MapCatalog {
     }
 
     /**
-     * Hashes a string into a string SHA 256
+     * Hashes a string into a string SHA 512
      * @param toHash The string to hash
      * @return The hashed string
      * @throws NoSuchAlgorithmException
      */
     public static String hasher(String toHash) throws NoSuchAlgorithmException {
-        //hashing the password
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        //hashing the string
+        MessageDigest md = MessageDigest.getInstance("SHA-512");
         md.update(toHash.getBytes());
         byte byteData[] = md.digest();
         //convert the byte to hex format
@@ -284,7 +284,6 @@ public class MapCatalog {
     }
 
     public static void main(String[] args) throws Exception{
-        System.out.println(hasher("thecakeisalie"));
-        System.out.println(1==Integer.parseInt(null));
+        System.out.println(hasher("123456"));
     }
 }

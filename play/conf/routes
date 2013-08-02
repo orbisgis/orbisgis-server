@@ -166,6 +166,8 @@ GET /signin                                                                 cont
 
 POST /signin                                                                controllers.General.signedin
 
+GET /validate/:verification                                                 controllers.General.validateAccount(verification)
+
 # Admin
 
 GET /admin                                                                  controllers.Admin.admin()

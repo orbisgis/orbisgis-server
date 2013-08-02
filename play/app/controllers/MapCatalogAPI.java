@@ -61,7 +61,7 @@ public class MapCatalogAPI extends Controller {
      * Returns a context
      * @param workspace of the workspace, not used
      * @param id the id of the context
-     * @return
+     * @return bad request status if error, the xml context else
      */
     public static Result getContext(String workspace, String id){
         try {
@@ -80,9 +80,9 @@ public class MapCatalogAPI extends Controller {
 
     /**
      * Deletes a context
-     * @param workspace of the workspace, not used
+     * @param workspace id of the workspace, not used, just here for rest
      * @param id the id of the context
-     * @return
+     * @return no content if success, bad request else
      */
     public static Result deleteContext(String workspace, String id){
         try {
@@ -95,7 +95,7 @@ public class MapCatalogAPI extends Controller {
 
     /**
      * Get the list of workspaces
-     * @return
+     * @return The XML list of workspaces, or bad request if error
      */
     public static Result listWorkspaces(){
         try {
@@ -112,7 +112,7 @@ public class MapCatalogAPI extends Controller {
     /**
      * Get the context list of a workspace
      * @param id_workspace the id of the workspace
-     * @return
+     * @return the list of the contexts in a workspace (xml) or bad request if error
      */
     public static Result listContexts(String id_workspace){
         try {
@@ -129,9 +129,9 @@ public class MapCatalogAPI extends Controller {
     /**
      * adds a context with root as parent
      * @param id_workspace the root workspace
-     * @return
+     * @return bad request if errors, XML validation else (created)
      */
-   @BodyParser.Of(BodyParser.Xml.class)
+    @BodyParser.Of(BodyParser.Xml.class)
     public static Result addContextFromRoot(String id_workspace){
        try {
            Http.RequestBody body = request().body();
@@ -176,7 +176,7 @@ public class MapCatalogAPI extends Controller {
      * Adds a context with folder as parent
      * @param id_workspace the root workspace
      * @param id_folder the parent folder
-     * @return
+     * @return bad request if errors, XML validation else (created)
      */
     @BodyParser.Of(BodyParser.Xml.class)
     public static Result addContextFromParent(String id_workspace, String id_folder){
@@ -224,7 +224,7 @@ public class MapCatalogAPI extends Controller {
      * Updates a context
      * @param id_root Root workspace of the context
      * @param id_owscontext the id of the context to update
-     * @return
+     * @return  status ok with XML validation, or bad request if errors
      */
     @BodyParser.Of(BodyParser.Xml.class)
     public static Result updateContext(String id_root, String id_owscontext){
@@ -251,7 +251,7 @@ public class MapCatalogAPI extends Controller {
             OWSContext updated = OWSContext.page(MC, attributes, values).get(0);
             String[] titleLang = MapCatalog.getTitleLang(updated.getContent(MC));
             //updating the ows with new title
-            OWSContext toUpdate = new OWSContext(id_owscontext.toString(), current.getId_root(), current.getId_parent(), current.getId_uploader(), titleLang[0], null);
+            OWSContext toUpdate = new OWSContext(id_owscontext, current.getId_root(), current.getId_parent(), current.getId_uploader(), titleLang[0], null);
             toUpdate.update(MC, ows.getContent(MC));
             //sending response
             String answer = "<context id=\""+id_owscontext+"\" date=\""+current.getDate()+"\">\n" +

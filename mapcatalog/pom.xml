@@ -6,7 +6,7 @@
     <groupId>org.orbisgis.server</groupId>
     <artifactId>mapcatalog</artifactId>
     <packaging>jar</packaging>
-    <version>2.4.3-SNAPSHOT</version>
+    <version>2.4.4-SNAPSHOT</version>
     <name>mapcatalog</name>
 
     <properties>

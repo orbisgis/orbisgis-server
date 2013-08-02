@@ -231,7 +231,7 @@ public class Comment implements Comparable{
 
     /**
      * This method returns a hash map containing all Comments linked to their writer (user). The password is not specified. Only ten comments are returned, begining at offset, in date order desc
-     * @param MC The mapcalog instance to get the connection to database
+     * @param MC The mapcatalog instance to get the connection to database
      * @param id_owscontext The id of the map context containing the comments
      * @param offset the number of the first of ten comments returned
      * @return A hash map comment user

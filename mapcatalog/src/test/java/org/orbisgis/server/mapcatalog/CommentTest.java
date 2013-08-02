@@ -90,7 +90,7 @@ public class CommentTest {
         //Obtaining of the ows
         String[] attributes = {"id_comment"};
         String[] values = {"1"};
-        List<Comment> list= com.page(MC, attributes,values);
+        List<Comment> list= Comment.page(MC, attributes,values);
         Assert.assertTrue(
                             list.get(0).getId_writer().equals("1")
                         && list.get(0).getId_map().equals("1")

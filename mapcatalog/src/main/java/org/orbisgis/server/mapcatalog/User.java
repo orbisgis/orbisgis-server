@@ -48,6 +48,7 @@ public class User {
     private String admin_wms = "30";
     private String admin_mapcatalog = "30";
     private String admin_wps = "30";
+    private String verification = "";
 
     /**
      * Constructor that hashes the password of the user (used for saving into database when signing in)
@@ -75,8 +76,9 @@ public class User {
      * @param admin_wms The level of accreditation of the user in the wms branch
      * @param admin_mapcatalog The level of accreditation of the user in the mapcatalog branch
      * @param admin_wps The level of accreditation of the user in the wps branch
+     * @param verification A string that indicates that the user has validated his account
      */
-    public User(String id_user, String name, String email, String password, String location, String profession, String additional, String admin_wms, String admin_mapcatalog, String admin_wps) {
+    public User(String id_user, String name, String email, String password, String location, String profession, String additional, String admin_wms, String admin_mapcatalog, String admin_wps, String verification) {
         this.id_user = id_user;
         this.name = name;
         this.email = email;
@@ -87,6 +89,7 @@ public class User {
         this.admin_wms = admin_wms;
         this.admin_mapcatalog = admin_mapcatalog;
         this.admin_wps = admin_wps;
+        this.verification = verification;
     }
 
     public String getId_user() {
@@ -129,6 +132,10 @@ public class User {
         return admin_wps;
     }
 
+    public String getVerification() {
+        return verification;
+    }
+
     public void setAdmin_wms(String admin_wms) {
         this.admin_wms = admin_wms;
     }
@@ -142,13 +149,14 @@ public class User {
     }
 
     /**
-     * Method that saves a instantiated User into database. Handles SQL injections.
+     * Method that saves a instantiated User into database. Handles SQL injections. This creates a new Verification attribute, unique in the database.
      * @param MC the mapcatalog object for the connection
      * @return The ID of the User just created (primary key)
      */
-    public  Long save(MapCatalog MC) throws SQLException{
+    public  Long save(MapCatalog MC) throws SQLException, NoSuchAlgorithmException {
+        this.setVerification(MC);
         Long last = null;
-        String query = "INSERT INTO user (name,email,password,location,profession,additional) VALUES (? , ? , ? , ? , ? , ?);";
+        String query = "INSERT INTO user (name,email,password,location,profession,additional,verification) VALUES (? , ? , ? , ? , ? , ? , ?);";
         PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
         pstmt.setString(1, name);
         pstmt.setString(2, email);
@@ -156,6 +164,7 @@ public class User {
         pstmt.setString(4, location);
         pstmt.setString(5, profession);
         pstmt.setString(6, additional);
+        pstmt.setString(7, verification);
         pstmt.executeUpdate();
         ResultSet rs = pstmt.getGeneratedKeys();
         if(rs.next()){
@@ -227,7 +236,8 @@ public class User {
             String admin_wms = rs.getString("admin_wms");
             String admin_mapcatalog = rs.getString("admin_mapcatalog");
             String admin_wps = rs.getString("admin_wps");
-            User use = new User(id_user,name,email,password,location,profession,additional, admin_wms, admin_mapcatalog, admin_wps);
+            String verification = rs.getString("verification");
+            User use = new User(id_user,name,email,password,location,profession,additional, admin_wms, admin_mapcatalog, admin_wps, verification);
             paged.add(use);
         }
         rs.close();
@@ -256,7 +266,8 @@ public class User {
             String admin_wms = rs.getString("admin_wms");
             String admin_mapcatalog = rs.getString("admin_mapcatalog");
             String admin_wps = rs.getString("admin_wps");
-            User use = new User(id_user,name,email,password,location,profession,additional, admin_wms, admin_mapcatalog, admin_wps);
+            String verification = rs.getString("verification");
+            User use = new User(id_user,name,email,password,location,profession,additional, admin_wms, admin_mapcatalog, admin_wps, verification);
             paged.add(use);
         }
         rs.close();
@@ -287,7 +298,8 @@ public class User {
             String admin_wms = rs.getString("admin_wms");
             String admin_mapcatalog = rs.getString("admin_mapcatalog");
             String admin_wps = rs.getString("admin_wps");
-            User use = new User(id_user,name,email,password,location,profession,additional, admin_wms, admin_mapcatalog, admin_wps);
+            String verification = rs.getString("verification");
+            User use = new User(id_user,name,email,password,location,profession,additional, admin_wms, admin_mapcatalog, admin_wps, verification);
             paged.add(use);
         }
         rs.close();
@@ -389,7 +401,8 @@ public class User {
             String admin_wms = rs.getString("admin_wms");
             String admin_mapcatalog = rs.getString("admin_mapcatalog");
             String admin_wps = rs.getString("admin_wps");
-            User use = new User(id_user,name,email,password,location,profession,additional, admin_wms, admin_mapcatalog, admin_wps);
+            String verification = rs.getString("verification");
+            User use = new User(id_user,name,email,password,location,profession,additional, admin_wms, admin_mapcatalog, admin_wps,verification);
             searched.add(use);
         }
         rs.close();
@@ -417,4 +430,39 @@ public class User {
         stmt.close();
         return count;
     }
+
+    /**
+     * Sets the verification attribute of a User as a unique string.
+     * @param MC the database connection
+     */
+    public void setVerification(MapCatalog MC) throws SQLException, NoSuchAlgorithmException {
+        List<User> list = User.page(MC);
+        String verification = MapCatalog.hasher(Double.toString(Math.random()));
+        boolean test;
+        do{
+            test=false;
+            for(User user : list){
+                if(verification.equals(user.verification)){
+                    verification = MapCatalog.hasher(Double.toString(Math.random()));
+                    test=true;
+                    break;
+                }
+            }
+        }while (test);
+        this.verification=verification;
+    }
+
+    /**
+     * Sets the verification attribute of the user to NULL
+     * @param MC database connection
+     */
+    public void resetVerification(MapCatalog MC) throws SQLException {
+        String query = "UPDATE user SET verification = NULL WHERE id_user = ?;";
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, id_user);
+        stmt.executeUpdate();
+        stmt.close();
+    }
+
 }

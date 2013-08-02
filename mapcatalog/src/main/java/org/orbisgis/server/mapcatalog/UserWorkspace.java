@@ -224,7 +224,7 @@ public class UserWorkspace {
     }
 
     /**
-     * Querys for a join from user_workspace and User, to get the information about each user linked to a workspace
+     * Queries for a join from user_workspace and User, to get the information about each user linked to a workspace
      * @param MC the mapcatalog object for the connection
      * @param id The id of the user
      * @return A map containing, for each Workspace, the relation as key, and the workspace as value
@@ -262,7 +262,7 @@ public class UserWorkspace {
     }
 
     /**
-     * Querys for a join from user_workspace and User, to get the information about each user linked to a workspace
+     * Queries for a join from user_workspace and User, to get the information about each user linked to a workspace
      * @param MC the mapcatalog object for the connection
      * @param id The id of the user
      * @param offset The number of workspace to skip
@@ -336,7 +336,7 @@ public class UserWorkspace {
     }
 
     /**
-     * Querys for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
+     * Queries for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
      * @param MC the mapcatalog object for the connection
      * @param id The id of the user
      * @return A hashmap containing, for each Workspace, the relation as key, and the workspace as value were the user has management right
@@ -371,7 +371,7 @@ public class UserWorkspace {
     }
 
     /**
-     * Querys for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
+     * Queries for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
      * @param MC the mapcatalog object for the connection
      * @param id The id of the user
      * @return A hashmap containing, for each Workspace, the relation as key, and the workspace as value
@@ -530,7 +530,7 @@ public class UserWorkspace {
     }
 
     /**
-     * Querys for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
+     * Queries for a join from user_workspace and Workspace, to get the information about each workspaces linked to a user where the access to management is granted
      * @param MC the mapcatalog object for the connection
      * @param expression the expression to look for in the name or description of the workspaces
      * @param id the user's id
