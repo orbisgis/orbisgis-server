@@ -51,16 +51,26 @@ public class User {
     private String verification = "";
 
     /**
+     * Constructor to change password
+     * @param id_user the id of the user
+     * @param passwordToHash the new password to be hashed
+     */
+    public User(String id_user, String passwordToHash) throws NoSuchAlgorithmException {
+        this.id_user = id_user;
+        this.password = MapCatalog.hasher(passwordToHash);
+    }
+
+    /**
      * Constructor that hashes the password of the user (used for saving into database when signing in)
      * @param name The name of the user
      * @param email the email of the user
-     * @param passwordtohash The password, not hashed
+     * @param passwordToHash The password, not hashed
      * @param location The location of the user
      */
-    public User(String name, String email, String passwordtohash, String location) throws NoSuchAlgorithmException {
+    public User(String name, String email, String passwordToHash, String location) throws NoSuchAlgorithmException {
         this.name = name;
         this.email = email;
-        this.password = MapCatalog.hasher(passwordtohash);
+        this.password = MapCatalog.hasher(passwordToHash);
         this.location = location;
     }
 
@@ -465,4 +475,48 @@ public class User {
         stmt.close();
     }
 
+    /**
+     * Sets the reset_pass of the user to a random value, in order to provide him a link to reset the password
+     */
+    public void setReset_pass(MapCatalog MC) throws NoSuchAlgorithmException, SQLException {
+        String pass = MapCatalog.hasher(Double.toString(Math.random()));
+        String query = "UPDATE user SET reset_pass = ? WHERE id_user = ?;";
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, pass);
+        stmt.setString(2, id_user);
+        stmt.executeUpdate();
+        stmt.close();
+    }
+
+    /**
+     * gets the value of reset_pass of an user
+     * @param MC the database connection
+     * @return The reset_pass of the user
+     */
+    public String getReset_pass(MapCatalog MC) throws SQLException {
+        String query = "SELECT reset_pass FROM user WHERE id_user = ?;";
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1,id_user);
+        ResultSet rs = stmt.executeQuery();
+        String pass=null;
+        if(rs.next()){
+            pass = rs.getString("reset_pass");
+        }
+        rs.close();
+        stmt.close();
+        return pass;
+    }
+
+    /**
+     * Sets the reset_pass attribute of the user to NULL
+     * @param MC database connection
+     */
+    public void resetReset_pass(MapCatalog MC) throws SQLException {
+        String query = "UPDATE user SET reset_pass = NULL WHERE id_user = ?;";
+        //preparation of the statement
+        PreparedStatement stmt = MC.getConnection().prepareStatement(query);
+        stmt.setString(1, id_user);
+        stmt.executeUpdate();
+        stmt.close();
+    }
 }

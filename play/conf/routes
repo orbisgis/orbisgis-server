@@ -66,7 +66,7 @@ DELETE /map/workspaces/:name/contexts/:id               controllers.CatalogAPI.r
 
 # MapCatalog website
 
-GET /home                                                                   controllers.General.home
+GET /                                                                       controllers.General.home
 
 GET /mapcatalog/public                                                      controllers.MapCatalogC.index
 
@@ -154,13 +154,21 @@ GET /profile/delete                                                         cont
 
 GET /user/profile/:id_user                                                  controllers.General.userView(id_user)
 
+GET /forgotPass                                                             controllers.General.forgotPassword()
+
+POST /forgotPass                                                            controllers.General.sendEmailForgotPassword()
+
+GET /resetPassword/:reset_pass                                              controllers.General.renderResetPassword(reset_pass)
+
+POST /resetPassword                                                         controllers.General.resetPassword()
+
 # Authentification
 
-GET /login                                                                  controllers.General.login(uri ?="/home")
+GET /login                                                                  controllers.General.login(uri ?="/")
 
 GET /logout                                                                 controllers.General.logout
 
-POST /login                                                                 controllers.General.authenticate(uri ?="/home")
+POST /login                                                                 controllers.General.authenticate(uri ?="/")
 
 GET /signin                                                                 controllers.General.signin
 

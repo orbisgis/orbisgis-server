@@ -36,19 +36,31 @@ import com.typesafe.plugin.*;
 public class MailHelper {
     public String sender = "Test <test@gmail.com>";
     public String recipient = "Test <test@gmail.com>";
-    public String subject = "verification email";
+    public String subject = "";
     private String content ="";
 
     /**
      * Sets the content of the verification email with the right URL
      * @param URLverification
      */
-    public void setContent(String URLverification) {
+    public void setContentAtSignUp(String URLverification) {
         this.content =
                 "<html>" +
                     "Click here to verify your email for you " +
                     "subscription to orbisGIS services :" +
                     "<a href=\""+ URLverification+"\">link</a>" +
+                "</html>";
+    }
+
+    /**
+     * Sets the content of the verification email with the right URL
+     * @param URLverification
+     */
+    public void setContentAtForgotPass(String URLResetPass) {
+        this.content =
+                "<html>" +
+                        "Click here to change your password for OrbisGis Services" +
+                        "<a href=\""+ URLResetPass+"\">link</a>" +
                 "</html>";
     }
 

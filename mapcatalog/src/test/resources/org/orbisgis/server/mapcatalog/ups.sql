@@ -10,6 +10,7 @@ create table IF NOT EXISTS user (
   admin_mapcatalog  tinyint default 30,
   admin_wps         tinyint default 30,
   verification      varchar(255),
+  reset_pass           varchar(255),
   constraint pk_user primary key (id_user)
 );
 

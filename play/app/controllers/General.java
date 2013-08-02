@@ -107,7 +107,7 @@ public class General extends Controller{
      */
     public static Result logout(){
         session().clear();
-        return redirect(routes.General.login("/home"));
+        return redirect(routes.General.login("/"));
     }
 
     /**
@@ -145,10 +145,12 @@ public class General extends Controller{
                         usr.setVerification(MC);
                         usr.save(MC);
                         MailHelper mail = new MailHelper();
-                        String URL = "http://www.services-dev.orbisgis.org/validate/"+usr.getVerification();
-                        mail.setContent(URL);
+                        String URL = routes.General.home().absoluteURL(request())+"/validate/"+usr.getVerification();
+                        mail.setContentAtSignUp(URL);
+                        mail.recipient=usr.getName()+" <"+usr.getEmail()+">";
+                        mail.subject ="verification email for OrbisGis services";
                         mail.SendMail();
-                        flash("info","You have created an account, please validate it with the email that was sent to you");
+                        flash("info", "You have created an account, please validate it with the email that was sent to you");
                         return ok(home.render());
                     }else{error= Message.ERROR_EMAIL_USED;}
                 }else{error= Message.ERROR_PASSWORD_MATCH;}
@@ -246,11 +248,10 @@ public class General extends Controller{
             String currentpass = form.get("currentpass");
             String newpass = form.get("newpass");
             String newpass2 = form.get("newpass2");
-            System.out.println(newpass+" "+newpass2);
             if(newpass.equals(newpass2)){
                 if(newpass.length()>=6){
                     if(MapCatalog.hasher(currentpass).equals(use.getPassword())){
-                        User newUse = new User(id_user,null,null,newpass,null,null,null,null,null,null,null);
+                        User newUse = new User(id_user,newpass);
                         newUse.updatePass(MC);
                         flash("info", Message.INFO_PASSWORD_UPDATED);
                     }else{flash("error", Message.ERROR_PASSWORD_INVALID);}
@@ -267,6 +268,11 @@ public class General extends Controller{
         return home();
     }
 
+    /**
+     * Page to see info about a user
+     * @param id_user the id of the user
+     * @return The page where the info about the user is
+     */
     @Security.Authenticated(Secured.class)
     public static Result userView(String id_user){
         try{
@@ -282,6 +288,11 @@ public class General extends Controller{
         return General.home();
     }
 
+    /**
+     * When a user with the right verification hash is calling this method, his verification attribute is set to null, therefore enableling his login
+     * @param verification the hash that specify the user
+     * @return The home page
+     */
     public static Result validateAccount(String verification){
         try{
             String[] attributes = {"verification"};
@@ -294,6 +305,91 @@ public class General extends Controller{
         }catch (SQLException e){
             flash("error", Message.ERROR_GENERAL);
             Logger.error("", e);
+        }
+        return General.home();
+    }
+
+    /**
+     * @return The "forgotPassword" page
+     */
+    public static Result forgotPassword(){
+        return ok(forgotPassword.render());
+    }
+
+    /**
+     * Verifies if the email in the form is valid, then sends an email to this address, with a link to reset password.
+     * @return the home page
+     */
+    public static Result sendEmailForgotPassword(){
+        try {
+            DynamicForm form = Form.form().bindFromRequest();
+            String email = form.get("email");
+            String[] attributes = {"email"};
+            String[] values = {email};
+            List<User> users =User.page(MC, attributes, values);
+            if(!users.isEmpty()){
+                User usr = users.get(0);
+                usr.setReset_pass(MC);
+                String URL = routes.General.home().absoluteURL(request())+"/resetPassword/"+usr.getReset_pass(MC);
+                MailHelper mail = new MailHelper();
+                mail.recipient=usr.getName()+" <"+usr.getEmail()+">";
+                mail.setContentAtForgotPass(URL);
+                mail.SendMail();
+                flash("info","You will recieve an email soon to change your password.");
+            }else{flash("error", "email Invalid");}
+        } catch (SQLException e) {
+            flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
+        } catch (NoSuchAlgorithmException e) {
+            flash("error", Message.ERROR_GENERAL);
+            Logger.error("Algorithm for hash failed", e);
+        }
+        return General.home();
+    }
+
+    /**
+     * @param reset_pass The hash that defines the user that needs his password reset
+     * @return the reset password page
+     */
+    public static Result renderResetPassword(String reset_pass){
+        return ok(resetPassword.render(reset_pass));
+    }
+
+    /**
+     * Checks if the email specified in the form corresponds to the same user as the reset_pass hash, then changes the password accordingly
+     * @return The home page, or the same page with errors
+     */
+    public static Result resetPassword(){
+        try {
+            DynamicForm form = Form.form().bindFromRequest();
+            String email = form.get("email");
+            String reset_pass = form.get("reset_pass");
+            String password = form.get("password");
+            String password2 = form.get("password2");
+            String[] attributes = {"email"};
+            String[] values = {email};
+            List<User> users =User.page(MC, attributes, values);
+            if(password.equals(password2)){
+                if(password.length()>=6){
+                    if(!users.isEmpty()){
+                        User usr = users.get(0);
+                        if(reset_pass.equals(usr.getReset_pass(MC))){
+                            User updated = new User(usr.getId_user(), password);
+                            updated.updatePass(MC);
+                            updated.resetReset_pass(MC);
+                            flash("info", Message.INFO_PASSWORD_UPDATED);
+                            return home();
+                        }else{flash("error", Message.ERROR_UNAUTHORIZED_USER);}
+                    }else{flash("error", "Email Invalid");}
+                }else{flash("error", Message.ERROR_PASSWORD_LENGTH);}
+            }else{flash("error", Message.ERROR_PASSWORD_MATCH);}
+            return renderResetPassword(reset_pass);
+        } catch (SQLException e) {
+            flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
+        } catch (NoSuchAlgorithmException e) {
+            flash("error", Message.ERROR_GENERAL);
+            Logger.error("Algorithm for hash failed", e);
         }
         return General.home();
     }
