@@ -123,7 +123,7 @@ div.commentBox {
     border-color:#BBBBBB;
     border-width:5px;
     border-radius:10px;
-    background-color:white;
+    background-color:White;
     padding-top:10px;
     padding-bottom:10px;
     padding-left:10px;
@@ -138,6 +138,11 @@ div.commentBox table.table th:first-child{
     width:20%;
 }
 
-div.commentBox table.table {
-
+footer{
+    border:2px solid;
+    border-radius:5px;
+    box-shadow: 5px 5px 2px #888888;
+    padding-left:5%;
+    padding-right:5%;
+    line-height:70%
 }

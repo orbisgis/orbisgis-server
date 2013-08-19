@@ -27,7 +27,7 @@
             <div class="thumbnail">
                 <img src="@routes.Assets.at("images/logos/OrbisData.png")" alt="Orbis Data">
                 <h2>Orbis Data</h2>
-                <p>Under development</p>
+                <p style="font-size:16px">Under development</p>
                 <a href="@controllers.routes.Application.index()"><button class="btn btn-primary" type="button">Try it !</button></a>
                 <a href="@controllers.routes.General.signin"><button class="btn" type="button">Sign up</button></a>
             </div>
@@ -36,7 +36,7 @@
             <div class="thumbnail">
                 <img src="@routes.Assets.at("images/logos/OrbisMapCatalog.png")" alt="Orbis Map Catalog">
                 <h2>Orbis Map Catalog</h2>
-                <p>Share your maps under .ows format with other users, and arrange them in different workspaces to manage the visibility of your maps. Works in coordination with <a href="http://www.orbisgis.org/">OrbisGis</a> for a even easier sharing process.</p>
+                <p style="font-size:16px">Share your maps under .ows format with other users, and arrange them in different workspaces to manage the visibility of your maps. Works in coordination with <a href="http://www.orbisgis.org/">OrbisGis</a> for a even easier sharing process.</p>
                 <a href="@controllers.routes.MapCatalogC.index()"><button class="btn btn-primary" type="button">Try it !</button></a>
                 <a href="@controllers.routes.General.signin"><button class="btn" type="button">Sign up</button></a>
             </div>
@@ -45,11 +45,17 @@
             <div class="thumbnail">
                 <img src="@routes.Assets.at("images/logos/OrbisProcessing.png")" alt="Orbis Processing">
                 <h2>Orbis Processing</h2>
-                <p>Under development</p>
+                <p style="font-size:16px">Under development</p>
                 <a href="@controllers.routes.WPS.manage"><button class="btn btn-primary" type="button">Try it!</button></a>
                 <a href="@controllers.routes.General.signin"><button class="btn" type="button">Sign up</button></a>
             </div>
         </li>
     </ul>
 </div>
+<footer>
+    </br>
+    <p>This is a in-development website, enjoy! </p>
+    <p><b>Version 2.4.7-SNAPSHOT</b> -- Mario Jothy</p>
+    <p><a href="@controllers.routes.General.contact">Contacts</a></p>
+</footer>
 }

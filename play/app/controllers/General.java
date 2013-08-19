@@ -393,4 +393,11 @@ public class General extends Controller{
         }
         return General.home();
     }
+
+    /**
+     * Renders the contact page
+     */
+    public static Result contact(){
+        return ok(contact.render());
+    }
 }

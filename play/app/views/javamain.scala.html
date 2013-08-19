@@ -39,7 +39,7 @@
             <ul class="nav" style="margin-left:90%;position:absolute">
                 <li class="divider-vertical"></li>
                 @if(session.get("email")==null){
-                    <li><a href="@controllers.routes.General.login("/home")">Login</a></li>
+                    <li><a href="@controllers.routes.General.login("/")">Login</a></li>
                 }else{
                     <li><a href="@controllers.routes.General.logout">Logout</a></li>
                 }

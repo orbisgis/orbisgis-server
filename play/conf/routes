@@ -63,10 +63,13 @@ DELETE /map/workspaces/:name/contexts/:id               controllers.CatalogAPI.r
 
 #DELETE /map/workspaces/:name/path/*path                controllers.CatalogAPI.removePath(key: String ?= "",path)
 
-
-# MapCatalog website
+# Main page and informations
 
 GET /                                                                       controllers.General.home
+
+GET /contact                                                                controllers.General.contact
+
+# MapCatalog website
 
 GET /mapcatalog/public                                                      controllers.MapCatalogC.index
 
