@@ -59,7 +59,8 @@ object Global extends GlobalSettings {
 
     WPS.init()
 
-    mc = MapCatalog.init(mapCatalogProperties());
+    Logger.info("Initializing MapCatalog database...")
+    mc = MapCatalog.init(mapCatalogProperties())
   }
 
   override def onStop(app: Application) {

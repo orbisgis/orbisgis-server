@@ -41,7 +41,7 @@ public class MailHelper {
 
     /**
      * Sets the content of the verification email with the right URL
-     * @param URLverification
+     * @param URLverification The URL needed to verify the email of the user (see routes)
      */
     public void setContentAtSignUp(String URLverification) {
         this.content =
@@ -54,7 +54,7 @@ public class MailHelper {
 
     /**
      * Sets the content of the verification email with the right URL
-     * @param URLverification
+     * @param URLResetPass The URL needed to reset the password of a user (see routes)
      */
     public void setContentAtForgotPass(String URLResetPass) {
         this.content =

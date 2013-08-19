@@ -109,10 +109,14 @@ public class MapCatalog {
         //Database initialization
         mc.executeSQL("ups.sql");
         //Verification of version
+        System.out.println("[Database INFO] : latest release version is "+VERSION);
         int dbVersion = mc.getVersion();
+        System.out.println("[Database INFO] : current version is "+dbVersion);
         while(dbVersion<VERSION){
+            System.out.println("[Database INFO] : Upgrading from "+dbVersion+" to "+(dbVersion+1));
             mc.updateVersion(dbVersion);
             dbVersion = mc.getVersion();
+            System.out.println("[Database INFO] : current version is "+dbVersion);
         }
         //Admin creation, default password is thecakeisalie
         String[] attributes = {"email"};
