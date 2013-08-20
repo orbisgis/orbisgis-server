@@ -21,9 +21,10 @@ object ApplicationBuild extends Build {
     val main = play.Project(appName, appVersion, appDependencies).settings(
        externalResolvers += "IRSTV" at "http://repo.orbisgis.org",
        externalResolvers += "Local repo" at "file://"+Path.userHome.absolutePath+"/.m2/repository",
-	javacOptions ++= Seq("-source", "1.6"),
-    //cannot test with this
-	//excludeFilter in unmanagedSources := "test",
-	unmanagedSourceDirectories in Test += file("app/wms/src/test/java")
+	     javacOptions ++= Seq("-source", "1.6"),
+       javaOptions in Test ++= Seq("-Dconfig.file=conf/test.conf"),
+       //cannot test with this
+	     //excludeFilter in unmanagedSources := "test",
+	     unmanagedSourceDirectories in Test += file("app/wms/src/test/java")
     )
 }

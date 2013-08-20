@@ -29,6 +29,7 @@
 
 import org.junit.*;
 import play.Logger;
+import play.Play;
 import play.mvc.*;
 import static org.fest.assertions.Assertions.assertThat;
 import static play.mvc.Http.Status.OK;
@@ -46,14 +47,9 @@ public class FunctionalTest {
     @Before
     public void startApp() throws Exception {
         // Set up connection to test database, different from main database. Config better should be used instead of hard-coding.
-        Map<String, String> settings = new HashMap<String, String>();
-        settings.put("db.default.url","jdbc:h2:~/testunit");
-        settings.put("db.default.user","sa");
-        settings.put("db.default.password","");
-        app = Helpers.fakeApplication(settings);
+        app = Helpers.fakeApplication();
         Helpers.start(app);
     }
-
 
     @Test
     public void homeSimpleTest(){
