@@ -28,6 +28,7 @@
  */
 
 import org.junit.*;
+import org.orbisgis.server.mapcatalog.MapCatalog;
 import play.Logger;
 import play.Play;
 import play.mvc.*;
@@ -36,7 +37,6 @@ import static play.mvc.Http.Status.OK;
 import static play.test.Helpers.*;
 import play.test.*;
 import play.libs.F.*;
-import utils.TestUnitHelper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,15 +46,24 @@ public class FunctionalTest {
 
     @Before
     public void startApp() throws Exception {
-        // Set up connection to test database, different from main database. Config better should be used instead of hard-coding.
         app = Helpers.fakeApplication();
         Helpers.start(app);
+        MapCatalog mc = controllers.MapCatalogC.getMapCatalog();
+        mc.setTestEnvironment();;
     }
 
     @Test
     public void homeSimpleTest(){
         Result result = callAction(
                 controllers.routes.ref.General.home()
+        );
+        assertThat(status(result)).isEqualTo(OK);
+    }
+
+    @Test
+    public void listWorkspacesTest(){
+        Result result = callAction(
+                controllers.routes.ref.MapCatalogAPI.listWorkspaces()
         );
         assertThat(status(result)).isEqualTo(OK);
     }

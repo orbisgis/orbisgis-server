@@ -287,6 +287,14 @@ public class MapCatalog {
         this.executeSQL("update"+n+".sql");
     }
 
+    /**
+     * Sets the test environment for the play application
+     */
+    public void setTestEnvironment() throws SQLException {
+        this.executeSQL("testEnvironment.sql");
+    }
+
+
     public static void main(String[] args) throws Exception{
         System.out.println(hasher("123456"));
     }
