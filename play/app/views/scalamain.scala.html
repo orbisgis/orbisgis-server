@@ -31,6 +31,8 @@
                 @if(session.get("admin")!=null){
                 <li @if(page=="admin"){class="active"}><a href="@controllers.routes.Admin.admin">Administration panel</a></li>
                 <li class="divider-vertical"></li>
+                <li @if(page=="Contact"){class="active"}><a href="@controllers.routes.General.contact">Contacts</a></li>
+                <li class="divider-vertical"></li>
                 }
             </ul>
             <ul class="nav" style="margin-left:70%;position:absolute">
