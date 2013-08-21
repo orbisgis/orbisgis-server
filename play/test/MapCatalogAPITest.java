@@ -29,6 +29,7 @@
 
 import org.junit.*;
 import org.orbisgis.server.mapcatalog.MapCatalog;
+import org.xml.sax.InputSource;
 import play.Logger;
 import play.Play;
 import play.mvc.*;
@@ -38,18 +39,20 @@ import static play.test.Helpers.*;
 import play.test.*;
 import play.libs.F.*;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FunctionalTest {
+public class MapCatalogAPITest {
     private static FakeApplication app;
+    private static MapCatalog mc;
 
-    @Before
-    public void startApp() throws Exception {
+    @BeforeClass
+    public static void startApp() throws Exception {
         app = Helpers.fakeApplication();
         Helpers.start(app);
-        MapCatalog mc = controllers.MapCatalogC.getMapCatalog();
-        mc.setTestEnvironment();;
+        mc = controllers.MapCatalogC.getMapCatalog();
+        mc.setTestEnvironment();
     }
 
     @Test
@@ -68,8 +71,51 @@ public class FunctionalTest {
         assertThat(status(result)).isEqualTo(OK);
     }
 
-    @After
-    public void stopApp() {
+    @Test
+    public void getContextError(){
+        Result result = callAction(
+                controllers.routes.ref.MapCatalogAPI.getContext(null, "12")
+        );
+        assertThat(status(result)).isEqualTo(BAD_REQUEST);
+    }
+
+    @Test
+    public void getContextTest(){
+        Result result = callAction(
+                controllers.routes.ref.MapCatalogAPI.getContext("1","1")
+        );
+        assertThat(status(result)).isEqualTo(OK);
+    }
+
+    @Test
+    public void deleteContextTest(){
+        Result result = callAction(
+                controllers.routes.ref.MapCatalogAPI.deleteContext(null,"2")
+        );
+        assertThat(status(result)).isEqualTo(NO_CONTENT);
+    }
+
+    @Test
+    public void listContextsTest(){
+        Result result = callAction(
+                controllers.routes.ref.MapCatalogAPI.listContexts("1")
+        );
+        assertThat(status(result)).isEqualTo(OK);
+    }
+
+    @Test
+    public void addContextFromRootTest(){
+        InputSource is = new InputSource(MapCatalog.class.getResourceAsStream("MaCarte.ows"));
+        Result result = callAction(
+                controllers.routes.ref.MapCatalogAPI.addContextFromRoot("1"),
+                fakeRequest().withXmlBody(is)
+        );
+        assertThat(status(result)).isEqualTo(CREATED);
+    }
+
+    @AfterClass
+    public static void stopApp() throws SQLException {
+        mc.breakTestEnvironment();
         Helpers.stop(app);
     }
 }

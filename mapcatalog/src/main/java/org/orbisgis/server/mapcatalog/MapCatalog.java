@@ -294,6 +294,13 @@ public class MapCatalog {
         this.executeSQL("testEnvironment.sql");
     }
 
+    /**
+     * breaks the test environment by deleting the target Database file
+     */
+    public void breakTestEnvironment() throws SQLException {
+        this.executeSQL("down.sql");
+    }
+
 
     public static void main(String[] args) throws Exception{
         System.out.println(hasher("123456"));
