@@ -41,21 +41,19 @@ import org.apache.commons.io.{FileUtils => FU}
 import org.orbisgis.server.wms.WMSProperties
 
 object Global extends GlobalSettings {
-  var mc = new MapCatalog();
+  var mc = new MapCatalog()
   /**
    * Feeds the workspace used by the WMS server and starts the application.
-   * @param app
    */
   override def onStart(app: Application) {
     Logger.info("Application start...")
     // init the main (and only) loaded OrbisGIS workspace
     val c = new CoreWorkspace()
     c.setWorkspaceFolder("workspace")
-    val s : Option[String] = Play.current.configuration.getString("db.driver")
 
     WMS.loadStyles
     WMS.wmsCt.init(c, WMS.styles, WMS.sourceStyles, wMSProperties())
-    Logger.info("WMS Context initialized");
+    Logger.info("WMS Context initialized")
 
     WPS.init()
 
@@ -88,7 +86,7 @@ object Global extends GlobalSettings {
   }
 
   private def mapCatalogProperties() : MapCatalogProperties = {
-    val mcp: MapCatalogProperties = new MapCatalogProperties();
+    val mcp: MapCatalogProperties = new MapCatalogProperties()
     val keys: util.HashSet[String] = MapCatalogProperties.getDefaultKeys
     keys.foreach(key => {
       val a =Play.current.configuration.getString(key)

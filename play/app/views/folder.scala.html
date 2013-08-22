@@ -6,19 +6,19 @@
 <div class="container">
     <div class="page-header">
         <h1>
-            <img src="@routes.Assets.at("images/logos/OrbisMapCatalog.png")" alt="Map Catalog"></img>
+            <img src="@routes.Assets.at("images/logos/OrbisMapCatalog.png")" alt="Map Catalog"/>
         </h1>
     </div>
 </div>
 @if(flash.get("error")!=null){
-<div class="alert alert-error" style="width:30%;margin-left:30%">
+<div class="alert alert-error">
     <button type="button" class="close" data-dismiss="alert">&times;</button>
     <h4>Error :</h4>
     @flash.get("error")
 </div>
 }
 @if(flash.get("info")!=null){
-<div class="alert alert-info" style="width:30%;margin-left:30%">
+<div class="alert alert-info">
     <button type="button" class="close" data-dismiss="alert">&times;</button>
     <h4>Info :</h4>
     @flash.get("info")
@@ -26,7 +26,7 @@
 }
 <div class="container-fluid">
     <div class="row-fluid">
-        <div class="span5" id="navigate" style="background-color:#61a8df;padding-left: 5px">
+        <div class="span5" id="navigate" style="background-color:#61a8df">
             <ul class="nav nav-tabs" style="margin-top:2%">
                 <li @if(root.getAll_read()=="0"){class="active"}>
                 <a href="@routes.MapCatalogC.myWorkspaces()"><h4>My workspaces</h4></a>
@@ -40,7 +40,7 @@
                 <button type="submit" class="btn">Search</button>
             </form>
             <div class="well well-small">
-                <img id="imgtoggle" src="@routes.Assets.at("images/icons/add.png")"alt="add"> create a folder here</img>
+                <img id="imgtoggle" src="@routes.Assets.at("images/icons/add.png")"alt="add"/> create a folder here
                 <form id="addtoggle" style="margin-left:2%;padding-bottom:2px;display:none" action="@routes.MapCatalogC.createFolderFromParent(root.getId_workspace(), path.get(path.size()-1).getId_folder())">
                     <fieldset>
                         <label>Name</label>
@@ -56,7 +56,7 @@
                 <li><a href="@routes.MapCatalogC.viewFolder(folder.getId_root(), folder.getId_folder())">@folder.getName()</a><span class="divider">/</span></li>
                 }
             </ul>
-            <div class="CSSworktable" style="width:98%;margin-bottom:1%">
+            <div class="CSSworktable">
                 <table>
                     <tr>
                         <td>Name</td>
@@ -66,7 +66,7 @@
                     <tr>
                         <td>
                             <a href="@routes.MapCatalogC.viewFolder(folder.getId_root(), folder.getId_folder())">
-                                <img src="@routes.Assets.at("images/icons/document.png")" alt="Map">
+                                <img src="@routes.Assets.at("images/icons/document.png")" alt="Map"/>
                                 @folder.getName()
                             </a>
                         </td>
@@ -85,7 +85,7 @@
                     @for(context <- contexts){
                     <tr>
                         <td>
-                            <img src="@routes.Assets.at("images/icons/map-compass.png")" alt="Map"></img>
+                            <img src="@routes.Assets.at("images/icons/map-compass.png")" alt="Map"/>
                             @context.getTitle()
                         </td>
                         <td>
@@ -105,7 +105,7 @@
             @if(folders.isEmpty()&&contexts.isEmpty()){There is no information to display}
             <br>
             <div class="well well-small" style="margin-right:2%">
-                <img src="@routes.Assets.at("images/icons/add.png")" alt="add"> Add a mapcontext</img>
+                <img src="@routes.Assets.at("images/icons/add.png")" alt="add"/> Add a mapcontext
                 <form style="margin-left:2%" action="@routes.MapCatalogC.addMapContextFromParent(root.getId_workspace(), path.get(path.size()-1).getId_folder())" enctype="multipart/form-data" method="post">
                     <input type="file" name="mapcontext">
                     <br>

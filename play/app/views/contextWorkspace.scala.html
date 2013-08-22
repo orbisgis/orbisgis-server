@@ -12,14 +12,14 @@
     </div>
 </div>
 @if(flash.get("error")!=null){
-<div class="alert alert-error" style="width:30%;margin-left:30%">
+<div class="alert alert-error">
     <button type="button" class="close" data-dismiss="alert">&times;</button>
     <h4>Error :</h4>
     @flash.get("error")
 </div>
 }
 @if(flash.get("info")!=null){
-<div class="alert alert-info" style="width:30%;margin-left:30%">
+<div class="alert alert-info">
     <button type="button" class="close" data-dismiss="alert">&times;</button>
     <h4>Info :</h4>
     @flash.get("info")
@@ -27,7 +27,7 @@
 }
 <div class="container-fluid">
     <div class="row-fluid">
-        <div class="span5" id="navigate" style="background-color:#61a8df;padding-left: 5px">
+        <div class="span5" id="navigate" style="background-color:#61a8df">
             <ul class="nav nav-tabs" style="margin-top:2%">
                 <li @if(root.getAll_read()=="0"){class="active"}>
                 <a href="@routes.MapCatalogC.myWorkspaces()"><h4>My workspaces</h4></a>
@@ -54,7 +54,7 @@
             <ul class="breadcrumb" style="margin-right:2%">
                 <li><a href="@routes.MapCatalogC.viewWorkspace(root.getId_workspace())">@root.getName()</a><span class="divider">/</span></li>
             </ul>
-            <div class="CSSworktable" style="width:98%;margin-bottom:1%">
+            <div class="CSSworktable">
                 <table>
                     <tr>
                         <td>Name</td>
@@ -64,7 +64,7 @@
                     <tr>
                         <td>
                             <a href="@routes.MapCatalogC.viewFolder(folder.getId_root(), folder.getId_folder())">
-                                <img src="@routes.Assets.at("images/icons/document.png")" alt="Map">
+                                <img src="@routes.Assets.at("images/icons/document.png")" alt="Map"/>
                                 @folder.getName()
                             </a>
                         </td>
@@ -83,7 +83,7 @@
                     @for(context <- contexts){
                     <tr>
                         <td>
-                            <img src="@routes.Assets.at("images/icons/map-compass.png")" alt="Map"></img>
+                            <img src="@routes.Assets.at("images/icons/map-compass.png")" alt="Map"/>
                             @context.getTitle()
                         </td>
                         <td>
@@ -111,7 +111,7 @@
             </div>
         </div>
         <div class="span7">
-            <div id="display" style="background-color:#70c265;padding-left:10px; padding-bottom:10px">
+            <div id="display" style="background-color:#70c265;">
                 <h3>@context.getTitle()</h3>
                 <h4>Date of upload : @context.getDate()</h4>
                 <img src="@routes.Assets.at("images/noPreview.jpg")" alt="no preview"/>

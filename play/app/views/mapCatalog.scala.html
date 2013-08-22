@@ -6,20 +6,27 @@
 <div class="container">
     <div class="page-header">
         <h1>
-            <img src="@routes.Assets.at("images/logos/OrbisMapCatalog.png")" alt="Map Catalog"></img>
+            <img src="@routes.Assets.at("images/logos/OrbisMapCatalog.png")" alt="Map Catalog"/>
         </h1>
     </div>
 </div>
 @if(flash.get("error")!=null){
-<div class="alert alert-error" style="width:30%;margin-left:30%">
+<div class="alert alert-error">
     <button type="button" class="close" data-dismiss="alert">&times;</button>
     <h4>Error :</h4>
     @flash.get("error")
 </div>
 }
+@if(flash.get("info")!=null){
+<div class="alert alert-info">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    <h4>Info :</h4>
+    @flash.get("info")
+</div>
+}
 <div class="container-fluid" >
     <div class="row-fluid">
-        <div class="span5" id="navigate" style="background-color:#61a8df;padding-left: 5px">
+        <div class="span5" id="navigate" style="background-color:#61a8df">
 
             <ul class="nav nav-tabs" style="margin-top:2%">
                 <li>
@@ -44,7 +51,7 @@
             </form>
             @if(session.get("email")!=null){
             <div class="well well-small">
-                <img id="imgtoggle" src="@routes.Assets.at("images/icons/add.png")" alt="add"> create my own workspace</img>
+                <img id="imgtoggle" src="@routes.Assets.at("images/icons/add.png")" alt="add"/> create my own workspace</img>
                 <form id="addtoggle" style="margin-left:2%;padding-bottom:2px;display:none" action="@routes.MapCatalogC.createWorkspace()">
                     <fieldset>
                         <label>Name</label>
@@ -67,7 +74,7 @@
                 </form>
             </div>
             }
-            <div class="CSSworktable" style="width:98%;margin-bottom:1%">
+            <div class="CSSworktable">
 
                 <table>
                     <tr>

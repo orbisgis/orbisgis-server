@@ -6,7 +6,7 @@
 <div class="container">
     <div class="page-header">
         <h1>
-            <img src="@routes.Assets.at("images/logos/OrbisMapCatalog.png")" alt="Map Catalog"></img>
+            <img src="@routes.Assets.at("images/logos/OrbisMapCatalog.png")" alt="Map Catalog"/>
         </h1>
     </div>
 </div>
@@ -17,9 +17,9 @@
             <h4>Info :</h4>
             Here is the list of the workspace where you have the right of management.
         </div>
-        <div class="span5" id="navigate" style="background-color:#61a8df;padding-left: 5px">
+        <div class="span5" id="navigate" style="background-color:#61a8df">
             <h3>Workspace Created</h3>
-            <div class="CSSworktable" style="width:98%;margin-bottom:1%">
+            <div class="CSSworktable">
                 <table>
                     <tr>
                         <td>Name</td>
@@ -30,7 +30,7 @@
                     <tr>
                         <td>
                             <a href="/mapcatalog/workspace/@workspace.getId_workspace()">
-                                <img src="@routes.Assets.at("images/icons/workspace.png")" alt="Map">@workspace.getName()
+                                <img src="@routes.Assets.at("images/icons/workspace.png")" alt="Map"/>@workspace.getName()
                             </a>
                         </td>
                         <td>
@@ -50,9 +50,9 @@
             </div>
             @if(workspacesCreated.isEmpty()){There is no information to display}
         </div>
-        <div class="span5" id="display" style="background-color:#61a8df;padding-left: 5px">
+        <div class="span5" id="display" style="background-color:#61a8df">
             <h3>Workspace Monitored</h3>
-            <div class="CSSworktable" style="width:98%;margin-bottom:1%">
+            <div class="CSSworktable">
                 <table>
                     <tr>
                         <td>Name</td>
@@ -64,7 +64,7 @@
                         <tr>
                             <td>
                                 <a href="/mapcatalog/workspace/@workspace.getId_workspace()">
-                                    <img src="@routes.Assets.at("images/icons/workspace.png")" alt="Map">@workspace.getName()
+                                    <img src="@routes.Assets.at("images/icons/workspace.png")" alt="Map"/>@workspace.getName()
                                 </a>
                             </td>
                             <td>

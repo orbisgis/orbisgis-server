@@ -2,7 +2,8 @@
 	margin:0px;padding:0px;
 	width:100%;
 	border:1px solid #000000;
-	
+	width:98%;
+	margin-bottom:1%
 	-moz-border-radius-bottomleft:0px;
 	-webkit-border-bottom-left-radius:0px;
 	border-bottom-left-radius:0px;
@@ -111,11 +112,19 @@ div#navigate
 {
 border:2px solid;
 border-radius:10px;
+padding-left: 5px;
+padding-top: 5px;
+padding-bottom: 5px;
+padding-right: 5px
 }
 div#display
 {
 border:2px solid;
 border-radius:10px;
+padding-left: 5px;
+padding-top: 5px;
+padding-bottom: 5px;
+padding-right: 5px
 }
 
 div.commentBox {
@@ -145,4 +154,9 @@ footer{
     padding-left:5%;
     padding-right:5%;
     line-height:70%
+}
+
+div.alert{
+    width:30%;
+    margin-left:30%;
 }

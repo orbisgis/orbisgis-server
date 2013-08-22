@@ -8,14 +8,14 @@
         <h1>Administration hub</h1>
     </div>
     @if(flash.get("error")!=null){
-    <div class="alert alert-error" style="width:30%;margin-left:30%">
+    <div class="alert alert-error">
         <button type="button" class="close" data-dismiss="alert">&times;</button>
         <h4>Error :</h4>
         @flash.get("error")
     </div>
     }
     @if(flash.get("info")!=null){
-    <div class="alert alert-info" style="width:30%;margin-left:30%">
+    <div class="alert alert-info">
         <button type="button" class="close" data-dismiss="alert">&times;</button>
         <h4>Info :</h4>
         @flash.get("info")
@@ -24,7 +24,7 @@
 </div>
 <div class="container-fluid">
     <div class="row-fluid">
-        <div class="span3" id="navigate" style="padding-left: 5px; padding-top: 5px; padding-bottom: 5px; padding-right: 5px">
+        <div class="span3" id="navigate">
             <h2>Navigation panel</h2>
             <div class="well well-small">
                 <p>You can only access the panels you have admin rights in, if you desire to apply as administrator for another service, ask a SA</p>
@@ -48,7 +48,7 @@
             </a><br/>
             }
         </div>
-        <div class="span9" id="display" style="padding-left: 5px; padding-right: 5px; padding-top: 5px;">
+        <div class="span9" id="display">
             @content
         </div>
     </div>

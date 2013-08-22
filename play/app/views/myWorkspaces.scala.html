@@ -11,14 +11,14 @@
     </div>
 </div>
 @if(flash.get("error")!=null){
-<div class="alert alert-error" style="width:30%;margin-left:30%">
+<div class="alert alert-error">
     <button type="button" class="close" data-dismiss="alert">&times;</button>
     <h4>Error :</h4>
     @flash.get("error")
 </div>
 }
 @if(flash.get("info")!=null){
-<div class="alert alert-info" style="width:30%;margin-left:30%">
+<div class="alert alert-info">
     <button type="button" class="close" data-dismiss="alert">&times;</button>
     <h4>Info :</h4>
     @flash.get("info")
@@ -26,7 +26,7 @@
 }
 <div class="container-fluid" >
     <div class="row-fluid">
-        <div class="span5" id="navigate" style="background-color:#61a8df;padding-left: 5px">
+        <div class="span5" id="navigate" style="background-color:#61a8df">
 
             <ul class="nav nav-tabs" style="margin-top:2%">
                 <li class="active">
@@ -37,7 +37,7 @@
                 </li>
             </ul>
 
-            <div class="alert alert-info">
+            <div class="alert alert-info" style="width:90%;margin-left:1%">
                 <button type="button" class="close" data-dismiss="alert">&times;</button>
                 <h4>Info :</h4>
                 You can delete your workspaces and manage its users by clicking on "Manage my workspaces" :
@@ -50,7 +50,7 @@
                 <button type="submit" class="btn">Search</button>
             </form>
             <div class="well well-small">
-                <img id="imgtoggle" src="@routes.Assets.at("images/icons/add.png")" alt="add"> Create a new workspace</img>
+                <img id="imgtoggle" src="@routes.Assets.at("images/icons/add.png")" alt="add"/> Create a new workspace
                 <form id="addtoggle" style="margin-left:2%;padding-bottom:2px;display:none" action="@routes.MapCatalogC.createWorkspace()">
                     <fieldset>
                         <label>Name</label>
@@ -76,7 +76,7 @@
                 <h4>Results for searching "@flash().get("search")"</h4>
             }
             <h3>Workspaces you created</h3>
-            <div class="CSSworktable" style="width:98%;margin-bottom:1%">
+            <div class="CSSworktable">
                 <table>
                     <tr>
                         <td>Name</td>
@@ -87,7 +87,7 @@
                     <tr>
                         <td >
                             <a href="/mapcatalog/workspace/@workspace.getId_workspace()">
-                                <img src="@routes.Assets.at("images/icons/workspace.png")" alt="Map"><h5 style="display:inline">@workspace.getName()</h5>
+                                <img src="@routes.Assets.at("images/icons/workspace.png")" alt="Map"/><h5 style="display:inline">@workspace.getName()</h5>
                             </a>
                         </td>
                         <td>
@@ -124,7 +124,7 @@
                 </ul>
             </div>
             <h3>Workspaces you monitored</h3>
-            <div class="CSSworktable" style="width:98%;margin-bottom:1%">
+            <div class="CSSworktable">
                 <table>
                     <tr>
                         <td>Name</td>
@@ -137,7 +137,7 @@
                         <tr>
                             <td >
                                 <a href="/mapcatalog/workspace/@workspace.getId_workspace()">
-                                    <img src="@routes.Assets.at("images/icons/workspace.png")" alt="Map"><h5 style="display:inline">@workspace.getName()</h5>
+                                    <img src="@routes.Assets.at("images/icons/workspace.png")" alt="Map"/><h5 style="display:inline">@workspace.getName()</h5>
                                 </a>
                             </td>
                             <td>
