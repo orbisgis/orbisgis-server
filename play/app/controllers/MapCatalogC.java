@@ -398,7 +398,7 @@ public class MapCatalogC extends Controller{
                 String all_write  = (form.get("all_write")!=null) ? "1":"0";
                 String all_manage  = (form.get("all_manage")!=null) ? "1":"0";
                 String description = form.get("description");
-                String id_creator = form.get("id_creator");
+                String id_creator = wor2.getId_creator();
                 Workspace wor = new Workspace(id_workspace,id_creator,name,all_read,all_write,all_manage,description);
                 wor.update(MC);
                 return manageAWorkspace(id_workspace);

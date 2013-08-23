@@ -3,6 +3,8 @@
 @import helper.twitterBootstrap._
 
 @javamain("MapCatalog","OrbisGIS services") {
+<script src="@routes.Assets.at("javascripts/tinymce/tinymce.min.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/test.js")" type="text/javascript"></script>
 <div class="container">
     <div class="page-header">
         <h1>
@@ -134,7 +136,7 @@
                 <div class="well well-small">
                     <p>
                         <h3>@workspace.getName()</h3>
-                        @workspace.getDescription()
+                        @Html(workspace.getDescription())
                     </p>
                 </div>
             </div>

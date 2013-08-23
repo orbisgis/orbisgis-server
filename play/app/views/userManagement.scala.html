@@ -3,6 +3,8 @@
 @import helper.twitterBootstrap._
 
 @javamain("MapCatalog","OrbisGIS services") {
+<script src="@routes.Assets.at("javascripts/tinymce/tinymce.min.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/test.js")" type="text/javascript"></script>
 <div class="container" xmlns="http://www.w3.org/1999/html">
     <div class="page-header">
         <h1>
@@ -107,7 +109,6 @@
                         <br/><br/>
                         <textarea style="width:90%" maxlength="999" name="description" rows="5">@wor.getDescription()</textarea>
                         <br/>
-                        <input type="hidden" name="id_creator" value="@wor.getId_creator()">
                         <button type="submit" class="btn">Submit</button>
                     </fieldset>
                 </form>
