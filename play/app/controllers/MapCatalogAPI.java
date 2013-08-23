@@ -99,7 +99,7 @@ public class MapCatalogAPI extends Controller {
      */
     public static Result listWorkspaces(){
         try {
-            return ok(MC.getWorkspaceList());
+            return ok(MC.getWorkspaceListWrite()); //only workspaces with write access
         } catch (SQLException e) {
             return badRequest(e.getMessage());
         } catch (ParserConfigurationException e) {

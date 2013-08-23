@@ -154,9 +154,46 @@ public class MapCatalog {
     /**
      * Sends a query to database that returns the workspace list, then write it in a xml file a the root of project.
      */
-    public InputStream getWorkspaceList() throws SQLException, ParserConfigurationException, TransformerException {
+    private InputStream getWorkspaceList() throws SQLException, ParserConfigurationException, TransformerException {
         //get the list of workspace names from the database
         List<Workspace>  list = Workspace.page(this);
+        Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+        Element e ;
+        Element e2 ;
+        Element rootEle = dom.createElement("workspaces");
+
+        //Create a node for each workspace, and add the name
+        for (Workspace wor : list) {
+            e = dom.createElement("workspace");
+            e2 = dom.createElement("name");
+            e2.appendChild(dom.createTextNode(wor.getId_workspace()));
+            e.appendChild(e2);
+            rootEle.appendChild(e);
+        }
+        dom.appendChild(rootEle);
+        //transform the dom in XML
+
+        Transformer tr = TransformerFactory.newInstance().newTransformer();
+        tr.setOutputProperty(OutputKeys.INDENT, "yes");
+        tr.setOutputProperty(OutputKeys.METHOD, "xml");
+        tr.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+        tr.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Source xmlSource = new DOMSource(dom);
+        Result outputTarget = new StreamResult(outputStream);
+        tr.transform(xmlSource, outputTarget);
+        return new ByteArrayInputStream(outputStream.toByteArray());
+    }
+
+    /**
+     * Sends a query to database that returns the workspace list with default write access, then write it in a xml file a the root of project.
+     */
+    @Deprecated
+    public InputStream getWorkspaceListWrite() throws SQLException, ParserConfigurationException, TransformerException {
+        String[] attributes ={"all_write"};
+        String[] values = {"1"};
+        //get the list of workspace names from the database
+        List<Workspace>  list = Workspace.page(this,attributes,values);
         Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
         Element e ;
         Element e2 ;
