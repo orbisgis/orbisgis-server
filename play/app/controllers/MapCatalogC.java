@@ -110,12 +110,12 @@ public class MapCatalogC extends Controller{
             String[] values2 = {id_workspace};
             Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
             String id_user = session().get("id_user");
-            if(wor.getAll_read().equals("1") || Workspace.isCreator(MC,id_workspace,id_user) || UserWorkspace.hasReadRight(MC,id_workspace,id_user)){
+            if(wor.getAll_read().equals("1") || Workspace.isCreator(MC,id_workspace,id_user) || UserWorkspace.hasReadRight(MC,id_workspace,id_user)||Integer.valueOf(session().get("level").split("!")[2])<=10){
                 String[] attributes = {"id_root", "id_parent"};
                 String[] values = {id_workspace, null};
                 List<Folder> listF = Folder.page(MC,attributes,values);
                 List<OWSContext> listC = OWSContext.page(MC, attributes, values);
-                boolean hasDeleteRights = UserWorkspace.hasWriteRight(MC, id_workspace, id_user)||(wor.getAll_write().equals("1"))|| Workspace.isCreator(MC,id_workspace,id_user);
+                boolean hasDeleteRights = UserWorkspace.hasWriteRight(MC, id_workspace, id_user)||(wor.getAll_write().equals("1"))|| Workspace.isCreator(MC,id_workspace,id_user)||Integer.valueOf(session().get("level").split("!")[2])<=10;
                 boolean hasManageRights = UserWorkspace.hasManageRight(MC, id_workspace, id_user) || (wor.getAll_manage().equals("1"))|| Workspace.isCreator(MC,id_workspace,id_user);
                 return ok(workspace.render(listF,listC,wor,hasDeleteRights,hasManageRights));
             }else{
@@ -148,7 +148,7 @@ public class MapCatalogC extends Controller{
                 List<Folder> listF = Folder.page(MC,attributes,values);
                 List<OWSContext> listC = OWSContext.page(MC, attributes, values);
                 List<Folder> path = Folder.getPath(MC, id_folder);
-                boolean hasDeleteRights = UserWorkspace.hasWriteRight(MC, id_workspace, id_user)||wor.getAll_write().equals("1")|| Workspace.isCreator(MC,id_workspace,id_user);
+                boolean hasDeleteRights = UserWorkspace.hasWriteRight(MC, id_workspace, id_user)||wor.getAll_write().equals("1")|| Workspace.isCreator(MC,id_workspace,id_user)||Integer.valueOf(session().get("level").split("!")[2])<=10;
                 return ok(folder.render(listF,listC,path,wor,hasDeleteRights));
             }else{
                 flash("error", Message.ERROR_UNAUTHORIZED_WORKSPACE);
@@ -363,7 +363,7 @@ public class MapCatalogC extends Controller{
         //verification of rights
         try {
             String id_logged = session().get("id_user");
-            if(Workspace.isCreator(MC, id_workspace, id_logged)){
+            if(Workspace.isCreator(MC, id_workspace, id_logged)||Integer.valueOf(session().get("level").split("!")[2])<=10){
                 Workspace.delete(MC, Long.valueOf(id_workspace));
                 flash("info", Message.INFO_WORKSPACE_DELETED);
                 return index();
@@ -391,7 +391,7 @@ public class MapCatalogC extends Controller{
             String[] values2 = {id_workspace};
             Workspace wor2 = Workspace.page(MC, attributes2, values2).get(0);
             String id_logged = session().get("id_user");
-            if(wor2.getAll_manage().equals("1") || UserWorkspace.hasManageRight(MC, id_workspace,id_logged) || Workspace.isCreator(MC, id_workspace,id_logged)){
+            if(wor2.getAll_manage().equals("1") || UserWorkspace.hasManageRight(MC, id_workspace,id_logged) || Workspace.isCreator(MC, id_workspace,id_logged)||Integer.valueOf(session().get("level").split("!")[2])<=10){
                 DynamicForm form = Form.form().bindFromRequest();
                 String name = form.get("name");
                 String all_read = (form.get("all_read")!=null) ? "1":"0";
@@ -452,7 +452,7 @@ public class MapCatalogC extends Controller{
             String[] values2 = {id_root};
             Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
             String id_logged = session().get("id_user");
-            if(wor.getAll_write().equals("1") || UserWorkspace.hasWriteRight(MC, id_root,id_logged) || Workspace.isCreator(MC, id_root,id_logged)){
+            if(wor.getAll_write().equals("1") || UserWorkspace.hasWriteRight(MC, id_root,id_logged) || Workspace.isCreator(MC, id_root,id_logged)||Integer.valueOf(session().get("level").split("!")[2])<=10){
                 Folder.delete(MC, Long.valueOf(id_folder));
                 flash("info",Message.INFO_FOLDER_DELETED);
                 return viewWorkspace(id_root);
@@ -686,7 +686,7 @@ public class MapCatalogC extends Controller{
             String[] values2 = {id_workspace};
             Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
             String id_user = session().get("id_user");
-            if(wor.getAll_read().equals("1") || Workspace.isCreator(MC,id_workspace,id_user) || UserWorkspace.hasReadRight(MC,id_workspace,id_user)){
+            if(wor.getAll_read().equals("1") || Workspace.isCreator(MC,id_workspace,id_user) || UserWorkspace.hasReadRight(MC,id_workspace,id_user)||Integer.valueOf(session().get("level").split("!")[2])<=10){
                 String[] attributes = {"id_parent"};
                 String[] values = {id_folder};
                 List<Folder> listF = Folder.page(MC,attributes,values);
@@ -732,7 +732,7 @@ public class MapCatalogC extends Controller{
             String[] values2 = {id_workspace};
             Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
             String id_user = session().get("id_user");
-            if(wor.getAll_read().equals("1") || Workspace.isCreator(MC,id_workspace,id_user) || UserWorkspace.hasReadRight(MC,id_workspace,id_user)){
+            if(wor.getAll_read().equals("1") || Workspace.isCreator(MC,id_workspace,id_user) || UserWorkspace.hasReadRight(MC,id_workspace,id_user)||Integer.valueOf(session().get("level").split("!")[2])<=10){
                 String[] attributes = {"id_root", "id_parent"};
                 String[] values = {id_workspace, null};
                 List<Folder> listF = Folder.page(MC,attributes,values);
@@ -746,7 +746,7 @@ public class MapCatalogC extends Controller{
                 }
                 if(theContext!=null){
                     SortedMap<Comment, User> hm = Comment.pageWithMap(MC, id_owscontext, 0);
-                    boolean hasDeleteRights = UserWorkspace.hasWriteRight(MC, id_workspace, id_user)||wor.getAll_write().equals("1")|| Workspace.isCreator(MC,id_workspace,id_user);
+                    boolean hasDeleteRights = UserWorkspace.hasWriteRight(MC, id_workspace, id_user)||wor.getAll_write().equals("1")|| Workspace.isCreator(MC,id_workspace,id_user)||Integer.valueOf(session().get("level").split("!")[2])<=10;
                     int count = (Comment.pageWithMapCount(MC, id_owscontext)-1)/10+1;
                     return ok(contextWorkspace.render(listF,listC,wor,theContext,hasDeleteRights,hm, MC, count));
                 }else{
@@ -802,7 +802,7 @@ public class MapCatalogC extends Controller{
             String[] values2 = {id_root};
             Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
             String id_logged = session().get("id_user");
-            if(wor.getAll_write().equals("1") || UserWorkspace.hasWriteRight(MC, id_root,id_logged) || Workspace.isCreator(MC, id_root,id_logged)){
+            if(wor.getAll_write().equals("1") || UserWorkspace.hasWriteRight(MC, id_root,id_logged) || Workspace.isCreator(MC, id_root,id_logged)||Integer.valueOf(session().get("level").split("!")[2])<=10){
                 OWSContext.delete(MC, Long.valueOf(id_owscontext));
                 flash("info",Message.INFO_OWS_DELETED);
                 return viewWorkspace(id_root);
@@ -950,7 +950,7 @@ public class MapCatalogC extends Controller{
             String[] attributes2 = {"id_workspace"};
             String[] values2 = {id_workspace};
             Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
-            if(wor.getAll_write().equals("1") || Workspace.isCreator(MC,id_workspace,id_logged) || UserWorkspace.hasWriteRight(MC, id_workspace, id_logged)){
+            if(wor.getAll_write().equals("1") || Workspace.isCreator(MC,id_workspace,id_logged) || UserWorkspace.hasWriteRight(MC, id_workspace, id_logged) ||Integer.valueOf(session().get("level").split("!")[2])<=10){
                 DynamicForm form = Form.form().bindFromRequest();
                 String title = form.get("title");
                 InputStream content = new ByteArrayInputStream(form.get("content").getBytes());
@@ -980,7 +980,7 @@ public class MapCatalogC extends Controller{
             String[] attributes2 = {"id_workspace"};
             String[] values2 = {id_workspace};
             Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
-            if(wor.getAll_write().equals("1") || Workspace.isCreator(MC,id_workspace,id_logged) || UserWorkspace.hasWriteRight(MC, id_workspace, id_logged)){
+            if(wor.getAll_write().equals("1") || Workspace.isCreator(MC,id_workspace,id_logged) || UserWorkspace.hasWriteRight(MC, id_workspace, id_logged)||Integer.valueOf(session().get("level").split("!")[2])<=10){
                 DynamicForm form = Form.form().bindFromRequest();
                 String title = form.get("title");
                 InputStream content = new ByteArrayInputStream(form.get("content").getBytes());
@@ -1011,7 +1011,7 @@ public class MapCatalogC extends Controller{
             String[] values2 = {id_workspace};
             Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
             String id_user = session().get("id_user");
-            if(wor.getAll_read().equals("1") || Workspace.isCreator(MC,id_workspace,id_user) || UserWorkspace.hasReadRight(MC, id_workspace, id_user)){
+            if(wor.getAll_read().equals("1") || Workspace.isCreator(MC,id_workspace,id_user) || UserWorkspace.hasReadRight(MC, id_workspace, id_user) ||Integer.valueOf(session().get("level").split("!")[2])<=10){
                 String[] attributes = {"id_parent"};
                 String[] values = {id_folder};
                 List<Folder> listF = Folder.page(MC,attributes,values);
@@ -1028,7 +1028,7 @@ public class MapCatalogC extends Controller{
                     SortedMap<Comment, User> hm = Comment.pageWithMap(MC, id_owscontext, offset);
                     flash("page", Integer.toString(offset / 10 + 1));
                     int count = (Comment.pageWithMapCount(MC, id_owscontext)-1)/10+1;
-                    boolean hasDeleteRights = UserWorkspace.hasWriteRight(MC, id_workspace, id_user)||wor.getAll_write().equals("1")|| Workspace.isCreator(MC,id_workspace,id_user);
+                    boolean hasDeleteRights = UserWorkspace.hasWriteRight(MC, id_workspace, id_user)||wor.getAll_write().equals("1")|| Workspace.isCreator(MC,id_workspace,id_user)||Integer.valueOf(session().get("level").split("!")[2])<=10;
                     return ok(contextFolder.render(listF,listC,path,wor,theContext,hasDeleteRights,hm,MC,count));
                 }else{
                     flash("error",Message.ERROR_GENERAL);
@@ -1058,7 +1058,7 @@ public class MapCatalogC extends Controller{
             String[] values2 = {id_workspace};
             Workspace wor = Workspace.page(MC, attributes2, values2).get(0);
             String id_user = session().get("id_user");
-            if(wor.getAll_read().equals("1") || Workspace.isCreator(MC,id_workspace,id_user) || UserWorkspace.hasReadRight(MC, id_workspace, id_user)){
+            if(wor.getAll_read().equals("1") || Workspace.isCreator(MC,id_workspace,id_user) || UserWorkspace.hasReadRight(MC, id_workspace, id_user)||Integer.valueOf(session().get("level").split("!")[2])<=10){
                 String[] attributes = {"id_root", "id_parent"};
                 String[] values = {id_workspace, null};
                 List<Folder> listF = Folder.page(MC,attributes,values);
@@ -1074,7 +1074,7 @@ public class MapCatalogC extends Controller{
                     SortedMap<Comment, User> hm = Comment.pageWithMap(MC, id_owscontext, offset);
                     flash("page", Integer.toString(offset/10+1));
                     int count = (Comment.pageWithMapCount(MC, id_owscontext)-1)/10+1;
-                    boolean hasDeleteRights = UserWorkspace.hasWriteRight(MC, id_workspace, id_user)||wor.getAll_write().equals("1")|| Workspace.isCreator(MC,id_workspace,id_user);
+                    boolean hasDeleteRights = UserWorkspace.hasWriteRight(MC, id_workspace, id_user)||wor.getAll_write().equals("1")|| Workspace.isCreator(MC,id_workspace,id_user)||Integer.valueOf(session().get("level").split("!")[2])<=10;
                     return ok(contextWorkspace.render(listF,listC,wor,theContext,hasDeleteRights,hm, MC, count));
                 }else{
                     flash("error",Message.ERROR_GENERAL);
@@ -1104,7 +1104,7 @@ public class MapCatalogC extends Controller{
             String[] attributes = {"id_comment"};
             String[] values = {id_comment};
             Comment com = Comment.page(MC, attributes,values).get(0);
-            if(com.getId_writer().equals(id_logged)){
+            if(com.getId_writer().equals(id_logged)||Integer.valueOf(session().get("level").split("!")[2])<=10){
                 Comment.delete(MC, Long.valueOf(id_comment));
                 flash("info", Message.INFO_COMMENT_DELETED);
                 return viewWorkspace(id_workspace);
@@ -1131,7 +1131,7 @@ public class MapCatalogC extends Controller{
             attributes[0] = "id_owscontext";
             values[0] = com.getId_map();
             OWSContext map = OWSContext.page(MC, attributes, values).get(0);
-            if(com.getId_writer().equals(id_logged)){
+            if(com.getId_writer().equals(id_logged)||Integer.valueOf(session().get("level").split("!")[2])<=10){
                 flash("edit", id_comment);
                 if(map.getId_parent()==null){
                     return redirect("/mapcatalog/workspace/"+map.getId_root()+"/context/"+map.getId_owscontext()+"#"+com.getId_comment());
@@ -1161,7 +1161,7 @@ public class MapCatalogC extends Controller{
             attributes[0] = "id_owscontext";
             values[0] = com.getId_map();
             OWSContext map = OWSContext.page(MC, attributes, values).get(0);
-            if(com.getId_writer().equals(id_logged)){
+            if(com.getId_writer().equals(id_logged)||Integer.valueOf(session().get("level").split("!")[2])<=10){
                 DynamicForm form = Form.form().bindFromRequest();
                 String title = form.get("title");
                 InputStream content = new ByteArrayInputStream(form.get("content").getBytes());

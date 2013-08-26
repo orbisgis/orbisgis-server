@@ -121,7 +121,7 @@
             <div class="commentBox">
                 <h3>Comments about @context.getTitle() :</h3><br/>
                 @for((comment, user) <- commentUser){
-                    @if(user.getId_user().equals(session().get("id_user"))){
+                    @if(user.getId_user().equals(session().get("id_user"))||(Integer.valueOf(session().get("level").split("!")(2))<=10)){
                         <a href="@routes.MapCatalogC.viewEditComment(comment.getId_comment())"><img alt="edit" title="edit" src="@routes.Assets.at("images/icons/edit-3.png")"/></a>
                         <a href="@routes.MapCatalogC.deleteComment(root.getId_workspace(), comment.getId_comment())"><img alt="delete" title="delete" src="@routes.Assets.at("images/icons/delete.png")"/></a>
                     }

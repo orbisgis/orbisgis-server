@@ -87,6 +87,7 @@ public class General extends Controller{
                         if(Integer.valueOf(user.getAdmin_mapcatalog())<=10||Integer.valueOf(user.getAdmin_wms())<=10||Integer.valueOf(user.getAdmin_wps())<=10){
                             session("admin","yes");
                         }
+                        session("level",user.getAdmin_wms()+"!"+user.getAdmin_wps()+"!"+user.getAdmin_mapcatalog());
                         return redirect(uri);
                     }else{error= "You haven't validated your account";}
                 }else{error= Message.ERROR_LOGIN;}
