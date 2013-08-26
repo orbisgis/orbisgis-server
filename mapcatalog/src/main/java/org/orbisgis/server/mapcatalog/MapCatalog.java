@@ -337,9 +337,4 @@ public class MapCatalog {
     public void breakTestEnvironment() throws SQLException {
         this.executeSQL("down.sql");
     }
-
-
-    public static void main(String[] args) throws Exception{
-        System.out.println(hasher("123456"));
-    }
 }
