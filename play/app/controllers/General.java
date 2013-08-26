@@ -146,7 +146,7 @@ public class General extends Controller{
                         usr.setVerification(MC);
                         usr.save(MC);
                         MailHelper mail = new MailHelper();
-                        String URL = routes.General.home().absoluteURL(request())+"/validate/"+usr.getVerification();
+                        String URL = routes.General.home().absoluteURL(request())+"validate/"+usr.getVerification();
                         mail.setContentAtSignUp(URL);
                         mail.recipient=usr.getName()+" <"+usr.getEmail()+">";
                         mail.subject ="verification email for OrbisGis services";
@@ -331,7 +331,7 @@ public class General extends Controller{
             if(!users.isEmpty()){
                 User usr = users.get(0);
                 usr.setReset_pass(MC);
-                String URL = routes.General.home().absoluteURL(request())+"/resetPassword/"+usr.getReset_pass(MC);
+                String URL = routes.General.home().absoluteURL(request())+"resetPassword/"+usr.getReset_pass(MC);
                 MailHelper mail = new MailHelper();
                 mail.recipient=usr.getName()+" <"+usr.getEmail()+">";
                 mail.setContentAtForgotPass(URL);

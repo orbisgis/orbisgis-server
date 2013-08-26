@@ -45,11 +45,9 @@ public class MailHelper {
      */
     public void setContentAtSignUp(String URLverification) {
         this.content =
-                "<html>" +
                     "Click here to verify your email for you " +
-                    "subscription to orbisGIS services :" +
-                    "<a href=\""+ URLverification+"\">link</a>" +
-                "</html>";
+                    "subscription to orbisGIS services : " +
+                    URLverification;
     }
 
     /**
@@ -58,10 +56,8 @@ public class MailHelper {
      */
     public void setContentAtForgotPass(String URLResetPass) {
         this.content =
-                "<html>" +
-                        "Click here to change your password for OrbisGis Services" +
-                        "<a href=\""+ URLResetPass+"\">link</a>" +
-                "</html>";
+                        "Click here to change your password for OrbisGis Services " +
+                        URLResetPass;
     }
 
     /**
@@ -71,8 +67,8 @@ public class MailHelper {
     public void SendMail() {
         MailerAPI mail = play.Play.application().plugin(MailerPlugin.class).email();
         mail.setSubject(subject); //Specify subject of the mail
-        mail.addRecipient(sender);
-        mail.addFrom(recipient);
+        mail.addRecipient(recipient);
+        mail.addFrom(sender);
         //sends html
         mail.send(content);
     }
