@@ -1,0 +1,57 @@
+@(page : String, user : org.orbisgis.server.mapcatalog.User)(content: Html)
+
+@import helper.twitterBootstrap._
+
+@javamain("admin","admin") {
+<div class="container">
+    <div class="page-header">
+        <h1>Administration hub</h1>
+    </div>
+    @if(flash.get("error")!=null){
+    <div class="alert alert-error">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <h4>Error :</h4>
+        @flash.get("error")
+    </div>
+    }
+    @if(flash.get("info")!=null){
+    <div class="alert alert-info">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <h4>Info :</h4>
+        @flash.get("info")
+    </div>
+    }
+</div>
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="span3" id="navigate">
+            <h2>Navigation panel</h2>
+            <div class="well well-small">
+                <p>You can only access the panels you have admin rights in, if you desire to apply as administrator for another service, ask a SA</p>
+                @if(user.getAdmin_wms().equals("0")){
+                <p style="color:blue">Info : as a SA, you can give the SA status to anyone, but this action is irreversible</p>
+                }
+            </div>
+            @if(Integer.valueOf(user.getAdmin_wms())<11){
+            <a href="@routes.Admin.adminWMS(0)">
+                <button class="btn @if(page.equals("wms")){btn-primary}" style="width:100%"><h3>WMS</h3></button>
+            </a><br/><br/>
+            }
+            @if(Integer.valueOf(user.getAdmin_mapcatalog())<11){
+            <a href="@routes.Admin.adminMapCatalog(0)">
+                <button class="btn @if(page.equals("mapcatalog")){btn-primary}" style="width:100%"><h3>MapCatalog</h3></button>
+            </a><br/><br/>
+            }
+            @if(Integer.valueOf(user.getAdmin_wps())<11){
+            <a href="@routes.Admin.adminWPS(0)">
+                <button class="btn @if(page.equals("wps")){btn-primary}" style="width:100%"><h3>WPS</h3></button>
+            </a><br/>
+            }
+        </div>
+        <div class="span9" id="display">
+            @content
+        </div>
+    </div>
+</div>
+<script src="@routes.Assets.at("javascripts/main.js")" type="text/javascript"></script>
+}

@@ -1,0 +1,76 @@
+@(styles: Seq[java.io.File], layers: Seq[(String, java.io.File)], fileForm: play.api.data.Form[String], styleForm: play.api.data.Form[String])(implicit session : play.api.mvc.Session)
+
+@import helper.twitterBootstrap._
+
+@scalamain("Data","OrbisGIS services") {
+<div class="container">
+    <div class="page-header">
+        <h1>WMS manager</h1>
+    </div>
+    <h2>Georeferenced data sources</h2>
+    <table class="table table-striped table-bordered">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Path</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @layers.map { l =>
+        <tr>
+            <td><b>@l._1</b></td><td>@l._2.getAbsolutePath</td>
+            <td><a class="btn btn-mini" href="@controllers.routes.Application.removeFile(l._1)"></i>Remove</a></td>
+        </tr>
+        }
+        </tbody>
+    </table>
+    @helper.form(action = routes.Application.clearFiles) {
+    <button type='submit' class="btn btn-danger">Clear all</button> <span class="help-inline">This does not delete the actual files.</span>
+    }
+    <div class="row">
+        @helper.form(action = routes.Application.addFile, 'class -> "form-horizontal well") {
+        @helper.inputText(fileForm("file"), 'class -> "span7", '_label -> "File path:",
+        'placeholder -> "/home/myusername/mydata.shp", '_showConstraints -> false)
+        <button type='submit' class="btn btn-success">Add file</button>
+        }
+    </div>
+    <h2>Styles (Symbology Encoding 2.0)</h2>
+    <table class="table table-striped table-bordered">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Path</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @styles.map { l =>
+        <tr>
+            <td><b>@l.getName</b></td><td>@l.getAbsolutePath</td><td>
+            <div class="input-prepend">
+                @helper.form(action = routes.WMS.renameStyle(l.getName), 'class -> "form-inline") {
+                <a class="btn btn-danger" href="@controllers.routes.WMS.removeStyle(l.getName)">Remove</a><button class="btn" type="submit">Rename</button><input class="span3" id="newname" name="newname" type="text" placeholder="new@(l.getName)">
+                }
+            </div>
+        </td>
+        </tr>
+        }
+        </tbody>
+    </table>
+    @helper.form(action = routes.WMS.clearStyles) {
+    <button type='submit' class="btn btn-danger">Clear all</button> <span class="help-inline">This does not delete the original styles.</span>
+    }
+    <div class="row">
+        @helper.form(action = routes.WMS.addStyle, 'class -> "form-horizontal well") {
+        @helper.inputText(styleForm("style"), 'class -> "span7", '_label -> "Style file path:",
+        'placeholder -> "/home/myusername/mystyle.se", '_showConstraints -> false)
+        <button type='submit' class="btn btn-success">Add style</button>
+        }
+    </div>
+    <h2>Links</h2>
+    <ul>
+        <li><a href="@controllers.routes.WMS.wms?SERVICE=wms&VERSION=1.3&REQUEST=getcapabilities">GetCapabilities</a></li>
+    </ul>
+</div>
+}

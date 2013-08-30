@@ -1,0 +1,120 @@
+@(users : Map[org.orbisgis.server.mapcatalog.UserWorkspace,org.orbisgis.server.mapcatalog.User], wor : org.orbisgis.server.mapcatalog.Workspace)
+
+@import helper.twitterBootstrap._
+
+@javamain("MapCatalog","OrbisGIS services") {
+<script src="@routes.Assets.at("javascripts/tinymce/tinymce.min.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/configmce1.js")" type="text/javascript"></script>
+<div class="container" xmlns="http://www.w3.org/1999/html">
+    <div class="page-header">
+        <h1>
+            <img src="@routes.Assets.at("images/logos/OrbisMapCatalog.png")" alt="Map Catalog"/>
+        </h1>
+    </div>
+</div>
+<div class="container-fluid" >
+    <div class="row-fluid">
+        <div class="span7" id="navigate" style="background-color:#61a8df;">
+            <h2>Manage users of @wor.getName()</h2>
+            <div class="CSSworktable">
+                <table>
+                    <tr>
+                        <td>Name</td>
+                        <td>Email</td>
+                        <td>Read</td>
+                        <td>Write</td>
+                        <td>Manage</td>
+                        <td>Change rights</td>
+                        <td>Remove</td>
+                        @if(session().get("id_user").equals(wor.getId_creator())){
+                        <td>Hand over creator status</td>
+                        }
+                    </tr>
+                    @for(user <- users.keySet()){
+                    <tr>
+                        <td>
+                            @users.get(user).getName()
+                        </td>
+                        <td>@users.get(user).getEmail()</td>
+                        <form action="@routes.MapCatalogC.changeRights(user.getId_workspace(), user.getId_user())">
+                            <td>
+                                <select name="Read" style="width:50px">
+                                    <option value="1"@if(user.getRead().equals("1")){ selected}>Yes</option>
+                                    <option value="0"@if(user.getRead().equals("0")){ selected}>No</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="Write" style="width:50px">
+                                    <option value="1"@if((user.getWrite().equals("1"))){ selected}>Yes</option>
+                                    <option value="0"@if((user.getWrite().equals("0"))){ selected}>No</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="Manage" style="width:50px">
+                                    <option value="1"@if((user.getManageUser().equals("1"))){ selected}>Yes</option>
+                                    <option value="0"@if((user.getManageUser().equals("0"))){ selected}>No</option>
+                                </select>
+                            </td>
+                            <td>
+                                <button type="submit" class="btn">Submit rights changes</button>
+                            </td>
+                        </form>
+                        <td>
+                            <a href="@routes.MapCatalogC.castOut(wor.getId_workspace, user.getId_user())"><button class="btn btn-danger">Cast Out</button></a>
+                        </td>
+                        @if(session().get("id_user").equals(wor.getId_creator())){
+                        <td><a href="@routes.MapCatalogC.handOverCreation(wor.getId_workspace, user.getId_user)"><button class="btn btn-danger">!</button></a></td>
+                        }
+                    </tr>
+                    }
+                </table>
+            </div>
+            @if(users.keySet().isEmpty()){There is no information to display}
+        </div>
+        <div class="span5" id="display" style="background-color:#70c265;">
+            <h2>Workspace info</h2>
+            <div style="margin-left:2%">
+                @if(session().get("id_user").equals(wor.getId_creator())){
+                <form action="@routes.MapCatalogC.deleteWorkspace(wor.getId_workspace())">
+                    <div class="message">
+                        <h1>
+                            You are going to delete this workspace, this action is irreversible, are you sure ?
+                        </h1>
+                        <button type="submit" class="btn btn-large btn-danger" style="margin-left:35%">Confirm</button>
+                        <button type="reset" class="btn btn-large btn-info removePopup2"  style="margin-left:15%">Cancel</button>
+                    </div>
+                </form>
+                <button class="btn btn-danger removePopup">Delete this workspace</button>
+                }
+                <br><br>
+                <div class="alert alert-info" style="width:90%;margin-left:1%">
+                    <h4>Info :</h4>
+                    You can set your workspace to be visible or editable for all connected users by setting the default accesses.
+                </div>
+                <form action="@routes.MapCatalogC.updateWorkspace(wor.getId_workspace())">
+                    <fieldset>
+                        <legend><h3>Modify information about the workspace :</h3></legend>
+                        <label>Name</label>
+                        <input type="text" name="name" value="@wor.getName()">
+                        <span class="help-block">Decide whether the workspace has default accesses or not :</span>
+                        <label class="checkbox inline">
+                            <input type="checkbox" name="all_read" value="1"@if(wor.getAll_read().equals("1")){ checked}>Read access
+                        </label>
+                        <label class="checkbox inline">
+                            <input type="checkbox" name="all_write" value="1"@if(wor.getAll_write().equals("1")){ checked}>Write access
+                        </label>
+                        <label class="checkbox inline">
+                            <input type="checkbox" name="all_manage" value="1"@if(wor.getAll_manage().equals("1")){ checked}>Management access
+                        </label>
+                        <br/><br/>
+                        <textarea style="width:90%" maxlength="999" name="description" rows="5">@wor.getDescription()</textarea>
+                        <br/>
+                        <button type="submit" class="btn">Submit</button>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="@routes.Assets.at("javascripts/main.js")" type="text/javascript"></script>
+}

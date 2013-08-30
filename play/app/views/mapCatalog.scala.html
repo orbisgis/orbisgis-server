@@ -1,0 +1,148 @@
+@(workspaces : List[org.orbisgis.server.mapcatalog.Workspace], currentpage : Int, pagenumber : Int)
+
+@import helper.twitterBootstrap._
+
+@javamain("MapCatalog","OrbisGIS services") {
+<script src="@routes.Assets.at("javascripts/tinymce/tinymce.min.js")" type="text/javascript"></script>
+<script src="@routes.Assets.at("javascripts/configmce1.js")" type="text/javascript"></script>
+<div class="container">
+    <div class="page-header">
+        <h1>
+            <img src="@routes.Assets.at("images/logos/OrbisMapCatalog.png")" alt="Map Catalog"/>
+        </h1>
+    </div>
+</div>
+@if(flash.get("error")!=null){
+<div class="alert alert-error">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    <h4>Error :</h4>
+    @flash.get("error")
+</div>
+}
+@if(flash.get("info")!=null){
+<div class="alert alert-info">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    <h4>Info :</h4>
+    @flash.get("info")
+</div>
+}
+<div class="container-fluid" >
+    <div class="row-fluid">
+        <div class="span5" id="navigate" style="background-color:#61a8df">
+
+            <ul class="nav nav-tabs" style="margin-top:2%">
+                <li>
+                    <a href="@routes.MapCatalogC.myWorkspaces()"><h4>My workspaces</h4></a>
+                </li>
+                <li class="active">
+                    <a href="@routes.MapCatalogC.index()"><h4>All workspaces</h4></a>
+                </li>
+            </ul>
+            @if(flash.contains("section")){
+                <div class="alert alert-info">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    <h4>Info :</h4>
+                    You can delete your workspace and manage its users by clicking on this button :
+                </div>
+                <a href="@routes.MapCatalogC.manageWorkspaces()"><button class="btn btn-danger">Manage my workspaces</button></a>
+            <br/><br/>
+            }
+            <form class="form-search" action="@routes.MapCatalogC.searchPublicWorkspaces(0)">
+                <input type="text" class="input-medium search-query" placeholder="Search a workspace" name="search">
+                <button type="submit" class="btn">Search</button>
+            </form>
+            @if(session.get("email")!=null){
+            <div class="well well-small">
+                <img id="imgtoggle" src="@routes.Assets.at("images/icons/add.png")" alt="add"/> create my own workspace</img>
+                <form id="addtoggle" style="margin-left:2%;padding-bottom:2px;display:none" action="@routes.MapCatalogC.createWorkspace()">
+                    <fieldset>
+                        <label>Name</label>
+                        <input required="required" type="text" placeholder="Type the name of the workspace" name="name">
+                        <span class="help-block">Decide whether the workspace has default accesses or not, all users will have the rights corresponding to the access you check.</span>
+                        <label class="checkbox inline">
+                            <input type="checkbox" name="all_read" value="1">Read access
+                        </label>
+                        <label class="checkbox inline">
+                            <input type="checkbox" name="all_write" value="1">Write access
+                        </label>
+                        <label class="checkbox inline">
+                            <input type="checkbox" name="all_read" value="1">Management access
+                        </label>
+                        <br/><br/>
+                        <textarea style="width:90%" required="required" maxlength="999" name="description" rows="5" placeholder="Add the description of you workspace here."></textarea>
+                        <br/>
+                        <button type="submit" class="btn">Submit</button>
+                    </fieldset>
+                </form>
+            </div>
+            }
+            <div class="CSSworktable">
+
+                <table>
+                    <tr>
+                        <td>Name</td>
+                        <td>Action</td>
+                        <td>Default access</td>
+                    </tr>
+                    @for(workspace <- workspaces){
+                    <tr>
+                        <td>
+                            <a href="/mapcatalog/workspace/@workspace.getId_workspace()">
+                                <img src="@routes.Assets.at("images/icons/workspace.png")" alt="Map"/><h5 style="display:inline">@workspace.getName()</h5>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="/mapcatalog/workspace/@workspace.getId_workspace()">
+                                <img src="@routes.Assets.at("images/icons/open-folder.png")" alt="explore" title="Explore the workspace"/>
+                            </a>
+                            <a class="toToggle @workspace.getId_workspace()">
+                                <img src="@routes.Assets.at("images/icons/dialog-information-3.png")" alt="info" title="More info about the workspace"/>
+                            </a>
+                            <a href="@routes.MapCatalogC.monitor(workspace.getId_workspace())">
+                                <img src="@routes.Assets.at("images/icons/eye.png")" alt="monitor" title="Monitor the workspace"/>
+                            </a>
+                        </td>
+                        <td>
+                            @if(workspace.getAll_read().equals("1")){Read}
+                            @if(workspace.getAll_write().equals("1")){Write}
+                            @if(workspace.getAll_manage().equals("1")){Manage}
+                            @if(workspace.getAll_read().equals("0")&&workspace.getAll_write().equals("0")&&workspace.getAll_manage().equals("0")){None}
+                        </td>
+                    </tr>
+                    }
+                </table>
+            </div>
+            @if(workspaces.isEmpty()){There is no information to display}
+            <div class="pagination pagination-centered">
+                <ul>
+                    @if(!flash.contains("search")){
+                        @for(index <- 1 until pagenumber+1){
+                        <li @if(index==currentpage){class="active"}><a href="@routes.MapCatalogC.indexOffset((index-1)*10)">@index</a></li>
+                        }
+                    }
+                    @if(flash.contains("search")){
+                        @for(index <- 1 until pagenumber+1){
+                        <li @if(index==currentpage){class="active"}><a href="/mapcatalog/public/search/@{(index-1)*10}?search=@flash().get("search")">@index</a></li>
+                        }
+                    }
+                </ul>
+            </div>
+        </div>
+        <div class="span7" id="display" style="background-color:#70c265;">
+            <h2>Display</h2>
+            <p class="text-info" >Click on info to get the workspace description !</p>
+            @for(workspace <- workspaces){
+            <div class="Info" id="@workspace.getId_workspace()" style="display:none">
+                <div class="well well-small">
+                    <p>
+                        <h3>@workspace.getName()</h3>
+                        @Html(workspace.getDescription())
+                    </p>
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+</div>
+<script src="@routes.Assets.at("javascripts/main.js")" type="text/javascript"></script>
+}

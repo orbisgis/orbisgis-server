@@ -1,0 +1,131 @@
+@(folders : List[org.orbisgis.server.mapcatalog.Folder], contexts : List[org.orbisgis.server.mapcatalog.OWSContext], path : List[org.orbisgis.server.mapcatalog.Folder], root : org.orbisgis.server.mapcatalog.Workspace, hasDeleteRights: Boolean)
+
+@import helper.twitterBootstrap._
+
+@javamain("MapCatalog","OrbisGIS services") {
+<div class="container">
+    <div class="page-header">
+        <h1>
+            <img src="@routes.Assets.at("images/logos/OrbisMapCatalog.png")" alt="Map Catalog"/>
+        </h1>
+    </div>
+</div>
+@if(flash.get("error")!=null){
+<div class="alert alert-error">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    <h4>Error :</h4>
+    @flash.get("error")
+</div>
+}
+@if(flash.get("info")!=null){
+<div class="alert alert-info">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    <h4>Info :</h4>
+    @flash.get("info")
+</div>
+}
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="span5" id="navigate" style="background-color:#61a8df">
+            <ul class="nav nav-tabs" style="margin-top:2%">
+                <li @if(root.getAll_read()=="0"){class="active"}>
+                <a href="@routes.MapCatalogC.myWorkspaces()"><h4>My workspaces</h4></a>
+                </li>
+                <li @if(root.getAll_read()=="1"){class="active"}>
+                <a href="@routes.MapCatalogC.index()"><h4>All workspaces</h4></a>
+                </li>
+            </ul>
+            <form class="form-search" action="@routes.MapCatalogC.searchFromRoot(root.getId_workspace())">
+                <input type="text" class="input-medium search-query" name="search" placeholder="Search a folder or a context">
+                <button type="submit" class="btn">Search</button>
+            </form>
+            <div class="well well-small">
+                <img id="imgtoggle" src="@routes.Assets.at("images/icons/add.png")"alt="add"/> create a folder here
+                <form id="addtoggle" style="margin-left:2%;padding-bottom:2px;display:none" action="@routes.MapCatalogC.createFolderFromParent(root.getId_workspace(), path.get(path.size()-1).getId_folder())">
+                    <fieldset>
+                        <label>Name</label>
+                        <input type="text" placeholder="Type the name of the folder" name="name">
+                        <button type="submit" class="btn">Submit</button>
+                    </fieldset>
+                </form>
+            </div>
+            <h4>Path</h4>
+            <ul class="breadcrumb">
+                <li><a href="@routes.MapCatalogC.viewWorkspace(root.getId_workspace())">@root.getName()</a><span class="divider">/</span></li>
+                @for(folder <- path){
+                <li><a href="@routes.MapCatalogC.viewFolder(folder.getId_root(), folder.getId_folder())">@folder.getName()</a><span class="divider">/</span></li>
+                }
+            </ul>
+            <div class="CSSworktable">
+                <table>
+                    <tr>
+                        <td>Name</td>
+                        <td>Action</td>
+                    </tr>
+                    @for(folder <- folders){
+                    <tr>
+                        <td>
+                            <a href="@routes.MapCatalogC.viewFolder(folder.getId_root(), folder.getId_folder())">
+                                <img src="@routes.Assets.at("images/icons/document.png")" alt="Map"/>
+                                @folder.getName()
+                            </a>
+                        </td>
+                        <td>
+                            <a href="@routes.MapCatalogC.viewFolder(folder.getId_root(), folder.getId_folder())">
+                                <img src="@routes.Assets.at("images/icons/open-folder.png")" alt="explore" title="Explore the folder"/>
+                            </a>
+                            @if(hasDeleteRights){
+                            <a href="@routes.MapCatalogC.deleteFolder(folder.getId_root(), folder.getId_folder())">
+                                <img src="@routes.Assets.at("images/icons/edit-delete-2.png")" alt="delete" title="Delete the folder"/>
+                            </a>
+                            }
+                        </td>
+                    </tr>
+                    }
+                    @for(context <- contexts){
+                    <tr>
+                        <td>
+                            <img src="@routes.Assets.at("images/icons/map-compass.png")" alt="Map"/>
+                            @context.getTitle()
+                        </td>
+                        <td>
+                            <a href="@routes.MapCatalogC.viewOWSFromParent(context.getId_root,context.getId_parent,context.getId_owscontext)">
+                                <img src="@routes.Assets.at("images/icons/document-preview.png")" alt="View" title="Preview of the context"/>
+                            </a>
+                            @if(hasDeleteRights){
+                            <a href="@routes.MapCatalogC.deleteContext(context.getId_root, context.getId_owscontext)">
+                                <img src="@routes.Assets.at("images/icons/edit-delete-2.png")" alt="delete" title="Delete the folder"/>
+                            </a>
+                            }
+                        </td>
+                    </tr>
+                    }
+                </table>
+            </div>
+            @if(folders.isEmpty()&&contexts.isEmpty()){There is no information to display}
+            <br>
+            <div class="well well-small" style="margin-right:2%">
+                <img src="@routes.Assets.at("images/icons/add.png")" alt="add"/> Add a mapcontext
+                <form style="margin-left:2%" action="@routes.MapCatalogC.addMapContextFromParent(root.getId_workspace(), path.get(path.size()-1).getId_folder())" enctype="multipart/form-data" method="post">
+                    <input type="file" name="mapcontext">
+                    <br>
+                    <button type="submit" class="btn">Submit</button>
+                </form>
+            </div>
+        </div>
+        <div class="span7" id="display" style="background-color:#70c265;">
+            <h2>Information</h2>
+            <div class="well well-small">
+                <h3>@root.getName()</h3>
+                @Html(root.getDescription())
+            </div>
+            <div class="alert alert-info">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <h4>Info :</h4>
+                View a context to display more information, and post comments about it !
+            </div>
+        </div>
+    </div>
+</div>
+<script src="@routes.Assets.at("javascripts/main.js")" type="text/javascript"></script>
+}
