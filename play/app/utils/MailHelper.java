@@ -45,10 +45,11 @@ public class MailHelper {
      * @param URLverification The URL needed to verify the email of the user (see routes)
      */
     public void setContentAtSignUp(String URLverification) {
+        String domainName=play.Play.application().configuration().getString("domain.name");
         this.content =
                     "Click here to verify your email for your " +
-                    "subscription to orbisGIS services : " +
-                    URLverification;
+                    "subscription to orbisGIS services : http://" +
+                     domainName+"/"+URLResetPass;
     }
 
     /**
@@ -58,7 +59,7 @@ public class MailHelper {
     public void setContentAtForgotPass(String URLResetPass) {
         String domainName=play.Play.application().configuration().getString("domain.name");
         this.content =
-                        "Click here to change your password for OrbisGis Services " +
+                        "Click here to change your password for OrbisGis Services http://" +
                         domainName+"/"+URLResetPass;
     }
 
