@@ -56,10 +56,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.cts.crs.CRSException;
 import org.cts.crs.CoordinateReferenceSystem;
+import org.cts.registry.RegistryException;
 
 /**
  * Creates the answer to a getCapabilities request and writes it into the output
@@ -364,8 +363,11 @@ public final class GetCapabilitiesHandler {
                     }
                     layerMap.put(name, layer);
                 } catch (NoSuchTableException ex) {
+                    LOGGER.error("Cannot find the data "+ name, ex);
                 } catch (DataSourceCreationException ex) {
+                    LOGGER.error("Cannot find the data "+ name, ex);
                 } catch (DriverException ex) {
+                    LOGGER.error("Cannot acces to the data "+ name, ex);
                 }
             }
         }
