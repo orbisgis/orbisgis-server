@@ -29,6 +29,7 @@ package utils;
  */
 
 import com.typesafe.plugin.*;
+import play.Logger;
 
 /**
  * this is a helper to send emails, via the typesafe plugin
@@ -68,13 +69,14 @@ public class MailHelper {
     public void SendMail() {
         MailerAPI mail = play.Play.application().plugin(MailerPlugin.class).email();
         mail.setSubject(subject); //Specify subject of the mail
-        String sender = play.Play.application().configuration().getString("smtp.user");
+        String from = play.Play.application().configuration().getString("smtp.user");
         if(sender!=null&&!sender.equals("")){
-            recipient=sender;
+            sender=from;
         }
         mail.addRecipient(recipient);
         mail.addFrom(sender);
         //sends html
         mail.send(content);
+        Logger.info("Un mail a été envoyé à "+recipient);
     }
 }
