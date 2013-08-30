@@ -31,7 +31,7 @@
 }
 <div class="container-fluid">
     <div class="row-fluid">
-        <div class="span5" id="navigate" style="background-color:#61a8df">
+        <div class="span5" id="navigate">
             <ul class="nav nav-tabs" style="margin-top:2%">
                 <li @if(root.getAll_read()=="0"){class="active"}>
                     <a href="@routes.MapCatalogC.myWorkspaces()"><h4>My workspaces</h4></a>
@@ -119,11 +119,24 @@
             </div>
         </div>
         <div class="span7">
-            <div id="display" style="background-color:#70c265;">
-                <h3>@context.getTitle()</h3>
-                <h4>Date of upload : @context.getDate()</h4>
-                <img src="@routes.Assets.at("images/noPreview.jpg")" alt="no preview"/>
-                <a href="@routes.MapCatalogC.downloadContext(context.getId_owscontext())"><button class="btn btn-primary">download</button></a>
+            <div id="display">
+                <div class="span6">
+                    <h3>@context.getTitle()</h3>
+                    <h4>Date of upload : @context.getDate()</h4>
+                    <h4>Information :</h4>
+                    @if(hasDeleteRights){
+                    <form action="@routes.MapCatalogC.updateOWS(root.getId_workspace(), context.getId_owscontext())" method="post">
+                        <textarea style="width:90%" maxlength="999" name="description" rows="5">@context.getDescription()</textarea>
+                        <button type="submit" class="btn">Submit</button>
+                    </form>
+                    }else{
+                    <p>@Html(context.getDescription())</p>
+                    }
+                    <a href="@routes.MapCatalogC.downloadContext(context.getId_owscontext())"><button class="btn btn-primary">download</button></a>
+                </div>
+                <div class="span6">
+                    <img src="@routes.Assets.at("images/noPreview.jpg")" alt="no preview"/>
+                </div>
             </div>
             <br>
             <div class="commentBox">

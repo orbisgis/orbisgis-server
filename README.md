@@ -32,7 +32,7 @@ h2-browser
  ```
 start
 ```
-8. go to [`http://localhost:9000/home`](http://localhost:9000/home) for the application home page.
+8. go to [`http://localhost:9000/`](http://localhost:9000/) for the application home page.
  
 
 ##Configuration instructions

@@ -487,7 +487,7 @@ public class MapCatalogC extends Controller{
                     String title = file.getFilename();
                     try{
                         FileInputStream context = new FileInputStream(file.getFile());
-                        OWSContext ows = new OWSContext(id_root,null,id_logged,title);
+                        OWSContext ows = new OWSContext(id_root,null,id_logged,title,"");
                         ows.save(MC,context);
                     }catch(FileNotFoundException e){
                         flash("error", Message.ERROR_GENERAL);
@@ -531,7 +531,7 @@ public class MapCatalogC extends Controller{
                     String title = file.getFilename();
                     try{
                         FileInputStream context = new FileInputStream(file.getFile());
-                        OWSContext ows = new OWSContext(id_root,id_parent,id_logged,title);
+                        OWSContext ows = new OWSContext(id_root,id_parent,id_logged,title,"");
                         ows.save(MC,context);
                     }catch(FileNotFoundException e){
                         Logger.error("OWSContext was not uploaded correctly", e);
@@ -1171,6 +1171,35 @@ public class MapCatalogC extends Controller{
                     return redirect("/mapcatalog/workspace/"+map.getId_root()+"/context/"+map.getId_owscontext()+"#"+com.getId_comment());
                 }else{
                     return redirect("/mapcatalog/workspace/"+map.getId_root()+"/folder/"+map.getId_parent()+"/context/"+map.getId_owscontext()+"#"+com.getId_comment());
+                }
+            }else{flash("error", Message.ERROR_UNAUTHORIZED_USER);}
+        }catch (SQLException e){
+            flash("error", Message.ERROR_GENERAL);
+            Logger.error("", e);
+        }
+        return General.home();
+    }
+
+    @Security.Authenticated(Secured.class)
+    public static Result updateOWS(String id_root, String id_owscontext){
+        try{
+            String id_user = session("id_user");
+            String[] attributes = {"id_workspace"};
+            String[] values = {id_root};
+            Workspace wor = Workspace.page(MC, attributes, values).get(0);
+            boolean hasDeleteRights = UserWorkspace.hasWriteRight(MC, id_root, id_user)||wor.getAll_write().equals("1")|| Workspace.isCreator(MC,id_root,id_user);
+            attributes[0] = "id_owscontext";
+            values[0] = id_owscontext;
+            OWSContext map = OWSContext.page(MC, attributes, values).get(0);
+            if(hasDeleteRights||Integer.valueOf(session().get("level").split("!")[2])<=10){
+                DynamicForm form = Form.form().bindFromRequest();
+                String description = form.get("description");
+                OWSContext updated = new OWSContext(id_owscontext,map.getId_root(),map.getId_parent(),map.getId_uploader(),map.getTitle(),map.getDate(),description);
+                updated.update(MC);
+                if(map.getId_parent()==null){
+                    return redirect("/mapcatalog/workspace/"+map.getId_root()+"/context/"+map.getId_owscontext());
+                }else{
+                    return redirect("/mapcatalog/workspace/"+map.getId_root()+"/folder/"+map.getId_parent()+"/context/"+map.getId_owscontext());
                 }
             }else{flash("error", Message.ERROR_UNAUTHORIZED_USER);}
         }catch (SQLException e){

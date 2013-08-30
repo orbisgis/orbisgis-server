@@ -401,4 +401,11 @@ public class General extends Controller{
     public static Result contact(){
         return ok(contact.render());
     }
+
+    /**
+     * Renders the about page
+     */
+    public static Result about(){
+        return ok(about.render());
+    }
 }

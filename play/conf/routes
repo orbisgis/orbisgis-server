@@ -69,6 +69,8 @@ GET /                                                                       cont
 
 GET /contact                                                                controllers.General.contact
 
+GET /about                                                                  controllers.General.about
+
 # MapCatalog website
 
 GET /mapcatalog/public                                                      controllers.MapCatalogC.index
@@ -144,6 +146,8 @@ GET /mapcatalog/workspace/:id_workspace/comment/:id_comment/delete          cont
 GET /mapcatalog/editcomment/:id_comment                                     controllers.MapCatalogC.viewEditComment(id_comment)
 
 POST /mapcatalog/editedcomment/:id_comment                                  controllers.MapCatalogC.editComment(id_comment)
+
+POST /mapcatalog/workspace/:id_workspace/context/:id_owscontext/update      controllers.MapCatalogC.updateOWS(id_workspace, id_owscontext)
 
 # Profile
 

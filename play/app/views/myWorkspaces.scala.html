@@ -28,7 +28,7 @@
 }
 <div class="container-fluid" >
     <div class="row-fluid">
-        <div class="span5" id="navigate" style="background-color:#61a8df">
+        <div class="span5" id="navigate">
 
             <ul class="nav nav-tabs" style="margin-top:2%">
                 <li class="active">
@@ -68,7 +68,7 @@
                             <input type="checkbox" name="all_manage" value="1">Management access
                         </label>
                         <br/><br/>
-                        <textarea style="width:90%" required="required" maxlength="999" name="description" rows="5" placeholder="Add the description of you workspace here."></textarea>
+                        <textarea style="width:90%" maxlength="999" name="description" rows="5" placeholder="Add the description of you workspace here."></textarea>
                         <br/>
                         <button type="submit" class="btn">Submit</button>
                     </fieldset>
@@ -186,7 +186,7 @@
                 </ul>
             </div>
         </div>
-        <div id="display" style="background-color:#70c265;position:fixed;margin-left:40%;width:55%">
+        <div id="display" style="position:fixed;margin-left:40%;width:55%">
             <h2>Display</h2>
             <p class="text-info" >Click on info to get the workspace description !</p>
             @for(workspace <- workspaceCreated){

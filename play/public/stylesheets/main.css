@@ -115,16 +115,18 @@ border-radius:10px;
 padding-left: 5px;
 padding-top: 5px;
 padding-bottom: 5px;
-padding-right: 5px
+padding-right: 5px;
+background-color:#61a8df;
 }
 div#display
 {
 border:2px solid;
 border-radius:10px;
-padding-left: 5px;
+padding-left: 20px;
 padding-top: 5px;
 padding-bottom: 5px;
 padding-right: 5px
+background-color:#70c265;
 }
 
 div.commentBox {
@@ -147,16 +149,13 @@ div.commentBox table.table th:first-child{
     width:20%;
 }
 
-footer{
-    border:2px solid;
-    border-radius:5px;
-    box-shadow: 5px 5px 2px #888888;
-    padding-left:5%;
-    padding-right:5%;
-    line-height:70%
-}
-
 div.alert{
     width:30%;
     margin-left:30%;
+}
+
+footer{
+margin-top:40px;
+margin-bottom:0%;
+    margin-left:40%;
 }

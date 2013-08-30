@@ -50,6 +50,7 @@ create table IF NOT EXISTS owscontext (
   id_uploader			bigint,
   content               clob,
   title                 varchar(255),
+  description           varchar(1000),
   date                  timestamp default CURRENT_TIMESTAMP,
   constraint pk_owscontext primary key (id_owscontext)
 );

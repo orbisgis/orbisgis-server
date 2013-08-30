@@ -44,6 +44,7 @@ public class OWSContext {
     private String id_parent = null;
     private String id_uploader = null;
     private String title = "default";
+    private String description ="";
     private Date date = null;
 
     /**
@@ -53,11 +54,12 @@ public class OWSContext {
      * @param id_uploader The id of the uploader
      * @param title The title of the OWSContext
      */
-    public OWSContext(String id_root, String id_parent, String id_uploader, String title) {
+    public OWSContext(String id_root, String id_parent, String id_uploader, String title, String description) {
         this.id_root = id_root;
         this.id_parent = id_parent;
         this.id_uploader = id_uploader;
         this.title = title;
+        this.description = description;
     }
 
     /**
@@ -69,13 +71,14 @@ public class OWSContext {
      * @param title The title of the context
      * @param date The date of upload
      */
-    public OWSContext(String id_owscontext, String id_root, String id_parent, String id_uploader, String title, Date date) {
+    public OWSContext(String id_owscontext, String id_root, String id_parent, String id_uploader, String title, Date date, String description) {
         this.id_owscontext = id_owscontext;
         this.id_root = id_root;
         this.id_parent = id_parent;
         this.id_uploader = id_uploader;
         this.title = title;
         this.date = date;
+        this.description = description;
     }
 
     public String getId_owscontext() {
@@ -92,6 +95,10 @@ public class OWSContext {
 
     public String getId_uploader() {
         return id_uploader;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     /**
@@ -128,13 +135,14 @@ public class OWSContext {
      */
     public  Long save(MapCatalog MC, InputStream content) throws SQLException{
         Long last = null;
-        String query = "INSERT INTO owscontext (id_root,id_parent,id_uploader,content, title) VALUES (? , ? , ? , ? , ?);";
+        String query = "INSERT INTO owscontext (id_root,id_parent,id_uploader,content, title, description) VALUES (? , ? , ? , ? , ? , ?);";
         PreparedStatement pstmt = MC.getConnection().prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS);
         pstmt.setString(1, id_root);
         pstmt.setString(2, id_parent);
         pstmt.setString(3, id_uploader);
         pstmt.setAsciiStream(4, content);
         pstmt.setString(5, title);
+        pstmt.setString(6, description);
         pstmt.executeUpdate();
         ResultSet rs = pstmt.getGeneratedKeys();
         if(rs.next()){
@@ -202,7 +210,8 @@ public class OWSContext {
             String id_uploader = rs.getString("id_uploader");
             String title = rs.getString("title");
             Date date = rs.getDate("date");
-            OWSContext ows = new OWSContext(id_owscontext,id_root,id_parent,id_uploader,title,date);
+            String description = rs.getString("description");
+            OWSContext ows = new OWSContext(id_owscontext,id_root,id_parent,id_uploader,title,date, description);
             paged.add(ows);
         }
         rs.close();
@@ -227,7 +236,8 @@ public class OWSContext {
             String id_uploader = rs.getString("id_uploader");
             String title = rs.getString("title");
             Date date = rs.getDate("date");
-            OWSContext ows = new OWSContext(id_owscontext,id_root,id_parent,id_uploader,title,date);
+            String description = rs.getString("description");
+            OWSContext ows = new OWSContext(id_owscontext,id_root,id_parent,id_uploader,title,date,description);
             paged.add(ows);
         }
         rs.close();
@@ -255,7 +265,8 @@ public class OWSContext {
             String id_uploader = rs.getString("id_uploader");
             String title = rs.getString("title");
             Date date = rs.getDate("date");
-            OWSContext ows = new OWSContext(id_owscontext,id_root,id_parent,id_uploader,title,date);
+            String description = rs.getString("description");
+            OWSContext ows = new OWSContext(id_owscontext,id_root,id_parent,id_uploader,title,date,description);
             searched.add(ows);
         }
         rs.close();
@@ -286,14 +297,15 @@ public class OWSContext {
      * @param MC the mapcatalog used for database connection
      */
     public void update(MapCatalog MC) throws SQLException{
-        String query = "UPDATE owscontext SET id_root = ? , id_parent = ? , id_uploader = ? , title = ? WHERE id_owscontext = ?;";
+        String query = "UPDATE owscontext SET id_root = ? , id_parent = ? , id_uploader = ? , title = ? , description = ? WHERE id_owscontext = ?;";
         //preparation of the statement
         PreparedStatement pstmt = MC.getConnection().prepareStatement(query);
         pstmt.setString(1, id_root);
         pstmt.setString(2, id_parent);
         pstmt.setString(3, id_uploader);
         pstmt.setString(4, title);
-        pstmt.setString(5, id_owscontext);
+        pstmt.setString(5, description);
+        pstmt.setString(6, id_owscontext);
         pstmt.executeUpdate();
         pstmt.close();
     }

@@ -16,7 +16,7 @@
     <div class="navbar-inner">
         <div class="container">
             <a class="brand" href="@controllers.routes.General.home()">
-                OrbisGIS Services
+                Orbis Services
             </a>
             <ul class="nav">
                 <li class="divider-vertical"></li>
@@ -42,6 +42,8 @@
                 <li class="divider-vertical"></li>
                 @if(session.get("email")==null){
                     <li><a href="@controllers.routes.General.login("/")">Login</a></li>
+                    <li class="divider-vertical"></li>
+                    <li><a href="@controllers.routes.General.signin()">Sign up</a></li>
                 }else{
                     <li><a href="@controllers.routes.General.logout">Logout</a></li>
                 }
@@ -52,4 +54,9 @@
 </div>
 @content
 </body>
+<footer>
+    Atelier SIG, IRSTV - FR CNRS 2488
+    <a href="@controllers.routes.General.contact">Contacts</a>
+    <a href="@controllers.routes.General.about">About</a>
+</footer>
 </html>

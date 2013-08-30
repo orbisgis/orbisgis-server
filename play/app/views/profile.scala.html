@@ -21,7 +21,7 @@
 }
 <div class="container-fluid">
     <div class="row-fluid">
-        <div class="span6" id="navigate">
+        <div class="span6" id="navigate" style="background-color:#FFFFFF;">
             @defining(MD5Util.md5Hex(session.get("email"))){icon =>
                 <a href="http://www.gravatar.com"><img src="https://www.gravatar.com/avatar/@icon?s=80&amp;d=identicon"/></a>
             }
@@ -48,7 +48,7 @@
                 <button class="btn btn-primary" type="submit">Submit your changes</button>
             </form>
         </div>
-        <div class="span6" id="display">
+        <div class="span6" id="display" style="background-color:#ffffff;">
             <h2>Account parameters</h2>
             <h3>Change password</h3>
             <form action="@routes.General.changePass()" method="post">

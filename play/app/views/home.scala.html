@@ -3,7 +3,7 @@
 @javamain("Home","OrbisGIS services") {
 <script src="@routes.Assets.at("javascripts/tinymce/tinymce.min.js")" type="text/javascript"></script>
 <script src="@routes.Assets.at("javascripts/configmce1.js")" type="text/javascript"></script>
-<div class="row-fluid" style="padding-left:2px">
+<div class="row-fluid">
     <div class="container" style="width:50%">
         <div class="page-header">
             <img src="@routes.Assets.at("images/logos/OrbisServices.png")" alt="Orbis Services Home"/>
@@ -12,8 +12,20 @@
     @if(!(flash.get("error")==null)){
         <div class="alert alert-error">
             <button type="button" class="close" data-dismiss="alert">&times;</button>
-            <h4>Error :</h4>
-            @flash.get("error")
+            <h4>There has been an <a data-toggle="modal" href="#modalDisclaimer">error</a></h4>
+        </div>
+
+        <div class="modal hide fade" id="modalDisclaimer">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4>Error :</h4>
+            </div>
+            <div class="modal-body">
+                    @flash.get("error")
+            </div>
+            <div class="modal-footer">
+                <a href="javascript:void(0)" class="btn" data-dismiss="modal" aria-hidden="true">Close</a>
+            </div>
         </div>
     }
     @if(flash.get("info")!=null){
@@ -23,40 +35,22 @@
         @flash.get("info")
     </div>
     }
-    <ul class="thumbnails">
+    <ul style="margin-top:20px">
         <li class="span4">
-            <div class="thumbnail">
+            <a href="@controllers.routes.Application.index()" title="Under development">
                 <img src="@routes.Assets.at("images/logos/OrbisData.png")" alt="Orbis Data"/>
-                <h2>Orbis Data</h2>
-                <p style="font-size:16px">Under development</p>
-                <a href="@controllers.routes.Application.index()"><button class="btn btn-primary" type="button">Try it !</button></a>
-                <a href="@controllers.routes.General.signin"><button class="btn" type="button">Sign up</button></a>
-            </div>
+            </a>
         </li>
         <li class="span4">
-            <div class="thumbnail">
+            <a class="link" href="@controllers.routes.MapCatalogC.index()" title="Share your maps under .ows format with other users, and arrange them in different workspaces to manage the visibility of your maps. Works in coordination with orbisGIS for a even easier sharing process.">
                 <img src="@routes.Assets.at("images/logos/OrbisMapCatalog.png")" alt="Orbis Map Catalog"/>
-                <h2>Orbis Map Catalog</h2>
-                <p style="font-size:16px">Share your maps under .ows format with other users, and arrange them in different workspaces to manage the visibility of your maps. Works in coordination with <a href="http://www.orbisgis.org/">OrbisGis</a> for a even easier sharing process.</p>
-                <a href="@controllers.routes.MapCatalogC.index()"><button class="btn btn-primary" type="button">Try it !</button></a>
-                <a href="@controllers.routes.General.signin"><button class="btn" type="button">Sign up</button></a>
-            </div>
+            </a>
         </li>
         <li class="span4">
-            <div class="thumbnail">
+            <a class="link" href="@controllers.routes.WPS.manage" title="Under development">
                 <img src="@routes.Assets.at("images/logos/OrbisProcessing.png")" alt="Orbis Processing"/>
-                <h2>Orbis Processing</h2>
-                <p style="font-size:16px">Under development</p>
-                <a href="@controllers.routes.WPS.manage"><button class="btn btn-primary" type="button">Try it!</button></a>
-                <a href="@controllers.routes.General.signin"><button class="btn" type="button">Sign up</button></a>
-            </div>
+            </a>
         </li>
     </ul>
 </div>
-<footer>
-    <br>
-    <p>This is an under development website, enjoy! </p>
-    <p><b>Version 2.6.0-SNAPSHOT</b> -- Mario Jothy</p>
-    <p><a href="@controllers.routes.General.contact">Contacts</a></p>
-</footer>
 }

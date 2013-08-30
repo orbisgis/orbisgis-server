@@ -14,8 +14,12 @@
 </div>
 <div class="container-fluid" >
     <div class="row-fluid">
-        <div class="span7" id="navigate" style="background-color:#61a8df;">
-            <h2>Manage users of @wor.getName()</h2>
+        <div class="span7" id="navigate" style="background-color:#ffffff;">
+            <h2>Manage users of
+                <a href="/mapcatalog/workspace/@wor.getId_workspace()">
+                    @wor.getName()
+                </a>
+            </h2>
             <div class="CSSworktable">
                 <table>
                     <tr>
@@ -71,7 +75,7 @@
             </div>
             @if(users.keySet().isEmpty()){There is no information to display}
         </div>
-        <div class="span5" id="display" style="background-color:#70c265;">
+        <div class="span5" id="display">
             <h2>Workspace info</h2>
             <div style="margin-left:2%">
                 @if(session().get("id_user").equals(wor.getId_creator())){

@@ -59,7 +59,7 @@ trait SecuredWMS {
     }
   }
 
-  def onUnauthorized(request: RequestHeader) = Results.Redirect(routes.General.home()).flashing("error" -> "access denied")
+  def onUnauthorized(request: RequestHeader) = Results.Redirect(routes.General.home()).flashing("error" -> "OrbisData and OrbisProcessing can only be accessed by an administrator")
 
   def withAuth(f: => String => Request[AnyContent] => Result) = {
     Security.Authenticated(username, onUnauthorized) { user =>

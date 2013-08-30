@@ -51,7 +51,7 @@ import java.util.List;
  */
 public class MapCatalog {
 
-    private static final int VERSION = 5;
+    private static final int VERSION = 6;
     static {
         try
         {

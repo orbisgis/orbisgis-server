@@ -54,7 +54,7 @@ public class OWSContextTest {
     @Test
     public void creation() throws SQLException {
         //Creation of the ows
-        OWSContext ows = new OWSContext("1",null,"1","title");
+        OWSContext ows = new OWSContext("1",null,"1","title","");
         InputStream is = getClass().getResourceAsStream("MaCarte.ows");
         Long id_owscontext = ows.save(MC, is);
         //Obtaining of the ows
@@ -71,7 +71,7 @@ public class OWSContextTest {
 
     @Test
     public void update() throws SQLException {
-        OWSContext ows = new OWSContext("1","1",null,"1","title2",null);
+        OWSContext ows = new OWSContext("1","1",null,"1","title2",null,"");
         ows.update(MC);
         //Obtaining of the ows
         String[] attributes = {"id_owscontext"};
