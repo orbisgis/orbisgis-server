@@ -49,7 +49,7 @@ public class MailHelper {
         this.content =
                     "Click here to verify your email for your " +
                     "subscription to orbisGIS services : http://" +
-                     domainName+"/"+URLResetPass;
+                     domainName+"/"+URLverification;
     }
 
     /**
