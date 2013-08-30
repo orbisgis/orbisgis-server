@@ -38,12 +38,12 @@
             <ul class="nav" style="margin-left:70%;position:absolute">
                 <li><a href="@controllers.routes.General.profilePage()">@session.get("email")</a></li>
             </ul>
-            <ul class="nav" style="margin-left:90%;position:absolute">
+            <ul class="nav" style="margin-left:88%;position:absolute">
                 <li class="divider-vertical"></li>
                 @if(session.get("email")==null){
                     <li><a href="@controllers.routes.General.login("/")">Login</a></li>
                     <li class="divider-vertical"></li>
-                    <li><a href="@controllers.routes.General.signin()">Sign up</a></li>
+                    <li><a href="@controllers.routes.General.signin()">Sign in</a></li>
                 }else{
                     <li><a href="@controllers.routes.General.logout">Logout</a></li>
                 }

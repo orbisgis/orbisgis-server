@@ -146,10 +146,10 @@ public class General extends Controller{
                         usr.setVerification(MC);
                         usr.save(MC);
                         MailHelper mail = new MailHelper();
-                        String URL = routes.General.home().absoluteURL(request())+"validate/"+usr.getVerification();
+                        String URL = "validate/"+usr.getVerification();
                         mail.setContentAtSignUp(URL);
                         mail.recipient=usr.getName()+" <"+usr.getEmail()+">";
-                        mail.subject ="verification email for OrbisGis services";
+                        mail.subject ="Verification email for OrbisGis services";
                         mail.SendMail();
                         flash("info", "You have created an account, please validate it with the email that was sent to you");
                         return ok(home.render());
@@ -331,10 +331,11 @@ public class General extends Controller{
             if(!users.isEmpty()){
                 User usr = users.get(0);
                 usr.setReset_pass(MC);
-                String URL = routes.General.home().absoluteURL(request())+"resetPassword/"+usr.getReset_pass(MC);
+                String URL = "resetPassword/"+usr.getReset_pass(MC);
                 MailHelper mail = new MailHelper();
                 mail.recipient=usr.getName()+" <"+usr.getEmail()+">";
                 mail.setContentAtForgotPass(URL);
+                mail.subject = "Reset Password on OrbisServices";
                 mail.SendMail();
                 flash("info","You will recieve an email soon to change your password.");
             }else{flash("error", "email Invalid");}

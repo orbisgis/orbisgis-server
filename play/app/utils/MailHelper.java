@@ -34,8 +34,8 @@ import com.typesafe.plugin.*;
  * this is a helper to send emails, via the typesafe plugin
  */
 public class MailHelper {
-    public String sender = "Test <test@gmail.com>";
-    public String recipient = "Test <test@gmail.com>";
+    public String sender = "Test <test@test.com>";
+    public String recipient = "";
     public String subject = "";
     private String content ="";
 
@@ -45,7 +45,7 @@ public class MailHelper {
      */
     public void setContentAtSignUp(String URLverification) {
         this.content =
-                    "Click here to verify your email for you " +
+                    "Click here to verify your email for your " +
                     "subscription to orbisGIS services : " +
                     URLverification;
     }
@@ -55,9 +55,10 @@ public class MailHelper {
      * @param URLResetPass The URL needed to reset the password of a user (see routes)
      */
     public void setContentAtForgotPass(String URLResetPass) {
+        String domainName=play.Play.application().configuration().getString("domain.name");
         this.content =
                         "Click here to change your password for OrbisGis Services " +
-                        URLResetPass;
+                        domainName+"/"+URLResetPass;
     }
 
     /**
@@ -67,6 +68,10 @@ public class MailHelper {
     public void SendMail() {
         MailerAPI mail = play.Play.application().plugin(MailerPlugin.class).email();
         mail.setSubject(subject); //Specify subject of the mail
+        String sender = play.Play.application().configuration().getString("smtp.user");
+        if(sender!=null&&!sender.equals("")){
+            recipient=sender;
+        }
         mail.addRecipient(recipient);
         mail.addFrom(sender);
         //sends html
