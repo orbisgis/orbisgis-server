@@ -1,0 +1,228 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+GET  /wms/manage					    controllers.Application.index
+
+GET  /assets/*file					    controllers.Assets.at(path="/public", file)
+
+GET  /wms/wms						    controllers.WMS.wms
+
+POST /wms/sources/add					controllers.Application.addFile
+
+POST /wms/styles/add					controllers.WMS.addStyle
+
+GET /wms/sources/remove/:name				controllers.Application.removeFile(name)
+
+GET /wms/styles/remove/:name				controllers.WMS.removeStyle(name)
+
+POST /wms/styles/rename/:name				controllers.WMS.renameStyle(name)
+
+POST /wms/sources/clear					controllers.Application.clearFiles
+
+POST /wms/styles/clear					controllers.WMS.clearStyles
+
+# REST API
+
+GET /wms/api/sources					controllers.API.listSources
+
+POST /wms/api/sources					controllers.API.registerSource
+
+DELETE /wms/api/sources/:name				controllers.API.deleteSource(name)
+
+POST /wps/api/processes                                 controllers.WPS.apiAddProcess
+
+DELETE /wps/api/processes/:name				controllers.WPS.apiRemoveProcess(name)
+
+# WPS end point
+
+GET  /wps/manage					controllers.WPS.manage
+
+GET  /wps/wps						controllers.WPS.wpsGet
+
+POST  /wps/wps						controllers.WPS.wpsPost
+
+GET /wps/tempResource/:name                             controllers.WPS.tempResource(name)
+
+
+# REST Catalog API
+
+GET /map/workspaces                                     controllers.CatalogAPI.listWorkspace(key: String ?= "")
+
+GET /map/workspaces/:name/contexts                      controllers.CatalogAPI.listContexts(key: String ?= "", name)
+
+GET /map/workspaces/:name/contexts/:id                  controllers.CatalogAPI.getContext(key: String ?= "",name,id)
+
+POST /map/workspaces/:name/contexts                     controllers.CatalogAPI.addContext(key: String ?= "", name, path="")
+
+#POST /map/workspaces/:name/contexts/path/*path         controllers.CatalogAPI.addContext(key: String ?= "",name, path)
+
+POST /map/workspaces/:name/contexts/:id                 controllers.CatalogAPI.replaceContext(key: String ?= "",name,id)
+
+DELETE /map/workspaces/:name/contexts/:id               controllers.CatalogAPI.removeContext(key: String ?= "",name,id)
+
+#DELETE /map/workspaces/:name/path/*path                controllers.CatalogAPI.removePath(key: String ?= "",path)
+
+# Main page and informations
+
+GET /                                                                       controllers.General.home
+
+GET /contact                                                                controllers.General.contact
+
+GET /about                                                                  controllers.General.about
+
+# MapCatalog website
+
+GET /mapcatalog/public                                                      controllers.MapCatalogC.index
+
+GET /mapcatalog/public/:offset                                              controllers.MapCatalogC.indexOffset(offset: Int)
+
+GET /mapcatalog/myworkspaces                                                controllers.MapCatalogC.myWorkspaces
+
+GET /mapcatalog/myworkspaces/created/:offset                                controllers.MapCatalogC.myWorkspacesCreatedOffset(offset: Int)
+
+GET /mapcatalog/myworkspaces/monitored/:offset                              controllers.MapCatalogC.myWorkspacesMonitoredOffset(offset: Int)
+
+GET /mapcatalog/workspace/:id_workspace                                     controllers.MapCatalogC.viewWorkspace(id_workspace : String)
+
+GET /mapcatalog/workspace/:id_workspace/folder/:id_folder                   controllers.MapCatalogC.viewFolder(id_workspace: String, id_folder :  String)
+
+GET /createworkspace                                                        controllers.MapCatalogC.createWorkspace
+
+GET /mapcatalog/workspace/:id_workspace/folder/:id_folder/createFolder      controllers.MapCatalogC.createFolderFromParent(id_workspace : String, id_folder : String)
+
+GET /mapcatalog/workspace/:id_workspace/createFolder                        controllers.MapCatalogC.createFolderFromRoot(id_workspace : String)
+
+GET /mapcatalog/workspace/:id_workspace/monitor                             controllers.MapCatalogC.monitor(id_workspace : String)
+
+GET /mapcatalog/manageWorkspaces                                            controllers.MapCatalogC.manageWorkspaces()
+
+GET /mapcatalog/manageWorkspace/workspace/:id_workspace                     controllers.MapCatalogC.manageAWorkspace(id_workspace : String)
+
+GET /mapcatalog/manageWorkspace/workspace/:id_workspace/user/:id_user       controllers.MapCatalogC.changeRights(id_workspace : String, id_user : String)
+
+GET /mapcatalog/manageWorkspace/workspace/:id_workspace/delete              controllers.MapCatalogC.deleteWorkspace(id_workspace : String)
+
+GET /mapcatalog/manageWorkspace/workspace/:id_workspace/update              controllers.MapCatalogC.updateWorkspace(id_workspace : String)
+
+GET /mapcatalog/manageWorkspace/workspace/:id_workspace/castOut/:id_user    controllers.MapCatalogC.castOut(id_workspace : String, id_user : String)
+
+GET /mapcatalog/workspace/:id_workspace/deleteFolder/:id_folder             controllers.MapCatalogC.deleteFolder(id_workspace : String , id_folder : String)
+
+POST /mapcatalog/workspace/:id_workspace/addcontext                         controllers.MapCatalogC.addMapContextFromRoot(id_workspace : String)
+
+POST /mapcatalog/workspace/:id_workspace/folder/:id_folder/addcontext       controllers.MapCatalogC.addMapContextFromParent(id_workspace : String, id_folder : String)
+
+GET /mapcatalog/public/search/:offset                                       controllers.MapCatalogC.searchPublicWorkspaces(offset : Int)
+
+GET /mapcatalog/workspace/:id_workspace/search                              controllers.MapCatalogC.searchFromRoot(id_workspace : String)
+
+GET /mapcatalog/workspace/:id_workspace/folder/:id_folder/search            controllers.MapCatalogC.searchFromParent(id_workspace : String, id_folder : String)
+
+GET /mapcatalog/myworkspaces/search/:choice/:offset                         controllers.MapCatalogC.searchMyWorkspaces(choice:String, offset : Int)
+
+GET /mapcatalog/workspace/:id_workspace/folder/:id_folder/context/:id_owscontext   controllers.MapCatalogC.viewOWSFromParent(id_workspace, id_folder, id_owscontext)
+
+GET /mapcatalog/workspace/:id_workspace/context/:id_owscontext              controllers.MapCatalogC.viewOWSFromRoot(id_workspace, id_owscontext)
+
+GET /mapcatalog/workspace/:id_workspace/folder/:id_folder/context/:id_owscontext/:offset   controllers.MapCatalogC.viewOWSFromParentOffset(id_workspace, id_folder, id_owscontext, offset : Int)
+
+GET /mapcatalog/workspace/:id_workspace/context/:id_owscontext/:offset              controllers.MapCatalogC.viewOWSFromRootOffset(id_workspace, id_owscontext, offset : Int)
+
+GET /mapcatalog/context/download/:id_owscontext                             controllers.MapCatalogC.downloadContext(id_owscontext)
+
+GET /mapcatalog/workspace/:id_workspace/deleteContext/:id_owscontext        controllers.MapCatalogC.deleteContext(id_workspace, id_owscontext)
+
+GET /mapcatalog/workspace/:id_workspace/stopMonitoring                      controllers.MapCatalogC.stopMonitoring(id_workspace)
+
+GET /mapcatalog/manageWorkspace/workspace/:id_workspace/Creator/:id_user    controllers.MapCatalogC.handOverCreation(id_workspace, id_user)
+
+POST /mapcatalog/workspace/:id_workspace/context/:id_owscontext/addcomment   controllers.MapCatalogC.addCommentFromRoot(id_workspace, id_owscontext)
+
+POST /mapcatalog/workspace/:id_workspace/folder/:id_folder/context/:id_owscontext/addcomment   controllers.MapCatalogC.addCommentFromParent(id_workspace, id_folder, id_owscontext)
+
+GET /mapcatalog/workspace/:id_workspace/comment/:id_comment/delete          controllers.MapCatalogC.deleteComment(id_workspace, id_comment)
+
+GET /mapcatalog/editcomment/:id_comment                                     controllers.MapCatalogC.viewEditComment(id_comment)
+
+POST /mapcatalog/editedcomment/:id_comment                                  controllers.MapCatalogC.editComment(id_comment)
+
+POST /mapcatalog/workspace/:id_workspace/context/:id_owscontext/update      controllers.MapCatalogC.updateOWS(id_workspace, id_owscontext)
+
+# Profile
+
+GET /profile                                                                controllers.General.profilePage()
+
+GET /changeprofile                                                          controllers.General.changeProfile()
+
+POST /changepass                                                            controllers.General.changePass()
+
+GET /profile/delete                                                         controllers.General.deleteAccount
+
+GET /user/profile/:id_user                                                  controllers.General.userView(id_user)
+
+GET /forgotPass                                                             controllers.General.forgotPassword()
+
+POST /forgotPass                                                            controllers.General.sendEmailForgotPassword()
+
+GET /resetPassword/:reset_pass                                              controllers.General.renderResetPassword(reset_pass)
+
+POST /resetPassword                                                         controllers.General.resetPassword()
+
+# Authentification
+
+GET /login                                                                  controllers.General.login(uri ?="/")
+
+GET /logout                                                                 controllers.General.logout
+
+POST /login                                                                 controllers.General.authenticate(uri ?="/")
+
+GET /signin                                                                 controllers.General.signin
+
+POST /signin                                                                controllers.General.signedin
+
+GET /validate/:verification                                                 controllers.General.validateAccount(verification)
+
+# Admin
+
+GET /admin                                                                  controllers.Admin.admin()
+
+GET /admin/wms                                                              controllers.Admin.adminWMS(offset : Int ?=0)
+
+GET /admin/mapcatalog                                                       controllers.Admin.adminMapCatalog(offset : Int ?=0)
+
+GET /admin/wps                                                              controllers.Admin.adminWPS(offset : Int ?=0)
+
+POST /admin/mapcatalog/change                                               controllers.Admin.changeMapCatalogRight(id_user : String)
+
+POST /admin/wms/change                                                      controllers.Admin.changeWMSRight(id_user : String)
+
+POST /admin/wps/change                                                      controllers.Admin.changeWPSRight(id_user : String)
+
+GET /admin/deleteUser/:id_userToDelete/from/:url                            controllers.Admin.deleteUser(id_userToDelete, url)
+
+GET /admin/wms/search                                                       controllers.Admin.searchAdminWMS(offset : Int ?=0)
+
+GET /admin/mapcatalog/search                                                controllers.Admin.searchAdminMapCatalog(offset : Int ?=0)
+
+GET /admin/wps/search                                                       controllers.Admin.searchAdminWPS(offset : Int ?=0)
+
+#API REST for orbisgis
+
+GET /mapcatalogapi/workspaces                                               controllers.MapCatalogAPI.listWorkspaces
+
+GET /mapcatalogapi/workspaces/:id_workspace/contexts                        controllers.MapCatalogAPI.listContexts(id_workspace)
+
+GET /mapcatalogapi/workspaces/:id_workspace/contexts/:id_context            controllers.MapCatalogAPI.getContext(id_workspace, id_context)
+
+DELETE /mapcatalogapi/workspaces/:id_workspace/contexts/:id_context         controllers.MapCatalogAPI.deleteContext(id_workspace, id_context)
+
+POST /mapcatalogapi/workspaces/:id_workspace/contexts                       controllers.MapCatalogAPI.addContextFromRoot(id_workspace)
+
+POST /mapcatalogapi/workspaces/:id_workspace/folder/id_folder               controllers.MapCatalogAPI.addContextFromParent(id_workspace, id_folder)
+
+POST /mapcatalogapi/workspaces/:id_workspace/contexts/:id_context           controllers.MapCatalogAPI.updateContext(id_workspace, id_context)
+
+#404 not found
+
+GET /notFound                                                               controllers.General.PageNotFound()

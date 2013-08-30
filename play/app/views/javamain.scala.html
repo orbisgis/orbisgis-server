@@ -1,0 +1,62 @@
+@(page : String, title: String)(content: Html)
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <title>@title</title>
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/bootstrap.min.css")">
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+    <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/logos/logo.png")">
+    <script src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/bootstrap.min.js")" type="text/javascript"></script>
+</head>
+<body>
+<div class="navbar">
+    <div class="navbar-inner">
+        <div class="container">
+            <a class="brand" href="@controllers.routes.General.home()">
+                Orbis Services
+            </a>
+            <ul class="nav">
+                <li class="divider-vertical"></li>
+                <li @if(page=="Home"){class="active"}><a href="@controllers.routes.General.home()">Home</a></li>
+                <li class="divider-vertical"></li>
+                <li @if(page=="Data"){class="active"}><a href="@controllers.routes.Application.index()">Data</a></li>
+                <li class="divider-vertical"></li>
+                <li @if(page=="MapCatalog"){class="active"}><a href="@controllers.routes.MapCatalogC.index()">MapCatalog</a></li>
+                <li class="divider-vertical"></li>
+                <li @if(page=="Processing"){class="active"}><a href="@controllers.routes.WPS.manage">Processing</a></li>
+                <li class="divider-vertical"></li>
+                <li @if(page=="Contact"){class="active"}><a href="@controllers.routes.General.contact">Contacts</a></li>
+                <li class="divider-vertical"></li>
+                @if(session.get("admin")!=null){
+                <li @if(page=="admin"){class="active"}><a href="@controllers.routes.Admin.admin">Administration panel</a></li>
+                <li class="divider-vertical"></li>
+                }
+            </ul>
+            <ul class="nav" style="margin-left:70%;position:absolute">
+                <li><a href="@controllers.routes.General.profilePage()">@session.get("email")</a></li>
+            </ul>
+            <ul class="nav" style="margin-left:88%;position:absolute">
+                <li class="divider-vertical"></li>
+                @if(session.get("email")==null){
+                    <li><a href="@controllers.routes.General.login("/")">Login</a></li>
+                    <li class="divider-vertical"></li>
+                    <li><a href="@controllers.routes.General.signin()">Sign in</a></li>
+                }else{
+                    <li><a href="@controllers.routes.General.logout">Logout</a></li>
+                }
+            </ul>
+
+        </div>
+    </div>
+</div>
+@content
+</body>
+<footer>
+    Atelier SIG, IRSTV - FR CNRS 2488
+    <a href="@controllers.routes.General.contact">Contacts</a>
+    <a href="@controllers.routes.General.about">About</a>
+</footer>
+</html>

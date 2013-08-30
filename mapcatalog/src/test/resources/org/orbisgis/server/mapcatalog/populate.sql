@@ -1,0 +1,14 @@
+INSERT INTO user (name,email,password,location,profession,additional) VALUES ('toto','toto@toto.com','','Nantes','dev','');
+INSERT INTO user (name,email,password,location,profession,additional) VALUES ('toto','toto@toto.com','','Nantes','dev','');
+INSERT INTO WORKSPACE (id_creator, name, all_read, all_write, all_manage, description) VALUES (1,'name',1,1,1,'description');
+INSERT INTO WORKSPACE (id_creator, name, all_read, all_write, all_manage, description) VALUES (1,'namesrc',1,1,1,'description');
+INSERT INTO WORKSPACE (id_creator, name, all_read, all_write, all_manage, description) VALUES (1,'namesrc',1,1,1,'description');
+INSERT INTO folder (id_root,id_parent,name) VALUES (1 , null , 'name');
+INSERT INTO folder (id_root,id_parent,name) VALUES (1 , null , 'namesrc');
+INSERT INTO user_workspace (id_user,id_workspace,read,write,manage_user) VALUES (1 , 1 , 0 , 0 , 0);
+INSERT INTO user_workspace (id_user,id_workspace,read,write,manage_user) VALUES (2 , 2 , 1 , 1 , 1);
+INSERT INTO owscontext (id_root,id_parent,id_uploader, title) VALUES (1, null, 1, 'title');
+INSERT INTO owscontext (id_root,id_parent,id_uploader, title) VALUES (1, null, 1, 'tyui');
+INSERT INTO owscontext (id_root,id_parent,id_uploader, title) VALUES (1, null, 1, 'tyui');
+INSERT INTO comment (id_writer,id_map,content,title) VALUES (1,1,'plop','title');
+INSERT INTO comment (id_writer,id_map,content,title) VALUES (1,1,'plop','title');
