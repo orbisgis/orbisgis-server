@@ -70,7 +70,7 @@ public class MailHelper {
         MailerAPI mail = play.Play.application().plugin(MailerPlugin.class).email();
         mail.setSubject(subject); //Specify subject of the mail
         String from = play.Play.application().configuration().getString("smtp.user");
-        if(sender!=null&&!sender.equals("")){
+        if(from!=null&&!from.equals("")){
             sender=from;
         }
         mail.addRecipient(recipient);
