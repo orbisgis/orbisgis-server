@@ -100,9 +100,7 @@ public final class MapImageWriter {
         private static void writeJPEG(WMSResponse wmsResponse, OutputStream output,
                 BufferedImage img) throws IOException {
                 wmsResponse.setContentType(ImageFormats.JPEG.toString());
-
-                JPEGEncodeParam jEnc = new JPEGEncodeParam();
-                JAI.create("Encode", img, output, "JPEG", jEnc);
+                ImageIO.write(img, "jpeg",output);
 
                 output.close();
         }
