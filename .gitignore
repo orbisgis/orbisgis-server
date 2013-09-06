@@ -16,4 +16,5 @@ tmp
 *.iml
 /play/map-catalogs/
 *~
-/wms/logs/
+/wms/logs/*
+/play/dist/*
