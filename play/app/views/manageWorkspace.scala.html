@@ -1,0 +1,90 @@
+@(workspacesCreated : List[org.orbisgis.server.mapcatalog.Workspace], workspacesMonitored : Map[org.orbisgis.server.mapcatalog.UserWorkspace,org.orbisgis.server.mapcatalog.Workspace])
+
+@import helper.twitterBootstrap._
+
+@javamain("MapCatalog","OrbisGIS services") {
+<div class="container">
+    <div class="page-header">
+        <h1>
+            <img src="@routes.Assets.at("images/logos/OrbisMapCatalog.png")" alt="Map Catalog"/>
+        </h1>
+    </div>
+</div>
+<div class="container-fluid">
+    <div class="row-fluid">
+        <h2> Manage your workspaces</h2>
+        <div class="alert alert-info">
+            <h4>Info :</h4>
+            Here is the list of the workspace where you have the right of management.
+        </div>
+        <div class="span5" id="navigate">
+            <h3>Workspace Created</h3>
+            <div class="CSSworktable">
+                <table>
+                    <tr>
+                        <td>Name</td>
+                        <td>Default accesses</td>
+                        <td>Action</td>
+                    </tr>
+                    @for(workspace <- workspacesCreated){
+                    <tr>
+                        <td>
+                            <a href="/mapcatalog/workspace/@workspace.getId_workspace()">
+                                <img src="@routes.Assets.at("images/icons/workspace.png")" alt="Map"/>@workspace.getName()
+                            </a>
+                        </td>
+                        <td>
+                            @if(workspace.getAll_read().equals("1")){Read}
+                            @if(workspace.getAll_write().equals("1")){Write}
+                            @if(workspace.getAll_manage().equals("1")){Manage}
+                            @if(workspace.getAll_read().equals("0")&&workspace.getAll_write().equals("0")&&workspace.getAll_manage().equals("0")){None}
+                        </td>
+                        <td>
+                            <a href="@routes.MapCatalogC.manageAWorkspace(workspace.getId_workspace)">
+                                <img src="@routes.Assets.at("images/icons/system-settings.png")" alt="Manage" title="Manage the workspace"/>
+                            </a>
+                        </td>
+                    </tr>
+                    }
+                </table>
+            </div>
+            @if(workspacesCreated.isEmpty()){There is no information to display}
+        </div>
+        <div class="span5" id="display">
+            <h3>Workspace Monitored</h3>
+            <div class="CSSworktable">
+                <table>
+                    <tr>
+                        <td>Name</td>
+                        <td>Default accesses</td>
+                        <td>Action</td>
+                    </tr>
+                    @for(userworkspace <- workspacesMonitored.keySet()){
+                        @defining(workspacesMonitored.get(userworkspace)){ workspace =>
+                        <tr>
+                            <td>
+                                <a href="@routes.MapCatalogC.manageAWorkspace(workspace.getId_workspace)">
+                                    <img src="@routes.Assets.at("images/icons/workspace.png")" alt="Map"/>@workspace.getName()
+                                </a>
+                            </td>
+                            <td>
+                                @if(workspace.getAll_read().equals("1")){Read}
+                                @if(workspace.getAll_write().equals("1")){Write}
+                                @if(workspace.getAll_manage().equals("1")){Manage}
+                                @if(workspace.getAll_read().equals("0")&&workspace.getAll_write().equals("0")&&workspace.getAll_manage().equals("0")){None}
+                            </td>
+                            <td>
+                                <a href="@routes.MapCatalogC.manageAWorkspace(workspace.getId_workspace)">
+                                    <img src="@routes.Assets.at("images/icons/system-settings.png")" alt="Manage" title="Manage the workspace"/>
+                                </a>
+                            </td>
+                        </tr>
+                        }
+                    }
+                </table>
+            </div>
+            @if(workspacesMonitored.keySet().isEmpty()){There is no information to display}
+        </div>
+    </div>
+</div>
+}
