@@ -53,5 +53,5 @@ application.
 About the use of internal styles
 ====================================
 
-The wms server implementation lets you define which style you want to use. When sepcifying such a style
+The wms server implementation lets you define which style you want to use. When specifying such a style
 in the URL, you must not give the extension (.se) of the file.
